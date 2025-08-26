@@ -319,9 +319,288 @@
             }
         }
 
+        /* Styles pour la barre d'outils supérieure */
+        .top-toolbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 12px 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            z-index: 1000;
+            position: relative;
+        }
+        
+        .top-toolbar .toolbar-section {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .toolbar-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+        
+        .toolbar-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .toolbar-btn.active {
+            background: rgba(255, 255, 255, 0.9);
+            color: #667eea;
+        }
+        
+        .toolbar-divider {
+            width: 1px;
+            height: 30px;
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .gemini-key-input {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            width: 200px;
+        }
+        
+        .gemini-key-input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        /* Styles pour les tooltips */
+        .tooltip {
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .tooltip-content {
+            position: absolute;
+            background: #1f2937;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            line-height: 1.4;
+            white-space: nowrap;
+            max-width: 300px;
+            white-space: normal;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s ease;
+            z-index: 10000;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            pointer-events: none;
+        }
+        
+        .tooltip-content::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 0;
+            border: 6px solid transparent;
+        }
+        
+        .tooltip:hover .tooltip-content {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        /* Positionnement intelligent des tooltips */
+        .tooltip-content.top {
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            margin-bottom: 8px;
+        }
+        
+        .tooltip-content.top::after {
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border-top-color: #1f2937;
+        }
+        
+        .tooltip-content.bottom {
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            margin-top: 8px;
+        }
+        
+        .tooltip-content.bottom::after {
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border-bottom-color: #1f2937;
+        }
+        
+        .tooltip-content.left {
+            right: 100%;
+            top: 50%;
+            transform: translateY(-50%);
+            margin-right: 8px;
+        }
+        
+        .tooltip-content.left::after {
+            left: 100%;
+            top: 50%;
+            transform: translateY(-50%);
+            border-left-color: #1f2937;
+        }
+        
+        .tooltip-content.right {
+            left: 100%;
+            top: 50%;
+            transform: translateY(-50%);
+            margin-left: 8px;
+        }
+        
+        .tooltip-content.right::after {
+            right: 100%;
+            top: 50%;
+            transform: translateY(-50%);
+            border-right-color: #1f2937;
+        }
+
     </style>
 </head>
 <body class="bg-gray-200 font-sans">
+
+    <!-- BARRE D'OUTILS SUPÉRIEURE -->
+    <div class="top-toolbar no-print">
+        <div class="toolbar-section">
+            <div class="tooltip">
+                <button id="toolbar-pdf-btn" class="toolbar-btn">
+                    <i class="fas fa-file-pdf"></i>
+                    PDF
+                </button>
+                <div class="tooltip-content bottom">
+                    <strong>Télécharger en PDF</strong><br>
+                    Génère et télécharge votre CV au format PDF de haute qualité,<br>
+                    optimisé pour l'impression et l'envoi par email aux recruteurs.
+                </div>
+            </div>
+            
+            <div class="tooltip">
+                <button id="toolbar-share-btn" class="toolbar-btn">
+                    <i class="fas fa-share-alt"></i>
+                    PARTAGER
+                </button>
+                <div class="tooltip-content bottom">
+                    <strong>Partager le CV</strong><br>
+                    Créez un lien de partage unique pour envoyer votre CV<br>
+                    en version web consultable à vos contacts ou recruteurs.
+                </div>
+            </div>
+            
+            <div class="tooltip">
+                <button id="toolbar-anonymize-btn" class="toolbar-btn">
+                    <i class="fas fa-user-secret"></i>
+                    ANONYMISER
+                </button>
+                <div class="tooltip-content bottom">
+                    <strong>Anonymiser le CV</strong><br>
+                    Masque temporairement vos informations personnelles<br>
+                    (nom, email, téléphone) pour créer une version anonyme.
+                </div>
+            </div>
+            
+            <div class="tooltip">
+                <button id="toolbar-new-cv-btn" class="toolbar-btn">
+                    <i class="fas fa-file-plus"></i>
+                    NOUVEAU CV
+                </button>
+                <div class="tooltip-content bottom">
+                    <strong>Créer un nouveau CV</strong><br>
+                    Efface complètement le CV actuel et repart sur<br>
+                    une base vierge pour créer un nouveau document.
+                </div>
+            </div>
+        </div>
+        
+        <div class="toolbar-divider"></div>
+        
+        <div class="toolbar-section">
+            <div class="tooltip">
+                <button id="toolbar-overflow-btn" class="toolbar-btn">
+                    <i class="fas fa-ruler-combined"></i>
+                    DÉTECTION DÉPASSEMENT
+                </button>
+                <div class="tooltip-content bottom">
+                    <strong>Mode Détection de Dépassement</strong><br>
+                    Active le surlignage visuel des pages qui débordent<br>
+                    pour vous aider à optimiser la mise en page.
+                </div>
+            </div>
+            
+            <div class="tooltip">
+                <button id="toolbar-presentation-btn" class="toolbar-btn">
+                    <i class="fas fa-presentation-screen"></i>
+                    MODE PRÉSENTATION
+                </button>
+                <div class="tooltip-content bottom">
+                    <strong>Mode Présentation</strong><br>
+                    Masque tous les éléments d'édition pour une vue<br>
+                    claire et propre, idéale pour présenter votre CV.
+                </div>
+            </div>
+        </div>
+        
+        <div class="toolbar-divider"></div>
+        
+        <div class="toolbar-section">
+            <div class="tooltip">
+                <button id="toolbar-save-btn" class="toolbar-btn">
+                    <i class="fas fa-save"></i>
+                    SAUVEGARDER
+                </button>
+                <div class="tooltip-content bottom">
+                    <strong>Sauvegarder localement</strong><br>
+                    Enregistre votre CV dans le stockage local du navigateur<br>
+                    pour ne pas perdre vos modifications.
+                </div>
+            </div>
+            
+            <div class="tooltip">
+                <button id="toolbar-load-btn" class="toolbar-btn">
+                    <i class="fas fa-folder-open"></i>
+                    CHARGER
+                </button>
+                <div class="tooltip-content bottom">
+                    <strong>Charger la sauvegarde</strong><br>
+                    Charge la dernière version sauvegardée de votre CV<br>
+                    depuis le stockage local du navigateur.
+                </div>
+            </div>
+            
+            <div class="tooltip">
+                <input type="text" id="gemini-api-key" class="gemini-key-input" placeholder="Clé API Gemini...">
+                <div class="tooltip-content bottom">
+                    <strong>Clé API Gemini</strong><br>
+                    Entrez votre clé API Google Gemini pour activer<br>
+                    les fonctionnalités d'intelligence artificielle avancées.
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- OVERLAYS AND MODALS -->
     <div id="loader-overlay" class="hidden fixed inset-0 bg-white bg-opacity-75 flex-col items-center justify-center z-[9999]">
@@ -330,7 +609,17 @@
     </div>
 
     <div id="notification"></div>
-    <button id="ai-summarize-btn" title="Synthèse IA des expériences (5 lignes max)" class="no-print"><i class="fas fa-compress-arrows-alt"></i></button>
+    
+    <div class="tooltip">
+        <button id="ai-summarize-btn" title="Synthèse IA des expériences (5 lignes max)" class="no-print">
+            <i class="fas fa-compress-arrows-alt"></i>
+        </button>
+        <div class="tooltip-content left">
+            <strong>Synthèse IA Rapide</strong><br>
+            Utilise l'intelligence artificielle pour condenser<br>
+            automatiquement vos expériences en 5 lignes maximum.
+        </div>
+    </div>
 
     <div class="flex flex-col lg:flex-row min-h-screen">
         <!-- CONTROLS PANEL -->
@@ -339,8 +628,22 @@
                 <div class="flex items-center gap-3"><i class="fas fa-magic-wand-sparkles text-3xl text-blue-600"></i><h1 class="text-2xl font-bold text-gray-800">Créateur de CV</h1></div>
                 <div class="flex items-center gap-2">
                     <!-- Save status removed -->
-                    <button id="undo-btn" class="history-btn text-xl text-gray-600 hover:text-gray-900 disabled:text-gray-300" title="Annuler (Ctrl+Z)"><i class="fas fa-undo"></i></button>
-                    <button id="redo-btn" class="history-btn text-xl text-gray-600 hover:text-gray-900 disabled:text-gray-300" title="Rétablir (Ctrl+Y)"><i class="fas fa-redo"></i></button>
+                    <div class="tooltip">
+                        <button id="undo-btn" class="history-btn text-xl text-gray-600 hover:text-gray-900 disabled:text-gray-300" title="Annuler (Ctrl+Z)"><i class="fas fa-undo"></i></button>
+                        <div class="tooltip-content top">
+                            <strong>Annuler (Ctrl+Z)</strong><br>
+                            Annule la dernière modification apportée au CV.<br>
+                            Permet de revenir en arrière dans l'historique des changements.
+                        </div>
+                    </div>
+                    <div class="tooltip">
+                        <button id="redo-btn" class="history-btn text-xl text-gray-600 hover:text-gray-900 disabled:text-gray-300" title="Rétablir (Ctrl+Y)"><i class="fas fa-redo"></i></button>
+                        <div class="tooltip-content top">
+                            <strong>Rétablir (Ctrl+Y)</strong><br>
+                            Rétablit la dernière action annulée.<br>
+                            Permet de refaire une modification précédemment annulée.
+                        </div>
+                    </div>
                 </div>
             </div>
             
@@ -353,17 +656,7 @@
                 <p id="progress-text" class="text-xs text-right text-gray-500 mt-1">0/X sections complétées</p>
             </div>
 
-            <!-- Actions Rapides -->
-            <div class="space-y-2 mb-4 p-4 bg-slate-50 rounded-lg border border-slate-200 flex-shrink-0">
-                 <div class="grid grid-cols-2 gap-2">
-                      <button id="download-pdf-btn" class="w-full bg-gray-800 text-white py-2 px-4 rounded-md hover:bg-gray-900 flex items-center justify-center gap-2"><i class="fa-solid fa-download"></i> PDF</button>
-                      <button id="share-btn" class="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 flex items-center justify-center gap-2"><i class="fa-solid fa-share-alt"></i> Partager</button>
-                 </div>
-                 <button id="anonymize-btn" class="w-full bg-slate-500 text-white py-2 px-4 rounded-md hover:bg-slate-600 flex items-center justify-center gap-2"><i class="fa-solid fa-user-secret"></i>Anonymiser le CV</button>
-                 <button id="reset-cv-btn" class="w-full bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 flex items-center justify-center gap-2"><i class="fa-solid fa-file-circle-plus"></i> Nouveau CV</button>
-                 <button id="toggle-overflow-btn" class="w-full bg-yellow-500 text-white py-2 px-4 rounded-md hover:bg-yellow-600 flex items-center justify-center gap-2"><i class="fa-solid fa-ruler-combined"></i> Détection Dépassement</button>
-                 <button id="toggle-presentation-mode-btn" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 flex items-center justify-center gap-2 mt-2"><i class="fa-solid fa-eye"></i> Mode Présentation</button>
-            </div>
+
 
 
             <!-- TABS -->
@@ -384,7 +677,15 @@
                         <summary><span>Analyse IA</span><label class="completion-label"><input type="checkbox" id="completion-ia-analyse" class="completion-checkbox"><span>Fait ✅</span></label></summary>
                         <div class="control-group-content space-y-2">
                             <textarea id="ai-input" rows="6" class="w-full p-2 border rounded-md" placeholder="Collez ici une description de poste, un CV brut..."></textarea>
-                            <button id="analyze-btn" class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 flex items-center justify-center gap-2"><i class="fa-solid fa-wand-magic-sparkles"></i> Analyser & Remplir</button>
+                            <div class="tooltip">
+                                <button id="analyze-btn" class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 flex items-center justify-center gap-2"><i class="fa-solid fa-wand-magic-sparkles"></i> Analyser & Remplir</button>
+                                <div class="tooltip-content top">
+                                    <strong>Analyser & Remplir</strong><br>
+                                    Utilise l'IA pour analyser le texte saisi et remplir<br>
+                                    automatiquement les sections du CV avec les informations<br>
+                                    extraites (expériences, formations, compétences...).
+                                </div>
+                            </div>
                         </div>
                     </details>
                     <details class="control-group" open>
@@ -393,7 +694,15 @@
                             <input type="text" id="qualification-dispo" placeholder="Disponibilité" class="cv-input w-full p-2 border rounded-md">
                             <input type="text" id="qualification-salaire" placeholder="Prétentions salariales" class="cv-input w-full p-2 border rounded-md">
                             <input type="text" id="qualification-loc" placeholder="Localisation" class="cv-input w-full p-2 border rounded-md">
-                            <button id="generate-mail-btn" class="mt-2 w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 flex items-center justify-center gap-2"><i class="fas fa-wand-magic-sparkles"></i> Générer le mail</button>
+                            <div class="tooltip">
+                                <button id="generate-mail-btn" class="mt-2 w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 flex items-center justify-center gap-2"><i class="fas fa-wand-magic-sparkles"></i> Générer le mail</button>
+                                <div class="tooltip-content top">
+                                    <strong>Générer le mail</strong><br>
+                                    Crée automatiquement un email de présentation<br>
+                                    personnalisé en utilisant les informations du CV<br>
+                                    et les critères spécifiés (disponibilité, salaire, localisation).
+                                </div>
+                            </div>
                             <textarea id="recruiter-mail-content" rows="8" class="cv-input w-full p-2 border rounded-md mt-2" placeholder="Le mail de présentation apparaîtra ici..."></textarea>
                         </div>
                     </details>
@@ -413,14 +722,34 @@
                      <details class="control-group" open>
                         <summary><span>Expériences</span><label class="completion-label"><input type="checkbox" id="completion-content-exp" class="completion-checkbox"><span>Fait ✅</span></label></summary>
                         <div class="control-group-content space-y-2">
-                            <div class="flex justify-end mb-2"><button id="add-experience" class="text-sm text-blue-600 hover:text-blue-800 font-medium"><i class="fas fa-circle-plus"></i> Ajouter un bloc</button></div>
+                            <div class="flex justify-end mb-2">
+                                <div class="tooltip">
+                                    <button id="add-experience" class="text-sm text-blue-600 hover:text-blue-800 font-medium"><i class="fas fa-circle-plus"></i> Ajouter un bloc</button>
+                                    <div class="tooltip-content top">
+                                        <strong>Ajouter une expérience</strong><br>
+                                        Ajoute un nouveau bloc d'expérience professionnelle<br>
+                                        avec des champs pour le poste, l'entreprise, les dates<br>
+                                        et la description des missions accomplies.
+                                    </div>
+                                </div>
+                            </div>
                             <div id="experience-list" class="space-y-2"></div>
                         </div>
                     </details>
                      <details class="control-group" open>
                         <summary><span>Formations</span><label class="completion-label"><input type="checkbox" id="completion-content-form" class="completion-checkbox"><span>Fait ✅</span></label></summary>
                         <div class="control-group-content space-y-2">
-                            <div class="flex justify-end mb-2"><button id="add-formation" class="text-sm text-blue-600 hover:text-blue-800 font-medium"><i class="fas fa-circle-plus"></i> Ajouter un bloc</button></div>
+                            <div class="flex justify-end mb-2">
+                                <div class="tooltip">
+                                    <button id="add-formation" class="text-sm text-blue-600 hover:text-blue-800 font-medium"><i class="fas fa-circle-plus"></i> Ajouter un bloc</button>
+                                    <div class="tooltip-content top">
+                                        <strong>Ajouter une formation</strong><br>
+                                        Ajoute un nouveau bloc de formation/éducation<br>
+                                        avec des champs pour le diplôme, l'établissement,<br>
+                                        les dates et les détails de la formation.
+                                    </div>
+                                </div>
+                            </div>
                             <div id="formation-list" class="space-y-2"></div>
                         </div>
                     </details>
@@ -439,7 +768,26 @@
                             </div>
                             
                             <div id="skills-text-controls">
-                                <div class="flex justify-between items-center"><label for="competences" class="font-medium">Liste des compétences</label><div class="flex gap-2"><button id="ai-limit-skills-btn" class="text-blue-600 hover:text-blue-800" title="Limiter à 10 compétences par l'IA"><i class="fas fa-filter"></i> 10</button><button id="ai-synthesize-skills-btn" class="text-blue-600 hover:text-blue-800" title="Synthétiser et ranger les compétences par l'IA"><i class="fas fa-brain"></i></button></div></div>
+                                <div class="flex justify-between items-center"><label for="competences" class="font-medium">Liste des compétences</label><div class="flex gap-2">
+                                    <div class="tooltip">
+                                        <button id="ai-limit-skills-btn" class="text-blue-600 hover:text-blue-800" title="Limiter à 10 compétences par l'IA"><i class="fas fa-filter"></i> 10</button>
+                                        <div class="tooltip-content top">
+                                            <strong>Limiter à 10 compétences (IA)</strong><br>
+                                            Utilise l'IA pour sélectionner automatiquement<br>
+                                            les 10 compétences les plus pertinentes et<br>
+                                            supprimer les autres pour un CV plus focalisé.
+                                        </div>
+                                    </div>
+                                    <div class="tooltip">
+                                        <button id="ai-synthesize-skills-btn" class="text-blue-600 hover:text-blue-800" title="Synthétiser et ranger les compétences par l'IA"><i class="fas fa-brain"></i></button>
+                                        <div class="tooltip-content top">
+                                            <strong>Synthétiser et organiser (IA)</strong><br>
+                                            L'IA analyse vos compétences, supprime les doublons,<br>
+                                            les regroupe par catégories et les réorganise<br>
+                                            de manière logique et professionnelle.
+                                        </div>
+                                    </div>
+                                </div></div>
                                 <textarea id="competences" placeholder="Compétences (séparées par des virgules)..." rows="4" class="cv-input w-full p-2 border rounded-md"></textarea>
                             </div>
 
@@ -453,7 +801,15 @@
                                     <button data-gauge-style="number" class="gauge-style-btn bg-gray-200 p-2 rounded-md text-sm font-bold" title="Chiffres">⅗</button>
                                 </div>
                                 <div id="skills-level-list" class="space-y-2 border-t pt-3"></div>
-                                <button id="add-skill-level-btn" class="w-full bg-blue-100 text-blue-800 py-2 px-4 rounded-md hover:bg-blue-200 flex items-center justify-center gap-2 text-sm"><i class="fas fa-plus-circle"></i> Ajouter une compétence</button>
+                                <div class="tooltip">
+                                    <button id="add-skill-level-btn" class="w-full bg-blue-100 text-blue-800 py-2 px-4 rounded-md hover:bg-blue-200 flex items-center justify-center gap-2 text-sm"><i class="fas fa-plus-circle"></i> Ajouter une compétence</button>
+                                    <div class="tooltip-content top">
+                                        <strong>Ajouter une compétence avec niveau</strong><br>
+                                        Ajoute une nouvelle compétence avec un niveau<br>
+                                        de maîtrise affiché sous forme de jauge<br>
+                                        (barres, étoiles, points ou chiffres).
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </details>
@@ -476,7 +832,15 @@
                                 </select>
                                 <div class="flex gap-2">
                                     <input type="text" id="new-section-title-input" class="flex-grow p-2 border rounded-md text-sm" placeholder="Ou tapez un titre personnalisé...">
-                                    <button id="add-section-btn" class="bg-indigo-500 text-white py-2 px-4 rounded-md hover:bg-indigo-600"><i class="fas fa-plus"></i></button>
+                                    <div class="tooltip">
+                                        <button id="add-section-btn" class="bg-indigo-500 text-white py-2 px-4 rounded-md hover:bg-indigo-600"><i class="fas fa-plus"></i></button>
+                                        <div class="tooltip-content top">
+                                            <strong>Ajouter une section personnalisée</strong><br>
+                                            Crée une nouvelle section avec le titre spécifié<br>
+                                            ou sélectionné dans la liste de suggestions.<br>
+                                            Vous pourrez ensuite y ajouter du contenu.
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                             <div id="custom-sections-list" class="space-y-2 mt-2 border-t pt-2"></div>
@@ -527,7 +891,15 @@
                                     <label for="secondary-color-picker" class="block text-sm font-medium text-gray-700">Secondaire</label>
                                     <div class="flex items-center">
                                         <input type="color" id="secondary-color-picker" value="#334155" class="cv-input w-full h-10 p-1 border rounded-md">
-                                        <button id="ai-color-btn" title="Suggestion IA" class="ml-2 text-blue-600 hover:text-blue-800"><i class="fas fa-wand-magic-sparkles"></i></button>
+                                        <div class="tooltip">
+                                            <button id="ai-color-btn" title="Suggestion IA" class="ml-2 text-blue-600 hover:text-blue-800"><i class="fas fa-wand-magic-sparkles"></i></button>
+                                            <div class="tooltip-content top">
+                                                <strong>Suggestion couleurs IA</strong><br>
+                                                L'IA suggère automatiquement une palette<br>
+                                                de couleurs harmonieuses et professionnelles<br>
+                                                adaptées à votre secteur d'activité.
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="col-span-2">
@@ -574,7 +946,15 @@
                         <div class="control-group-content space-y-3">
                             <div class="flex justify-between items-center">
                                 <h3 class="font-semibold text-gray-700">Bannière Recruteur</h3>
-                                <button id="reset-recruiter-btn" class="text-sm text-gray-500 hover:text-red-600" title="Réinitialiser les informations recruteur"><i class="fas fa-undo"></i></button>
+                                <div class="tooltip">
+                                    <button id="reset-recruiter-btn" class="text-sm text-gray-500 hover:text-red-600" title="Réinitialiser les informations recruteur"><i class="fas fa-undo"></i></button>
+                                    <div class="tooltip-content left">
+                                        <strong>Réinitialiser la bannière</strong><br>
+                                        Efface toutes les informations personnalisées<br>
+                                        de la bannière recruteur et restaure<br>
+                                        les valeurs par défaut.
+                                    </div>
+                                </div>
                             </div>
                             <div id="banner-fix-controls"><button id="fix-banner-top-btn" class="w-full bg-teal-600 text-white py-2 px-4 rounded-md hover:bg-teal-700 flex items-center justify-center gap-2"><i class="fas fa-arrow-up"></i>Fixer en haut</button><button id="fix-banner-bottom-btn" class="w-full bg-teal-600 text-white py-2 px-4 rounded-md hover:bg-teal-700 flex items-center justify-center gap-2 mt-2"><i class="fas fa-arrow-down"></i>Fixer en bas</button></div><button id="modular-banner-btn" class="cv-input w-full bg-orange-500 text-white py-2 px-4 rounded-md hover:bg-orange-600 flex items-center justify-center gap-2 hidden"><i class="fas fa-arrows-up-down-left-right"></i>Rendre modulaire</button><label class="flex items-center gap-2 text-sm"><input type="checkbox" id="toggle-banner-checkbox" class="cv-input">Afficher la bannière</label><label for="banner-style-select" class="text-sm font-medium">Style de Bannière</label><select id="banner-style-select" class="cv-input w-full p-2 border rounded-md"><option value="banner-style-modern">Moderne</option><option value="banner-style-elegant">Élégant</option><option value="banner-style-discret">Discret</option><option value="banner-style-carte">Carte</option><option value="banner-style-degrade">Dégradé</option><option value="banner-style-premium">Premium</option><option value="banner-style-minimal">Minimal</option><option value="banner-style-encadre">Encadré</option><option value="banner-style-ligne-haute">Ligne Haute</option></select><p class="text-sm font-medium">Alignement</p><div class="flex gap-2"><button data-banner-align="left" class="banner-align-btn flex-1 bg-gray-200 p-2 rounded-md text-sm"><i class="fas fa-align-left"></i></button><button data-banner-align="center" class="banner-align-btn flex-1 bg-gray-200 p-2 rounded-md text-sm"><i class="fas fa-align-center"></i></button><button data-banner-align="right" class="banner-align-btn flex-1 bg-gray-200 p-2 rounded-md text-sm"><i class="fas fa-align-right"></i></button><button id="banner-invert-btn" class="p-2 bg-gray-200 rounded-md text-sm" title="Inverser Logo/Texte"><i class="fas fa-right-left"></i></button></div><p class="text-sm font-medium">Taille Logo</p><div class="flex gap-2"><button data-logo-size="sm" class="logo-size-btn flex-1 bg-gray-200 p-2 rounded-md text-sm">P</button><button data-logo-size="md" class="logo-size-btn flex-1 bg-gray-200 p-2 rounded-md text-sm">M</button><button data-logo-size="lg" class="logo-size-btn flex-1 bg-gray-200 p-2 rounded-md text-sm">G</button><button data-logo-size="xl" class="logo-size-btn flex-1 bg-gray-200 p-2 rounded-md text-sm">XL</button><button data-logo-size="xxl" class="logo-size-btn flex-1 bg-gray-200 p-2 rounded-md text-sm">XXL</button></div><div><label for="banner-element-spacing" class="block text-sm font-medium text-gray-700">Espace Bannière: <span id="banner-element-spacing-value">1</span>rem</label><input type="range" id="banner-element-spacing" min="0.5" max="4" step="0.1" value="1" class="cv-input w-full h-2 bg-gray-200 rounded-lg cursor-pointer"></div><input type="text" id="banner-nom" placeholder="Votre Nom & Prénom" class="banner-input w-full p-2 border rounded-md"><input type="text" id="banner-poste" placeholder="Votre Poste" class="banner-input w-full p-2 border rounded-md"><input type="email" id="banner-email" placeholder="Email" class="banner-input w-full p-2 border rounded-md"><input type="tel" id="banner-tel" placeholder="Téléphone" class="banner-input w-full p-2 border rounded-md"><div><label for="banner-image" class="block text-sm font-medium text-gray-700">Photo/Logo</label><input type="file" id="banner-image" accept="image/*" class="banner-input mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"></div>
                         </div>
@@ -595,7 +975,14 @@
                                 <input type="range" id="banner-bg-blur" min="0" max="20" step="1" value="0" class="cv-input w-full h-2 bg-gray-200 rounded-lg cursor-pointer">
                             </div>
                             <label class="flex items-center gap-2 text-sm"><input type="checkbox" id="banner-bg-grayscale" class="cv-input">Image en noir et blanc</label>
-                            <button id="remove-banner-bg-btn" class="w-full bg-red-500 text-white py-2 px-4 rounded-md hover:bg-red-600 flex items-center justify-center gap-2"><i class="fas fa-trash"></i> Supprimer l'image de fond</button>
+                            <div class="tooltip">
+                                <button id="remove-banner-bg-btn" class="w-full bg-red-500 text-white py-2 px-4 rounded-md hover:bg-red-600 flex items-center justify-center gap-2"><i class="fas fa-trash"></i> Supprimer l'image de fond</button>
+                                <div class="tooltip-content top">
+                                    <strong>Supprimer l'image de fond</strong><br>
+                                    Supprime l'image de fond actuellement appliquée<br>
+                                    à la bannière et restaure l'arrière-plan par défaut.
+                                </div>
+                            </div>
                         </div>
                     </details>
                      <details class="control-group" open>
@@ -645,7 +1032,15 @@
                      <button class="remove-page-btn no-print"><i class="fas fa-trash-can"></i></button>
                 </div>
                  <div id="add-page-btn-wrapper" class="no-print">
-                     <button id="add-page-btn" title="Ajouter une page"><i class="fas fa-plus"></i></button>
+                     <div class="tooltip">
+                         <button id="add-page-btn" title="Ajouter une page"><i class="fas fa-plus"></i></button>
+                         <div class="tooltip-content top">
+                             <strong>Ajouter une nouvelle page</strong><br>
+                             Crée une nouvelle page A4 à votre CV pour<br>
+                             y ajouter plus de contenu si nécessaire.<br>
+                             Idéal pour les CV détaillés sur plusieurs pages.
+                         </div>
+                     </div>
                  </div>
             </div>
         </div>
@@ -706,13 +1101,18 @@
                 fixBannerTopBtn: document.getElementById('fix-banner-top-btn'), fixBannerBottomBtn: document.getElementById('fix-banner-bottom-btn'), modularBannerBtn: document.getElementById('modular-banner-btn'),
                 qualificationDispo: document.getElementById('qualification-dispo'), qualificationSalaire: document.getElementById('qualification-salaire'), qualificationLoc: document.getElementById('qualification-loc'),
                 generateMailBtn: document.getElementById('generate-mail-btn'), recruiterMailContent: document.getElementById('recruiter-mail-content'),
-                anonymizeBtn: document.getElementById('anonymize-btn'), downloadPdfBtn: document.getElementById('download-pdf-btn'),
-                resetCvBtn: document.getElementById('reset-cv-btn'),
-                togglePresentationModeBtn: document.getElementById('toggle-presentation-mode-btn'),
-                toggleOverflowBtn: document.getElementById('toggle-overflow-btn'),
+                anonymizeBtn: document.getElementById('toolbar-anonymize-btn'), 
+                downloadPdfBtn: document.getElementById('toolbar-pdf-btn'),
+                resetCvBtn: document.getElementById('toolbar-new-cv-btn'),
+                togglePresentationModeBtn: document.getElementById('toolbar-presentation-btn'),
+                toggleOverflowBtn: document.getElementById('toolbar-overflow-btn'),
                 aiSummarizeBtn: document.getElementById('ai-summarize-btn'),
                 resetRecruiterBtn: document.getElementById('reset-recruiter-btn'),
                 aiLimitSkillsBtn: document.getElementById('ai-limit-skills-btn'),
+                // Nouveaux contrôles de la barre d'outils
+                toolbarSaveBtn: document.getElementById('toolbar-save-btn'),
+                toolbarLoadBtn: document.getElementById('toolbar-load-btn'),
+                geminiApiKey: document.getElementById('gemini-api-key'),
                 pageMargin: document.getElementById('page-margin'), pageMarginValue: document.getElementById('page-margin-value'),
                 moduleSpacing: document.getElementById('module-spacing'), moduleSpacingValue: document.getElementById('module-spacing-value'),
                 itemSpacing: document.getElementById('item-spacing'), itemSpacingValue: document.getElementById('item-spacing-value'),
@@ -736,7 +1136,7 @@
                 fontFamilyH1Select: document.getElementById('font-family-h1-select'),
                 fontFamilyH2Select: document.getElementById('font-family-h2-select'),
                 fontFamilyBodySelect: document.getElementById('font-family-body-select'),
-                shareBtn: document.getElementById('share-btn'), shareModal: document.getElementById('share-modal'), closeShareModal: document.getElementById('close-share-modal'), shareLinkInput: document.getElementById('share-link-input'), copyShareLinkBtn: document.getElementById('copy-share-link-btn'),
+                shareBtn: document.getElementById('toolbar-share-btn'), shareModal: document.getElementById('share-modal'), closeShareModal: document.getElementById('close-share-modal'), shareLinkInput: document.getElementById('share-link-input'), copyShareLinkBtn: document.getElementById('copy-share-link-btn'),
                 iconPickerModal: document.getElementById('icon-picker-modal'), closeIconPickerModal: document.getElementById('close-icon-picker-modal'), iconPickerGrid: document.getElementById('icon-picker-grid'), iconSearchInput: document.getElementById('icon-search-input'),
                 addPageBtn: document.getElementById('add-page-btn'),
                 bannerBgImage: document.getElementById('banner-bg-image'),
@@ -886,6 +1286,105 @@
             // History is not saved, so this is a simple implementation
             function undo() { showNotification("Fonctionnalité non disponible en mode hors ligne.", "error"); }
             function redo() { showNotification("Fonctionnalité non disponible en mode hors ligne.", "error"); }
+            
+            // --- SAVE/LOAD SYSTEM ---
+            function saveCV() {
+                try {
+                    const cvData = {
+                        // Informations principales
+                        nom: controls.nom.value,
+                        prenom: controls.prenom.value,
+                        poste: controls.poste.value,
+                        description: controls.description.value,
+                        competences: controls.competences.value,
+                        
+                        // Bannière
+                        bannerNom: controls.bannerNom.value,
+                        bannerPoste: controls.bannerPoste.value,
+                        bannerEmail: controls.bannerEmail.value,
+                        bannerTel: controls.bannerTel.value,
+                        bannerStyle: controls.bannerStyleSelect.value,
+                        toggleBanner: controls.toggleBanner.checked,
+                        
+                        // Qualifications
+                        qualificationDispo: controls.qualificationDispo.value,
+                        qualificationSalaire: controls.qualificationSalaire.value,
+                        qualificationLoc: controls.qualificationLoc.value,
+                        recruiterMailContent: controls.recruiterMailContent.value,
+                        
+                        // Couleurs et styles
+                        primaryColor: controls.primaryColorPicker.value,
+                        secondaryColor: controls.secondaryColorPicker.value,
+                        bodyTextColor: controls.bodyTextColorPicker.value,
+                        fontFamilyH1: controls.fontFamilyH1Select.value,
+                        fontFamilyH2: controls.fontFamilyH2Select.value,
+                        fontFamilyBody: controls.fontFamilyBodySelect.value,
+                        
+                        // Espacements
+                        pageMargin: controls.pageMargin.value,
+                        moduleSpacing: controls.moduleSpacing.value,
+                        itemSpacing: controls.itemSpacing.value,
+                        fontSizeH1: controls.fontSizeH1.value,
+                        fontSizeH2: controls.fontSizeH2.value,
+                        fontSizeP: controls.fontSizeP.value,
+                        fontSizeBanner: controls.fontSizeBanner.value,
+                        lineHeight: controls.lineHeight.value,
+                        paragraphSpacing: controls.paragraphSpacing.value,
+                        
+                        // Contenu HTML du CV
+                        cvHTML: preview.previewWrapper ? preview.previewWrapper.innerHTML : '',
+                        
+                        // Timestamp
+                        savedAt: new Date().toISOString()
+                    };
+                    
+                    localStorage.setItem('cv-data', JSON.stringify(cvData));
+                    return true;
+                } catch (error) {
+                    console.error('Erreur lors de la sauvegarde:', error);
+                    return false;
+                }
+            }
+            
+            function loadCV() {
+                try {
+                    const savedData = localStorage.getItem('cv-data');
+                    if (!savedData) return false;
+                    
+                    const cvData = JSON.parse(savedData);
+                    
+                    // Restaurer les champs
+                    if (controls.nom) controls.nom.value = cvData.nom || '';
+                    if (controls.prenom) controls.prenom.value = cvData.prenom || '';
+                    if (controls.poste) controls.poste.value = cvData.poste || '';
+                    if (controls.description) controls.description.value = cvData.description || '';
+                    if (controls.competences) controls.competences.value = cvData.competences || '';
+                    
+                    if (controls.bannerNom) controls.bannerNom.value = cvData.bannerNom || '';
+                    if (controls.bannerPoste) controls.bannerPoste.value = cvData.bannerPoste || '';
+                    if (controls.bannerEmail) controls.bannerEmail.value = cvData.bannerEmail || '';
+                    if (controls.bannerTel) controls.bannerTel.value = cvData.bannerTel || '';
+                    if (controls.bannerStyleSelect) controls.bannerStyleSelect.value = cvData.bannerStyle || 'banner-style-modern';
+                    if (controls.toggleBanner) controls.toggleBanner.checked = cvData.toggleBanner || false;
+                    
+                    if (controls.qualificationDispo) controls.qualificationDispo.value = cvData.qualificationDispo || '';
+                    if (controls.qualificationSalaire) controls.qualificationSalaire.value = cvData.qualificationSalaire || '';
+                    if (controls.qualificationLoc) controls.qualificationLoc.value = cvData.qualificationLoc || '';
+                    if (controls.recruiterMailContent) controls.recruiterMailContent.value = cvData.recruiterMailContent || '';
+                    
+                    if (controls.primaryColorPicker) controls.primaryColorPicker.value = cvData.primaryColor || '#2563eb';
+                    if (controls.secondaryColorPicker) controls.secondaryColorPicker.value = cvData.secondaryColor || '#334155';
+                    if (controls.bodyTextColorPicker) controls.bodyTextColorPicker.value = cvData.bodyTextColor || '#334155';
+                    
+                    // Appliquer les changements
+                    updatePreview('form');
+                    
+                    return true;
+                } catch (error) {
+                    console.error('Erreur lors du chargement:', error);
+                    return false;
+                }
+            }
             
             // --- DRAG & DROP & RESIZE ---
             let activeResizer = null;
@@ -2234,6 +2733,69 @@
                 controls.fixBannerBottomBtn.addEventListener('click', () => moveBannerTo('bottom'));
                 controls.modularBannerBtn.addEventListener('click', () => moveBannerTo('modular'));
                 controls.addSkillLevelBtn.addEventListener('click', () => createSkillLevelItem());
+
+                // Nouveaux event listeners pour la barre d'outils
+                controls.toolbarSaveBtn.addEventListener('click', () => {
+                    saveCV();
+                    showNotification("CV sauvegardé localement avec succès.", "success");
+                });
+
+                controls.toolbarLoadBtn.addEventListener('click', () => {
+                    if (loadCV()) {
+                        showNotification("CV chargé depuis la sauvegarde locale.", "success");
+                    } else {
+                        showNotification("Aucune sauvegarde trouvée.", "error");
+                    }
+                });
+
+                controls.geminiApiKey.addEventListener('input', (e) => {
+                    localStorage.setItem('gemini-api-key', e.target.value);
+                });
+
+                // Charger la clé API sauvegardée au démarrage
+                const savedApiKey = localStorage.getItem('gemini-api-key');
+                if (savedApiKey) {
+                    controls.geminiApiKey.value = savedApiKey;
+                }
+
+                // Tentative de chargement automatique au démarrage
+                if (localStorage.getItem('cv-data')) {
+                    setTimeout(() => {
+                        if (loadCV()) {
+                            showNotification("CV restauré depuis la sauvegarde locale.", "info");
+                        }
+                    }, 1000);
+                }
+
+                // Fonction pour positionner intelligemment les tooltips
+                function positionTooltip(tooltip) {
+                    const tooltipContent = tooltip.querySelector('.tooltip-content');
+                    if (!tooltipContent) return;
+
+                    const rect = tooltip.getBoundingClientRect();
+                    const contentRect = tooltipContent.getBoundingClientRect();
+                    const viewportWidth = window.innerWidth;
+                    const viewportHeight = window.innerHeight;
+
+                    // Reset classes
+                    tooltipContent.classList.remove('top', 'bottom', 'left', 'right');
+
+                    // Choisir la position optimale
+                    if (rect.top > contentRect.height + 20) {
+                        tooltipContent.classList.add('top');
+                    } else if (rect.bottom + contentRect.height + 20 < viewportHeight) {
+                        tooltipContent.classList.add('bottom');
+                    } else if (rect.right + contentRect.width + 20 < viewportWidth) {
+                        tooltipContent.classList.add('right');
+                    } else {
+                        tooltipContent.classList.add('left');
+                    }
+                }
+
+                // Appliquer le positionnement intelligent des tooltips
+                document.querySelectorAll('.tooltip').forEach(tooltip => {
+                    tooltip.addEventListener('mouseenter', () => positionTooltip(tooltip));
+                });
 
                 document.querySelectorAll('.a4-page').forEach(setupOverflowObserver);
             }
