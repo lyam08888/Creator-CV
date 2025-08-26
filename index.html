@@ -831,7 +831,7 @@
         }
 
         .ai-thinking-container {
-            background: white;
+            background: rgba(0, 0, 0, 0.95);
             border-radius: 20px;
             padding: 2rem;
             text-align: center;
@@ -839,26 +839,28 @@
             width: 90%;
             position: relative;
             overflow: hidden;
+            border: 2px solid #00ff41;
+            box-shadow: 0 0 30px rgba(0, 255, 65, 0.5);
         }
 
         .ai-brain {
-            width: 80px;
-            height: 80px;
+            width: 100%;
+            height: 120px;
             margin: 0 auto 1rem;
-            background: linear-gradient(45deg, #3b82f6, #8b5cf6, #06b6d4);
-            border-radius: 50%;
             position: relative;
-            animation: aiPulse 2s ease-in-out infinite;
+            overflow: hidden;
+            border-radius: 10px;
+            background: rgba(0, 0, 0, 0.8);
         }
 
         .ai-brain::before {
-            content: '🧠';
+            content: '';
             position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 2rem;
-            animation: aiFloat 3s ease-in-out infinite;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(to bottom, rgba(0, 255, 65, 0.1), transparent);
         }
 
         .ai-neurons {
@@ -871,18 +873,19 @@
 
         .neuron {
             position: absolute;
-            width: 4px;
-            height: 4px;
-            background: #3b82f6;
-            border-radius: 50%;
-            animation: neuronPulse 1.5s ease-in-out infinite;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            color: #00ff41;
+            text-shadow: 0 0 5px currentColor;
+            animation: matrixFall 3s linear infinite;
         }
 
-        .neuron:nth-child(1) { top: 20%; left: 30%; animation-delay: 0s; }
-        .neuron:nth-child(2) { top: 40%; left: 70%; animation-delay: 0.3s; }
-        .neuron:nth-child(3) { top: 60%; left: 20%; animation-delay: 0.6s; }
-        .neuron:nth-child(4) { top: 30%; left: 80%; animation-delay: 0.9s; }
-        .neuron:nth-child(5) { top: 70%; left: 50%; animation-delay: 1.2s; }
+        .neuron:nth-child(1) { left: 10%; animation-delay: 0s; }
+        .neuron:nth-child(2) { left: 25%; animation-delay: 0.5s; }
+        .neuron:nth-child(3) { left: 40%; animation-delay: 1s; }
+        .neuron:nth-child(4) { left: 55%; animation-delay: 1.5s; }
+        .neuron:nth-child(5) { left: 70%; animation-delay: 2s; }
+        .neuron:nth-child(6) { left: 85%; animation-delay: 2.5s; }
 
         .ai-typing {
             display: flex;
@@ -2702,16 +2705,17 @@
         <div class="ai-thinking-container">
             <div class="ai-brain">
                 <div class="ai-neurons">
-                    <div class="neuron"></div>
-                    <div class="neuron"></div>
-                    <div class="neuron"></div>
-                    <div class="neuron"></div>
-                    <div class="neuron"></div>
+                    <div class="neuron">1</div>
+                    <div class="neuron">0</div>
+                    <div class="neuron">1</div>
+                    <div class="neuron">0</div>
+                    <div class="neuron">1</div>
+                    <div class="neuron">0</div>
                 </div>
             </div>
             
-            <h3 id="ai-thinking-title" class="text-xl font-bold text-gray-800 mb-2">IA en cours d'analyse...</h3>
-            <p id="ai-thinking-subtitle" class="text-gray-600 mb-4">Traitement de vos informations</p>
+            <h3 id="ai-thinking-title" class="text-xl font-bold mb-2" style="color: #00ff41; text-shadow: 0 0 10px currentColor;">IA Matrix en cours d'analyse...</h3>
+            <p id="ai-thinking-subtitle" class="mb-4" style="color: #90ee90;">Traitement des données binaires</p>
             
             <div class="ai-step-indicator">
                 <div class="ai-step active" id="step-1">
@@ -5508,7 +5512,7 @@
                         // Attendre la fin de l'animation avant de mettre à jour l'aperçu
                         await animationPromise;
                         updatePreview('form');
-                        showNotification("✨ CV restructuré et rempli par l'IA !", "success");
+                        showNotification("✨ CV restructuré et rempli par la Matrix !", "success");
                     } else {
                         // En cas d'erreur, masquer l'animation
                         hideCVRestructureAnimation();
@@ -6972,7 +6976,7 @@
 
             // --- FONCTIONS D'ANIMATION IA ---
             
-            function showAIThinking(title = "IA en cours d'analyse...", subtitle = "Traitement de vos informations") {
+            function showAIThinking(title = "IA Matrix en cours d'analyse...", subtitle = "Traitement des données binaires") {
                 if (!controls.aiThinkingOverlay) return;
                 
                 controls.aiThinkingTitle.textContent = title;
@@ -6985,6 +6989,8 @@
                     if (index === 0) step.classList.add('active');
                 });
                 
+                // Démarrer l'animation Matrix dans l'overlay IA
+                startAIMatrixAnimation();
                 // Démarrer l'animation des étapes
                 startAIStepAnimation();
             }
@@ -6992,7 +6998,34 @@
             function hideAIThinking() {
                 if (controls.aiThinkingOverlay) {
                     controls.aiThinkingOverlay.classList.remove('active');
+                    // Arrêter l'animation Matrix
+                    stopAIMatrixAnimation();
                 }
+            }
+
+            function startAIMatrixAnimation() {
+                const neurons = document.querySelectorAll('.ai-brain .neuron');
+                const matrixChars = ['0', '1'];
+                
+                neurons.forEach((neuron, index) => {
+                    // Mettre à jour le caractère initial
+                    neuron.textContent = matrixChars[Math.floor(Math.random() * 2)];
+                    
+                    // Changer le caractère périodiquement
+                    neuron.matrixInterval = setInterval(() => {
+                        neuron.textContent = matrixChars[Math.floor(Math.random() * 2)];
+                    }, 100 + Math.random() * 200);
+                });
+            }
+
+            function stopAIMatrixAnimation() {
+                const neurons = document.querySelectorAll('.ai-brain .neuron');
+                neurons.forEach(neuron => {
+                    if (neuron.matrixInterval) {
+                        clearInterval(neuron.matrixInterval);
+                        neuron.matrixInterval = null;
+                    }
+                });
             }
 
             // --- FONCTIONS D'ANIMATION MATRIX RAIN INTÉGRÉE SPECTACULAIRE ---
@@ -7007,7 +7040,7 @@
                 return new Promise((resolve) => {
                     // PHASE 1: Initialisation de la pluie Matrix (0-500ms)
                     startMatrixRainEffect(cvPages);
-                    showNotification("🔍 Scanning CV data...", "info", 1000);
+                    showNotification("🔍 Scanning CV data matrix...", "info", 1000);
                     
                     setTimeout(() => {
                         // PHASE 2: Intensification de la pluie + transformation du contenu (500ms-2000ms)
@@ -7025,7 +7058,7 @@
                     setTimeout(() => {
                         // PHASE 4: Finalisation avec effet de compilation (3500ms-4500ms)
                         finalizeMatrixCompilation(cvPages);
-                        showNotification("✨ Compilation complete...", "success", 1000);
+                        showNotification("✨ Matrix compilation complete...", "success", 1000);
                     }, 3500);
                     
                     setTimeout(() => {
@@ -7087,8 +7120,8 @@
                     animation-delay: ${Math.random() * 2}s;
                 `;
                 
-                // Caractères Matrix (japonais, chiffres, lettres)
-                const matrixChars = '田由甲申囗十丨ノ口卄1010110011アイウエオカキクケコサシスセソ';
+                // Caractères Matrix composés uniquement de 0 et 1 verts
+                const matrixChars = '0101010101';
                 const chars = matrixChars.split('');
                 
                 // Créer 20 caractères par colonne
@@ -7149,7 +7182,7 @@
                 textElements.forEach((element, index) => {
                     setTimeout(() => {
                         const originalText = element.textContent;
-                        const chars = '田由甲申囗十丨ノ口卄1010110011アイウエオカキクケコサシスセソ';
+                        const chars = '0101010101'; // Uniquement 0 et 1 verts
                         
                         // Phase de scramble
                         let scrambleInterval = setInterval(() => {
@@ -7210,13 +7243,13 @@
             
             function createCodeLinesEffect(module) {
                 const codeLines = [
-                    'function optimizeCV() {',
-                    '  analyzing_content...',
-                    '  layout.optimize();',
-                    '  fonts.adjust();',
-                    '  spacing.calculate();',
-                    '  return enhanced_cv;',
-                    '}'
+                    '01001000 01100101 01101100',
+                    '01101100 01101111 00100000',
+                    '01010111 01101111 01110010',
+                    '01101100 01100100 00100001',
+                    '01000001 01001001 00100000',
+                    '01010000 01110010 01101111',
+                    '01100011 01100101 01110011'
                 ];
                 
                 const codeContainer = document.createElement('div');
@@ -7809,7 +7842,7 @@
                     return;
                 }
 
-                showAIThinking("Réécriture des descriptions", "Reformulation pour plus d'impact");
+                showAIThinking("Réécriture matricielle", "Reformulation binaire des données");
                 
                 try {
                     const experiences = Array.from(document.querySelectorAll('#experience-list .experience-item')).map(item => ({
@@ -7893,7 +7926,7 @@
             
             async function generateAchievements() {
                 try {
-                    showAIThinking('Génération de réalisations', 'L\'IA analyse vos expériences pour générer des réalisations percutantes...');
+                    showAIThinking('Génération binaire de réalisations', 'La Matrix analyse vos expériences pour générer des réalisations percutantes...');
                     
                     const experiences = Array.from(document.querySelectorAll('#experiences .experience-item')).map(exp => {
                         return {
@@ -7945,7 +7978,7 @@
             
             async function suggestSkills() {
                 try {
-                    showAIThinking('Suggestion de compétences', 'L\'IA analyse votre profil pour suggérer des compétences pertinentes...');
+                    showAIThinking('Analyse Matrix des compétences', 'La Matrix analyse votre profil pour suggérer des compétences pertinentes...');
                     
                     const profile = document.querySelector('#about textarea')?.value || '';
                     const experiences = Array.from(document.querySelectorAll('#experiences .experience-item')).map(exp => {
@@ -7995,7 +8028,7 @@
             
             async function improveProfile() {
                 try {
-                    showAIThinking('Amélioration du profil', 'L\'IA restructure votre profil pour maximiser l\'impact...');
+                    showAIThinking('Amélioration binaire du profil', 'La Matrix restructure votre profil pour maximiser l\'impact...');
                     
                     const profileTextarea = document.querySelector('#about textarea');
                     const currentProfile = profileTextarea?.value || '';
@@ -8036,7 +8069,7 @@
             
             async function adaptToSector() {
                 try {
-                    showAIThinking('Adaptation sectorielle', 'L\'IA adapte votre CV au secteur cible...');
+                    showAIThinking('Adaptation sectorielle Matrix', 'La Matrix adapte votre CV au secteur cible...');
                     
                     // Demander le secteur cible
                     const sector = prompt('Dans quel secteur souhaitez-vous adapter votre CV ? (ex: Tech, Finance, Marketing, Santé...)');
@@ -8081,7 +8114,7 @@
             
             async function boostKeywords() {
                 try {
-                    showAIThinking('Optimisation des mots-clés', 'L\'IA enrichit votre CV avec des mots-clés stratégiques...');
+                    showAIThinking('Optimisation Matrix des mots-clés', 'La Matrix enrichit votre CV avec des mots-clés stratégiques...');
                     
                     const jobTitle = prompt('Pour quel poste/métier souhaitez-vous optimiser les mots-clés ? (ex: Développeur Full Stack, Chef de projet, Consultant...)');
                     if (!jobTitle) {
