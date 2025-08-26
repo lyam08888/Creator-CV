@@ -7307,7 +7307,7 @@
                     Pour chaque expérience, proposez 2-3 réalisations concrètes avec des chiffres, pourcentages ou résultats mesurables.
                     Format souhaité : "• [Réalisation avec chiffres et impact]"`;
                     
-                    const result = await generateAIContent(prompt);
+                    const result = await callGeminiAPI(prompt);
                     
                     // Simulation de mise à jour progressive
                     const lines = result.split('\n').filter(line => line.trim());
@@ -7359,7 +7359,7 @@
                     Suggérez des compétences techniques et comportementales qui manquent et qui seraient valorisantes pour ce profil.
                     Répondez uniquement avec une liste de compétences séparées par des virgules.`;
                     
-                    const result = await generateAIContent(prompt);
+                    const result = await callGeminiAPI(prompt);
                     const suggestedSkills = result.split(',').map(s => s.trim()).filter(s => s.length > 0);
                     
                     // Ajouter progressivement les compétences
@@ -7413,7 +7413,7 @@
                     
                     Limitez à 4-5 phrases maximum.`;
                     
-                    const improvedProfile = await generateAIContent(prompt);
+                    const improvedProfile = await callGeminiAPI(prompt);
                     
                     // Animation de réécriture
                     profileTextarea.value = '';
@@ -7458,7 +7458,7 @@
                     
                     Proposez uniquement le nouveau profil adapté.`;
                     
-                    const adaptedProfile = await generateAIContent(prompt);
+                    const adaptedProfile = await callGeminiAPI(prompt);
                     
                     // Animation de mise à jour
                     profileTextarea.value = '';
@@ -7496,7 +7496,7 @@
                     Proposez 10-15 mots-clés/expressions clés pertinents pour ce poste, en précisant où les intégrer naturellement dans le CV.
                     Format : "MOT-CLÉ : suggestion d'intégration"`;
                     
-                    const keywords = await generateAIContent(prompt);
+                    const keywords = await callGeminiAPI(prompt);
                     
                     // Afficher les suggestions dans une fenêtre modale
                     const modal = document.createElement('div');
