@@ -784,10 +784,7 @@
             <div id="tab-navigation" class="flex flex-wrap -mb-px border-b border-gray-200">
                 <button class="tab-btn -mb-px py-3 px-4 text-sm font-medium border-b-2 whitespace-nowrap" data-target="#panel-ia"><i class="fa-solid fa-robot mr-1"></i> IA</button>
                 <button class="tab-btn -mb-px py-3 px-4 text-sm font-medium border-b-2 whitespace-nowrap" data-target="#panel-content"><i class="fa-solid fa-file-lines mr-1"></i> Contenu</button>
-                <button class="tab-btn -mb-px py-3 px-4 text-sm font-medium border-b-2 whitespace-nowrap" data-target="#panel-skills"><i class="fa-solid fa-star mr-1"></i> Compétences</button>
-                <button class="tab-btn -mb-px py-3 px-4 text-sm font-medium border-b-2 whitespace-nowrap" data-target="#panel-custom"><i class="fa-solid fa-puzzle-piece mr-1"></i> Sections</button>
                 <button class="tab-btn -mb-px py-3 px-4 text-sm font-medium border-b-2 whitespace-nowrap" data-target="#panel-layout"><i class="fa-solid fa-columns mr-1"></i> Mise en Page</button>
-                <button class="tab-btn -mb-px py-3 px-4 text-sm font-medium border-b-2 whitespace-nowrap" data-target="#panel-styles"><i class="fa-solid fa-palette mr-1"></i> Styles</button>
                 <button class="tab-btn -mb-px py-3 px-4 text-sm font-medium border-b-2 whitespace-nowrap" data-target="#panel-banner"><i class="fa-solid fa-user-tie mr-1"></i> Bannière</button>
             </div>
 
@@ -831,21 +828,43 @@
 
                 <!-- TAB: Contenu -->
                 <div id="panel-content" class="tab-panel hidden space-y-4">
+                    <!-- Informations Personnelles -->
                     <details class="control-group" open>
-                        <summary><span>Informations Principales</span><label class="completion-label"><input type="checkbox" id="completion-content-infos" class="completion-checkbox"><span>Fait ✅</span></label></summary>
+                        <summary><span>Informations Personnelles</span><label class="completion-label"><input type="checkbox" id="completion-content-infos" class="completion-checkbox"><span>Fait ✅</span></label></summary>
                         <div class="control-group-content space-y-3">
-                            <input type="text" id="nom" placeholder="Nom" class="cv-input w-full p-2 border rounded-md">
-                            <input type="text" id="prenom" placeholder="Prénom" class="cv-input w-full p-2 border rounded-md">
+                            <div class="grid grid-cols-2 gap-3">
+                                <input type="text" id="nom" placeholder="Nom" class="cv-input w-full p-2 border rounded-md">
+                                <input type="text" id="prenom" placeholder="Prénom" class="cv-input w-full p-2 border rounded-md">
+                            </div>
                             <input type="text" id="poste" placeholder="Poste recherché" class="cv-input w-full p-2 border rounded-md">
-                            <textarea id="description" placeholder="Description du profil" rows="4" class="cv-input w-full p-2 border rounded-md"></textarea>
+                            <div class="grid grid-cols-2 gap-3">
+                                <input type="email" id="email" placeholder="Email" class="cv-input w-full p-2 border rounded-md">
+                                <input type="tel" id="telephone" placeholder="Téléphone" class="cv-input w-full p-2 border rounded-md">
+                            </div>
+                            <div class="grid grid-cols-3 gap-3">
+                                <input type="text" id="adresse" placeholder="Adresse" class="cv-input w-full p-2 border rounded-md">
+                                <input type="text" id="ville" placeholder="Ville" class="cv-input w-full p-2 border rounded-md">
+                                <input type="text" id="code_postal" placeholder="Code postal" class="cv-input w-full p-2 border rounded-md">
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <input type="date" id="date_naissance" placeholder="Date de naissance" class="cv-input w-full p-2 border rounded-md">
+                                <input type="text" id="nationalite" placeholder="Nationalité" class="cv-input w-full p-2 border rounded-md">
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <input type="text" id="linkedin" placeholder="LinkedIn" class="cv-input w-full p-2 border rounded-md">
+                                <input type="text" id="site_web" placeholder="Site web" class="cv-input w-full p-2 border rounded-md">
+                            </div>
+                            <textarea id="description" placeholder="Description du profil / Objectif professionnel" rows="4" class="cv-input w-full p-2 border rounded-md"></textarea>
                         </div>
                     </details>
-                     <details class="control-group" open>
-                        <summary><span>Expériences</span><label class="completion-label"><input type="checkbox" id="completion-content-exp" class="completion-checkbox"><span>Fait ✅</span></label></summary>
+
+                    <!-- Expériences Professionnelles -->
+                    <details class="control-group" open>
+                        <summary><span>Expériences Professionnelles</span><label class="completion-label"><input type="checkbox" id="completion-content-exp" class="completion-checkbox"><span>Fait ✅</span></label></summary>
                         <div class="control-group-content space-y-2">
                             <div class="flex justify-end mb-2">
                                 <div class="tooltip">
-                                    <button id="add-experience" class="text-sm text-blue-600 hover:text-blue-800 font-medium"><i class="fas fa-circle-plus"></i> Ajouter un bloc</button>
+                                    <button id="add-experience" class="text-sm text-blue-600 hover:text-blue-800 font-medium"><i class="fas fa-circle-plus"></i> Ajouter une expérience</button>
                                     <div class="tooltip-content top">
                                         <strong>Ajouter une expérience</strong><br>
                                         Ajoute un nouveau bloc d'expérience professionnelle<br>
@@ -857,12 +876,14 @@
                             <div id="experience-list" class="space-y-2"></div>
                         </div>
                     </details>
-                     <details class="control-group" open>
-                        <summary><span>Formations</span><label class="completion-label"><input type="checkbox" id="completion-content-form" class="completion-checkbox"><span>Fait ✅</span></label></summary>
+
+                    <!-- Formations et Éducation -->
+                    <details class="control-group" open>
+                        <summary><span>Formations et Éducation</span><label class="completion-label"><input type="checkbox" id="completion-content-form" class="completion-checkbox"><span>Fait ✅</span></label></summary>
                         <div class="control-group-content space-y-2">
                             <div class="flex justify-end mb-2">
                                 <div class="tooltip">
-                                    <button id="add-formation" class="text-sm text-blue-600 hover:text-blue-800 font-medium"><i class="fas fa-circle-plus"></i> Ajouter un bloc</button>
+                                    <button id="add-formation" class="text-sm text-blue-600 hover:text-blue-800 font-medium"><i class="fas fa-circle-plus"></i> Ajouter une formation</button>
                                     <div class="tooltip-content top">
                                         <strong>Ajouter une formation</strong><br>
                                         Ajoute un nouveau bloc de formation/éducation<br>
@@ -874,11 +895,9 @@
                             <div id="formation-list" class="space-y-2"></div>
                         </div>
                     </details>
-                </div>
-                
-                <!-- TAB: Compétences -->
-                <div id="panel-skills" class="tab-panel hidden space-y-4">
-                     <details class="control-group" open>
+
+                    <!-- Compétences -->
+                    <details class="control-group" open>
                         <summary><span>Compétences</span><label class="completion-label"><input type="checkbox" id="completion-skills" class="completion-checkbox"><span>Fait ✅</span></label></summary>
                         <div class="control-group-content space-y-3">
                             <p class="text-sm font-medium">Style de Présentation</p>
@@ -934,22 +953,62 @@
                             </div>
                         </div>
                     </details>
-                </div>
 
-                <!-- TAB: Sections Perso -->
-                <div id="panel-custom" class="tab-panel hidden space-y-4">
-                    <details class="control-group" open>
+                    <!-- Langues -->
+                    <details class="control-group">
+                        <summary><span>Langues</span><label class="completion-label"><input type="checkbox" id="completion-content-langues" class="completion-checkbox"><span>Fait ✅</span></label></summary>
+                        <div class="control-group-content space-y-3">
+                            <div class="flex justify-end mb-2">
+                                <button id="add-language" class="text-sm text-blue-600 hover:text-blue-800 font-medium"><i class="fas fa-circle-plus"></i> Ajouter une langue</button>
+                            </div>
+                            <div id="language-list" class="space-y-2"></div>
+                        </div>
+                    </details>
+
+                    <!-- Certifications -->
+                    <details class="control-group">
+                        <summary><span>Certifications</span><label class="completion-label"><input type="checkbox" id="completion-content-certifs" class="completion-checkbox"><span>Fait ✅</span></label></summary>
+                        <div class="control-group-content space-y-3">
+                            <div class="flex justify-end mb-2">
+                                <button id="add-certification" class="text-sm text-blue-600 hover:text-blue-800 font-medium"><i class="fas fa-circle-plus"></i> Ajouter une certification</button>
+                            </div>
+                            <div id="certification-list" class="space-y-2"></div>
+                        </div>
+                    </details>
+
+                    <!-- Projets -->
+                    <details class="control-group">
+                        <summary><span>Projets</span><label class="completion-label"><input type="checkbox" id="completion-content-projets" class="completion-checkbox"><span>Fait ✅</span></label></summary>
+                        <div class="control-group-content space-y-3">
+                            <div class="flex justify-end mb-2">
+                                <button id="add-project" class="text-sm text-blue-600 hover:text-blue-800 font-medium"><i class="fas fa-circle-plus"></i> Ajouter un projet</button>
+                            </div>
+                            <div id="project-list" class="space-y-2"></div>
+                        </div>
+                    </details>
+
+                    <!-- Centres d'intérêt -->
+                    <details class="control-group">
+                        <summary><span>Centres d'intérêt</span><label class="completion-label"><input type="checkbox" id="completion-content-interets" class="completion-checkbox"><span>Fait ✅</span></label></summary>
+                        <div class="control-group-content space-y-3">
+                            <textarea id="interets" placeholder="Centres d'intérêt, hobbies, activités..." rows="3" class="cv-input w-full p-2 border rounded-md"></textarea>
+                        </div>
+                    </details>
+
+                    <!-- Sections Personnalisées -->
+                    <details class="control-group">
                         <summary><span>Sections Personnalisées</span><label class="completion-label"><input type="checkbox" id="completion-custom" class="completion-checkbox"><span>Fait ✅</span></label></summary>
                         <div class="control-group-content space-y-3">
                             <div class="space-y-2">
                                 <label class="text-sm font-medium">Ajouter une nouvelle section</label>
                                 <select id="section-suggestion-select" class="w-full p-2 border rounded-md text-sm">
                                     <option value="">-- Choisir une suggestion --</option>
-                                    <option value="Langues 🌐">Langues 🌐</option>
-                                    <option value="Centres d'intérêt 🎨">Centres d'intérêt 🎨</option>
-                                    <option value="Certifications 📜">Certifications 📜</option>
-                                    <option value="Projets Personnels 💡">Projets Personnels 💡</option>
+                                    <option value="Références 👥">Références 👥</option>
+                                    <option value="Publications 📚">Publications 📚</option>
                                     <option value="Bénévolat ❤️">Bénévolat ❤️</option>
+                                    <option value="Récompenses 🏆">Récompenses 🏆</option>
+                                    <option value="Conférences 🎤">Conférences 🎤</option>
+                                    <option value="Formations complémentaires 📖">Formations complémentaires 📖</option>
                                 </select>
                                 <div class="flex gap-2">
                                     <input type="text" id="new-section-title-input" class="flex-grow p-2 border rounded-md text-sm" placeholder="Ou tapez un titre personnalisé...">
@@ -986,12 +1045,39 @@
                             <div><label for="font-size-h1" class="block text-sm font-medium text-gray-700">Taille Titre Principal: <span id="font-size-h1-value">40</span>pt</label><input type="range" id="font-size-h1" min="20" max="50" step="1" value="40" class="cv-input w-full h-2 bg-gray-200 rounded-lg cursor-pointer"></div><div><label for="font-size-h2" class="block text-sm font-medium text-gray-700">Taille Titres Section: <span id="font-size-h2-value">21</span>pt</label><input type="range" id="font-size-h2" min="14" max="30" step="1" value="21" class="cv-input w-full h-2 bg-gray-200 rounded-lg cursor-pointer"></div><div><label for="font-size-p" class="block text-sm font-medium text-gray-700">Taille Paragraphe: <span id="font-size-p-value">10</span>pt</label><input type="range" id="font-size-p" min="8" max="14" step="0.5" value="10" class="cv-input w-full h-2 bg-gray-200 rounded-lg cursor-pointer"></div><div><label for="font-size-banner" class="block text-sm font-medium text-gray-700">Taille Bannière: <span id="font-size-banner-value">9</span>pt</label><input type="range" id="font-size-banner" min="7" max="12" step="0.5" value="9" class="cv-input w-full h-2 bg-gray-200 rounded-lg cursor-pointer"></div><div><label for="line-height" class="block text-sm font-medium text-gray-700">Interligne: <span id="line-height-value">1.6</span></label><input type="range" id="line-height" min="0.8" max="2.5" step="0.1" value="1.6" class="cv-input w-full h-2 bg-gray-200 rounded-lg cursor-pointer"></div><div><label for="paragraph-spacing" class="block text-sm font-medium text-gray-700">Espace Paragraphe: <span id="paragraph-spacing-value">0.5</span>rem</label><input type="range" id="paragraph-spacing" min="0" max="2" step="0.1" value="0.5" class="cv-input w-full h-2 bg-gray-200 rounded-lg cursor-pointer"></div>
                         </div>
                     </details>
-                </div>
-                
-                <!-- TAB: Styles Globaux -->
-                <div id="panel-styles" class="tab-panel hidden space-y-4">
-                     <details class="control-group" open>
-                        <summary><span>Thèmes</span><label class="completion-label"><input type="checkbox" id="completion-styles-themes" class="completion-checkbox"><span>Fait ✅</span></label></summary>
+
+                    <details class="control-group" open>
+                        <summary><span>Polices</span><label class="completion-label"><input type="checkbox" id="completion-layout-fonts" class="completion-checkbox"><span>Fait ✅</span></label></summary>
+                        <div class="control-group-content space-y-3">
+                            <div>
+                                <label for="font-family-h1-select" class="block text-sm font-medium text-gray-700">Titre Principal (H1)</label>
+                                <select id="font-family-h1-select" class="cv-input w-full p-2 border rounded-md"></select>
+                            </div>
+                            <div>
+                                <label for="font-family-h2-select" class="block text-sm font-medium text-gray-700">Titres de Section (H2)</label>
+                                <select id="font-family-h2-select" class="cv-input w-full p-2 border rounded-md"></select>
+                            </div>
+                            <div>
+                                <label for="font-family-body-select" class="block text-sm font-medium text-gray-700">Corps de Texte</label>
+                                <select id="font-family-body-select" class="cv-input w-full p-2 border rounded-md"></select>
+                            </div>
+                        </div>
+                    </details>
+
+                    <details class="control-group" open>
+                        <summary><span>Styles des Titres de Section</span><label class="completion-label"><input type="checkbox" id="completion-layout-titles" class="completion-checkbox"><span>Fait ✅</span></label></summary>
+                        <div class="control-group-content">
+                            <div class="grid grid-cols-2 gap-2">
+                                <button data-title-style="style-underline" class="section-title-style-btn bg-gray-200 p-2 rounded-md text-sm active">Souligné</button>
+                                <button data-title-style="style-side-line" class="section-title-style-btn bg-gray-200 p-2 rounded-md text-sm">Ligne Côté</button>
+                                <button data-title-style="style-background" class="section-title-style-btn bg-gray-200 p-2 rounded-md text-sm">Fond</button>
+                                <button data-title-style="style-boxed" class="section-title-style-btn bg-gray-200 p-2 rounded-md text-sm">Encadré</button>
+                            </div>
+                        </div>
+                    </details>
+
+                    <details class="control-group" open>
+                        <summary><span>Thèmes</span><label class="completion-label"><input type="checkbox" id="completion-layout-themes" class="completion-checkbox"><span>Fait ✅</span></label></summary>
                         <div class="control-group-content">
                             <div id="theme-buttons" class="grid grid-cols-3 gap-2">
                                 <button data-theme="professional" class="theme-btn bg-gray-200 p-2 rounded-md text-sm">Pro</button>
@@ -1000,8 +1086,9 @@
                             </div>
                         </div>
                     </details>
-                     <details class="control-group" open>
-                        <summary><span>Couleurs</span><label class="completion-label"><input type="checkbox" id="completion-styles-colors" class="completion-checkbox"><span>Fait ✅</span></label></summary>
+
+                    <details class="control-group" open>
+                        <summary><span>Couleurs</span><label class="completion-label"><input type="checkbox" id="completion-layout-colors" class="completion-checkbox"><span>Fait ✅</span></label></summary>
                         <div class="control-group-content">
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
@@ -1027,34 +1114,6 @@
                                     <label for="body-text-color-picker" class="block text-sm font-medium text-gray-700">Texte du corps</label>
                                     <input type="color" id="body-text-color-picker" value="#334155" class="cv-input w-full h-10 p-1 border rounded-md">
                                 </div>
-                            </div>
-                        </div>
-                    </details>
-                     <details class="control-group" open>
-                        <summary><span>Polices</span><label class="completion-label"><input type="checkbox" id="completion-styles-fonts" class="completion-checkbox"><span>Fait ✅</span></label></summary>
-                        <div class="control-group-content space-y-4">
-                            <div>
-                                <label for="font-family-h1-select" class="block text-sm font-medium text-gray-700">Titre Principal (H1)</label>
-                                <select id="font-family-h1-select" class="cv-input w-full p-2 border rounded-md"></select>
-                            </div>
-                            <div>
-                                <label for="font-family-h2-select" class="block text-sm font-medium text-gray-700">Titres de Section (H2)</label>
-                                <select id="font-family-h2-select" class="cv-input w-full p-2 border rounded-md"></select>
-                            </div>
-                            <div>
-                                <label for="font-family-body-select" class="block text-sm font-medium text-gray-700">Corps de Texte</label>
-                                <select id="font-family-body-select" class="cv-input w-full p-2 border rounded-md"></select>
-                            </div>
-                        </div>
-                    </details>
-                     <details class="control-group" open>
-                        <summary><span>Style des Titres de Section</span><label class="completion-label"><input type="checkbox" id="completion-styles-titles" class="completion-checkbox"><span>Fait ✅</span></label></summary>
-                        <div class="control-group-content">
-                            <div class="grid grid-cols-2 gap-2">
-                                <button data-title-style="style-underline" class="section-title-style-btn bg-gray-200 p-2 rounded-md text-sm active">Souligné</button>
-                                <button data-title-style="style-side-line" class="section-title-style-btn bg-gray-200 p-2 rounded-md text-sm">Ligne Côté</button>
-                                <button data-title-style="style-background" class="section-title-style-btn bg-gray-200 p-2 rounded-md text-sm">Fond</button>
-                                <button data-title-style="style-boxed" class="section-title-style-btn bg-gray-200 p-2 rounded-md text-sm">Encadré</button>
                             </div>
                         </div>
                     </details>
