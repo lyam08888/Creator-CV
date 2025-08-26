@@ -339,6 +339,45 @@
         .filter-contrast { filter: contrast(1.2); }
         .filter-grayscale { filter: grayscale(0.5); }
         .filter-sepia { filter: sepia(0.3); }
+
+        /* Animations personnalisées */
+        @keyframes fade {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slide {
+            from { transform: translateY(-10px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-5px); }
+            60% { transform: translateY(-2px); }
+        }
+        @keyframes scale {
+            from { transform: scale(0.95); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        /* Styles d'impression */
+        .print-optimized {
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+        .high-contrast-print {
+            filter: contrast(1.5);
+        }
+
+        @media print {
+            .print-optimized {
+                box-shadow: none !important;
+                animation: none !important;
+            }
+            .high-contrast-print {
+                background: white !important;
+                color: black !important;
+            }
+        }
         .skill-item .delete-skill-btn { display: none; position: absolute; top: 50%; right: 5px; transform: translateY(-50%); cursor: pointer; font-size: 14px; line-height: 1; color: #9ca3af; padding: 2px; }
         .skill-item:hover .delete-skill-btn { display: inline-block; }
         .skill-item .delete-skill-btn:hover { color: #ef4444; }
@@ -2596,6 +2635,69 @@
                     hideLoader();
                 }
             }
+
+            async function generateAIColors() {
+                if (!validateApiKey()) {
+                    showNotification("Veuillez configurer votre clé API Gemini d'abord.", "error");
+                    return;
+                }
+
+                // Récupérer le contexte du CV pour des suggestions pertinentes
+                const profession = document.getElementById('poste')?.value || 'professionnel';
+                const sector = document.getElementById('description')?.value || '';
+                
+                const prompt = `En tant qu'expert en design et psychologie des couleurs, suggère une palette de couleurs professionnelle pour un CV de ${profession}. 
+                Contexte supplémentaire: ${sector}
+                
+                Recommande 3 couleurs:
+                1. Couleur principale (primary) - pour les titres et éléments importants
+                2. Couleur secondaire (secondary) - pour les sous-titres et accents
+                3. Couleur du texte (body-text) - pour le contenu principal
+                
+                Les couleurs doivent être professionnelles, lisibles et adaptées au secteur d'activité. 
+                Fournis les couleurs au format hexadécimal (#RRGGBB).`;
+
+                const schema = {
+                    type: "OBJECT",
+                    properties: {
+                        primary: { type: "STRING", description: "Couleur principale en hexadécimal" },
+                        secondary: { type: "STRING", description: "Couleur secondaire en hexadécimal" },
+                        bodyText: { type: "STRING", description: "Couleur du texte principal en hexadécimal" },
+                        reasoning: { type: "STRING", description: "Explication du choix des couleurs" }
+                    },
+                    required: ["primary", "secondary", "bodyText", "reasoning"]
+                };
+
+                try {
+                    const result = await callGeminiAPI(prompt, schema);
+                    if (result && result.primary && result.secondary && result.bodyText) {
+                        // Appliquer les couleurs suggérées
+                        const primaryPicker = document.getElementById('primary-color-picker');
+                        const secondaryPicker = document.getElementById('secondary-color-picker');
+                        const bodyTextPicker = document.getElementById('body-text-color-picker');
+                        
+                        if (primaryPicker) {
+                            primaryPicker.value = result.primary;
+                            primaryPicker.dispatchEvent(new Event('input'));
+                        }
+                        if (secondaryPicker) {
+                            secondaryPicker.value = result.secondary;
+                            secondaryPicker.dispatchEvent(new Event('input'));
+                        }
+                        if (bodyTextPicker) {
+                            bodyTextPicker.value = result.bodyText;
+                            bodyTextPicker.dispatchEvent(new Event('input'));
+                        }
+
+                        showNotification(`Palette IA appliquée ! ${result.reasoning}`, 'success', 8000);
+                    } else {
+                        showNotification("L'IA n'a pas pu générer de suggestions de couleurs.", 'error');
+                    }
+                } catch (error) {
+                    console.error("Erreur lors de la génération des couleurs IA:", error);
+                    showNotification("Erreur lors de la génération des couleurs IA", 'error');
+                }
+            }
             
             function updateAllStyles() {
                 root.style.setProperty('--primary-color', controls.primaryColorPicker.value);
@@ -3160,6 +3262,19 @@
                         checkAllPagesOverflow();
                     });
                 });
+
+                // Gestionnaire pour le bouton couleur IA
+                const aiColorBtn = document.getElementById('ai-color-btn');
+                if (aiColorBtn) {
+                    aiColorBtn.addEventListener('click', async () => {
+                        if (!isApiConfigured()) {
+                            showNotification("Veuillez configurer votre clé API Gemini d'abord.", "error");
+                            return;
+                        }
+                        
+                        await generateAIColors();
+                    });
+                }
                 
                 controls.analyzeBtn.addEventListener('click', async () => {
                     const text = controls.aiInput.value;
@@ -3500,12 +3615,21 @@
                 console.log("Initializing advanced layout controls...");
                 
                 // Gestionnaires pour les arrière-plans
-                const bgTypeButtons = document.querySelectorAll('[data-bg-type]');
-                bgTypeButtons.forEach(btn => {
+                const bgStyleButtons = document.querySelectorAll('[data-bg-style]');
+                bgStyleButtons.forEach(btn => {
                     btn.addEventListener('click', function() {
-                        const type = this.dataset.bgType;
-                        updateBackgroundType(type);
-                        setActiveButton(bgTypeButtons, this);
+                        const style = this.dataset.bgStyle;
+                        updateBackgroundStyle(style);
+                        setActiveButton(bgStyleButtons, this);
+                        
+                        // Afficher/masquer les contrôles spécifiques
+                        const gradientControls = document.getElementById('gradient-controls');
+                        const patternControls = document.getElementById('pattern-controls');
+                        const textureControls = document.getElementById('texture-controls');
+                        
+                        if (gradientControls) gradientControls.style.display = style === 'gradient' ? 'block' : 'none';
+                        if (patternControls) patternControls.style.display = style === 'pattern' ? 'block' : 'none';
+                        if (textureControls) textureControls.style.display = style === 'texture' ? 'block' : 'none';
                     });
                 });
 
@@ -3521,18 +3645,27 @@
                 }
 
                 // Dégradés
-                const gradientColor1 = document.getElementById('gradient-color1');
-                const gradientColor2 = document.getElementById('gradient-color2');
-                const gradientDirection = document.getElementById('gradient-direction');
+                const gradientColor1 = document.getElementById('gradient-color-1');
+                const gradientColor2 = document.getElementById('gradient-color-2');
+                const gradientDirButtons = document.querySelectorAll('[data-gradient-dir]');
                 
-                [gradientColor1, gradientColor2, gradientDirection].forEach(input => {
+                [gradientColor1, gradientColor2].forEach(input => {
                     if (input) {
                         input.addEventListener('input', updateGradient);
                     }
                 });
 
+                gradientDirButtons.forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        updateGradientDirection(this.dataset.gradientDir);
+                        setActiveButton(gradientDirButtons, this);
+                    });
+                });
+
                 // Motifs
                 const patternButtons = document.querySelectorAll('[data-pattern]');
+                const patternOpacity = document.getElementById('pattern-opacity');
+                
                 patternButtons.forEach(btn => {
                     btn.addEventListener('click', function() {
                         const pattern = this.dataset.pattern;
@@ -3540,6 +3673,13 @@
                         setActiveButton(patternButtons, this);
                     });
                 });
+
+                if (patternOpacity) {
+                    patternOpacity.addEventListener('input', function() {
+                        updatePatternOpacity(this.value);
+                        updateRangeValue(this);
+                    });
+                }
 
                 // Couleur des motifs
                 const patternColorInput = document.getElementById('pattern-color');
@@ -3569,11 +3709,19 @@
                         const style = this.dataset.borderStyle;
                         updateBorderStyle(style);
                         setActiveButton(borderStyleButtons, this);
+                        
+                        // Afficher/masquer les contrôles de bordure
+                        const borderControls = document.getElementById('border-controls');
+                        if (borderControls) {
+                            borderControls.style.display = style !== 'none' ? 'block' : 'none';
+                        }
                     });
                 });
 
-                // Épaisseur de bordure
+                // Épaisseur de bordure et arrondis
                 const borderWidthInput = document.getElementById('border-width');
+                const borderRadiusInput = document.getElementById('border-radius');
+                
                 if (borderWidthInput) {
                     borderWidthInput.addEventListener('input', function() {
                         const preview = document.querySelector('.a4-page');
@@ -3582,6 +3730,45 @@
                         }
                         updateRangeValue(this);
                     });
+                }
+
+                if (borderRadiusInput) {
+                    borderRadiusInput.addEventListener('input', function() {
+                        const preview = document.querySelector('.a4-page');
+                        if (preview) {
+                            preview.style.borderRadius = this.value + 'px';
+                        }
+                        updateRangeValue(this);
+                    });
+                }
+
+                // Ombres
+                const enableShadows = document.getElementById('enable-shadows');
+                const shadowControls = ['shadow-x', 'shadow-y', 'shadow-blur', 'shadow-opacity'];
+                const shadowColorInput = document.getElementById('shadow-color');
+                
+                if (enableShadows) {
+                    enableShadows.addEventListener('change', function() {
+                        const shadowControlsDiv = document.getElementById('shadow-controls');
+                        if (shadowControlsDiv) {
+                            shadowControlsDiv.style.display = this.checked ? 'block' : 'none';
+                        }
+                        updateCustomShadow();
+                    });
+                }
+
+                shadowControls.forEach(id => {
+                    const input = document.getElementById(id);
+                    if (input) {
+                        input.addEventListener('input', function() {
+                            updateCustomShadow();
+                            updateRangeValue(this);
+                        });
+                    }
+                });
+
+                if (shadowColorInput) {
+                    shadowColorInput.addEventListener('input', updateCustomShadow);
                 }
 
                 // Couleur de bordure
@@ -3606,14 +3793,142 @@
                 });
 
                 // Formes de section
-                const shapeButtons = document.querySelectorAll('[data-shape]');
-                shapeButtons.forEach(btn => {
+                const sectionShapeButtons = document.querySelectorAll('[data-section-shape]');
+                sectionShapeButtons.forEach(btn => {
                     btn.addEventListener('click', function() {
-                        const shape = this.dataset.shape;
+                        const shape = this.dataset.sectionShape;
                         updateSectionShape(shape);
-                        setActiveButton(shapeButtons, this);
+                        setActiveButton(sectionShapeButtons, this);
                     });
                 });
+
+                // Padding des sections
+                const sectionPaddingInput = document.getElementById('section-padding');
+                if (sectionPaddingInput) {
+                    sectionPaddingInput.addEventListener('input', function() {
+                        const sections = document.querySelectorAll('.cv-module');
+                        sections.forEach(section => {
+                            section.style.padding = this.value + 'rem';
+                        });
+                        updateRangeValue(this);
+                    });
+                }
+
+                // Orientation de la page
+                const orientationButtons = document.querySelectorAll('[data-orientation]');
+                orientationButtons.forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const orientation = this.dataset.orientation;
+                        updatePageOrientation(orientation);
+                        setActiveButton(orientationButtons, this);
+                    });
+                });
+
+                // Échelle de la page
+                const pageScaleInput = document.getElementById('page-scale');
+                if (pageScaleInput) {
+                    pageScaleInput.addEventListener('input', function() {
+                        const preview = document.querySelector('.a4-page');
+                        if (preview) {
+                            preview.style.transform = `scale(${this.value})`;
+                            preview.style.transformOrigin = 'top left';
+                        }
+                        updateRangeValue(this);
+                    });
+                }
+
+                // Alignement du contenu
+                const alignButtons = document.querySelectorAll('[data-align]');
+                alignButtons.forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const align = this.dataset.align;
+                        updateContentAlignment(align);
+                        setActiveButton(alignButtons, this);
+                    });
+                });
+
+                // Justification du texte
+                const justifyButtons = document.querySelectorAll('[data-text-justify]');
+                justifyButtons.forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const justify = this.dataset.textJustify;
+                        updateTextJustification(justify);
+                        setActiveButton(justifyButtons, this);
+                    });
+                });
+
+                // Animations
+                const enableAnimations = document.getElementById('enable-animations');
+                const animationTypeSelect = document.getElementById('animation-type');
+                const animationDurationInput = document.getElementById('animation-duration');
+                
+                if (enableAnimations) {
+                    enableAnimations.addEventListener('change', function() {
+                        const animationControls = document.getElementById('animation-controls');
+                        if (animationControls) {
+                            animationControls.style.display = this.checked ? 'block' : 'none';
+                        }
+                        updateAnimations();
+                    });
+                }
+
+                if (animationTypeSelect) {
+                    animationTypeSelect.addEventListener('change', updateAnimations);
+                }
+
+                if (animationDurationInput) {
+                    animationDurationInput.addEventListener('input', function() {
+                        updateAnimations();
+                        updateRangeValue(this);
+                    });
+                }
+
+                // Filtres
+                const filterInputs = ['blur-filter', 'brightness-filter', 'contrast-filter', 'saturate-filter'];
+                filterInputs.forEach(id => {
+                    const input = document.getElementById(id);
+                    if (input) {
+                        input.addEventListener('input', function() {
+                            updateFilters();
+                            updateRangeValue(this);
+                        });
+                    }
+                });
+
+                // Options d'impression
+                const printOptimized = document.getElementById('print-optimized');
+                const highContrastPrint = document.getElementById('high-contrast-print');
+                
+                if (printOptimized) {
+                    printOptimized.addEventListener('change', updatePrintOptions);
+                }
+
+                if (highContrastPrint) {
+                    highContrastPrint.addEventListener('change', updatePrintOptions);
+                }
+
+                // Césure et contrôle typographique
+                const hyphenation = document.getElementById('hyphenation');
+                const widowOrphan = document.getElementById('widow-orphan');
+                
+                if (hyphenation) {
+                    hyphenation.addEventListener('change', function() {
+                        const preview = document.querySelector('.a4-page');
+                        if (preview) {
+                            preview.style.hyphens = this.checked ? 'auto' : 'none';
+                        }
+                    });
+                }
+
+                if (widowOrphan) {
+                    widowOrphan.addEventListener('change', function() {
+                        const preview = document.querySelector('.a4-page');
+                        if (preview) {
+                            preview.style.orphans = this.checked ? '2' : 'auto';
+                            preview.style.widows = this.checked ? '2' : 'auto';
+                        }
+                    });
+                }
 
                 // Padding personnalisé
                 const paddingInputs = ['padding-top', 'padding-right', 'padding-bottom', 'padding-left'];
@@ -3678,29 +3993,168 @@
                 });
             }
 
-            function updateBackgroundType(type) {
+            function updateBackgroundStyle(style) {
                 const preview = document.querySelector('.a4-page');
                 if (!preview) return;
 
                 // Retirer toutes les classes de background
-                preview.classList.remove('bg-solid', 'bg-gradient-linear', 'bg-gradient-radial');
+                preview.classList.remove('bg-solid', 'bg-gradient-linear', 'bg-gradient-radial', 'bg-pattern-dots', 'bg-pattern-lines', 'bg-pattern-grid', 'bg-texture-paper', 'bg-texture-fabric');
                 
                 // Ajouter la classe appropriée
-                if (type !== 'none') {
-                    preview.classList.add(`bg-${type}`);
+                switch(style) {
+                    case 'solid':
+                        preview.classList.add('bg-solid');
+                        break;
+                    case 'gradient':
+                        preview.classList.add('bg-gradient-linear');
+                        break;
+                    case 'pattern':
+                        // La classe sera ajoutée par updatePattern()
+                        break;
+                    case 'texture':
+                        // La classe sera ajoutée par updateTexture()
+                        break;
                 }
             }
 
             function updateGradient() {
-                const color1 = document.getElementById('gradient-color1')?.value || '#ffffff';
-                const color2 = document.getElementById('gradient-color2')?.value || '#f3f4f6';
-                const direction = document.getElementById('gradient-direction')?.value || 'to right';
+                const color1 = document.getElementById('gradient-color-1')?.value || '#ffffff';
+                const color2 = document.getElementById('gradient-color-2')?.value || '#f3f4f6';
                 
                 const preview = document.querySelector('.a4-page');
                 if (preview) {
                     preview.style.setProperty('--gradient-color1', color1);
                     preview.style.setProperty('--gradient-color2', color2);
-                    preview.style.setProperty('--gradient-direction', direction);
+                }
+            }
+
+            function updateGradientDirection(direction) {
+                const directionMap = {
+                    'to-r': 'to right',
+                    'to-br': 'to bottom right', 
+                    'to-b': 'to bottom',
+                    'to-bl': 'to bottom left',
+                    'to-l': 'to left',
+                    'to-tl': 'to top left',
+                    'to-t': 'to top',
+                    'to-tr': 'to top right'
+                };
+                
+                const preview = document.querySelector('.a4-page');
+                if (preview) {
+                    preview.style.setProperty('--gradient-direction', directionMap[direction] || 'to right');
+                }
+            }
+
+            function updatePatternOpacity(opacity) {
+                const preview = document.querySelector('.a4-page');
+                if (preview) {
+                    preview.style.setProperty('--pattern-opacity', opacity);
+                }
+            }
+
+            function updateCustomShadow() {
+                const enableShadows = document.getElementById('enable-shadows');
+                if (!enableShadows || !enableShadows.checked) {
+                    const preview = document.querySelector('.a4-page');
+                    if (preview) {
+                        preview.style.boxShadow = 'none';
+                    }
+                    return;
+                }
+
+                const x = document.getElementById('shadow-x')?.value || '0';
+                const y = document.getElementById('shadow-y')?.value || '2';
+                const blur = document.getElementById('shadow-blur')?.value || '4';
+                const color = document.getElementById('shadow-color')?.value || '#000000';
+                const opacity = document.getElementById('shadow-opacity')?.value || '0.1';
+                
+                // Convertir hex en rgb pour l'opacité
+                const r = parseInt(color.slice(1, 3), 16);
+                const g = parseInt(color.slice(3, 5), 16);
+                const b = parseInt(color.slice(5, 7), 16);
+                
+                const preview = document.querySelector('.a4-page');
+                if (preview) {
+                    preview.style.boxShadow = `${x}px ${y}px ${blur}px rgba(${r}, ${g}, ${b}, ${opacity})`;
+                }
+            }
+
+            function updatePageOrientation(orientation) {
+                const preview = document.querySelector('.a4-page');
+                if (!preview) return;
+
+                if (orientation === 'landscape') {
+                    preview.style.width = '29.7cm';
+                    preview.style.height = '21cm';
+                } else {
+                    preview.style.width = '21cm';
+                    preview.style.height = '29.7cm';
+                }
+            }
+
+            function updateContentAlignment(align) {
+                const preview = document.querySelector('.a4-page');
+                if (!preview) return;
+
+                preview.style.textAlign = align;
+            }
+
+            function updateTextJustification(justify) {
+                const preview = document.querySelector('.a4-page');
+                if (!preview) return;
+
+                if (justify === 'justify') {
+                    preview.style.textAlign = 'justify';
+                } else {
+                    preview.style.textAlign = 'left';
+                }
+            }
+
+            function updateAnimations() {
+                const enableAnimations = document.getElementById('enable-animations');
+                const animationType = document.getElementById('animation-type')?.value || 'fade';
+                const duration = document.getElementById('animation-duration')?.value || '0.3';
+                
+                const sections = document.querySelectorAll('.cv-module');
+                sections.forEach(section => {
+                    if (enableAnimations && enableAnimations.checked) {
+                        section.style.animation = `${animationType} ${duration}s ease-in-out`;
+                    } else {
+                        section.style.animation = 'none';
+                    }
+                });
+            }
+
+            function updateFilters() {
+                const blur = document.getElementById('blur-filter')?.value || '0';
+                const brightness = document.getElementById('brightness-filter')?.value || '100';
+                const contrast = document.getElementById('contrast-filter')?.value || '100';
+                const saturate = document.getElementById('saturate-filter')?.value || '100';
+                
+                const preview = document.querySelector('.a4-page');
+                if (preview) {
+                    const filterValue = `blur(${blur}px) brightness(${brightness}%) contrast(${contrast}%) saturate(${saturate}%)`;
+                    preview.style.filter = filterValue;
+                }
+            }
+
+            function updatePrintOptions() {
+                const printOptimized = document.getElementById('print-optimized');
+                const highContrastPrint = document.getElementById('high-contrast-print');
+                
+                const preview = document.querySelector('.a4-page');
+                if (!preview) return;
+
+                // Réinitialiser les styles d'impression
+                preview.classList.remove('print-optimized', 'high-contrast-print');
+                
+                if (printOptimized && printOptimized.checked) {
+                    preview.classList.add('print-optimized');
+                }
+                
+                if (highContrastPrint && highContrastPrint.checked) {
+                    preview.classList.add('high-contrast-print');
                 }
             }
 
