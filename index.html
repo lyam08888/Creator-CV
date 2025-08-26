@@ -385,6 +385,22 @@
             color: rgba(255, 255, 255, 0.7);
         }
         
+        .gemini-key-input.valid {
+            border-color: rgba(34, 197, 94, 0.6);
+            box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.3);
+        }
+        
+        .gemini-key-input.invalid {
+            border-color: rgba(239, 68, 68, 0.6);
+            box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.3);
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.3); }
+            50% { transform: scale(1.05); box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.6); }
+            100% { transform: scale(1); box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.3); }
+        }
+        
         /* Styles pour les tooltips */
         .tooltip {
             position: relative;
@@ -592,11 +608,17 @@
             </div>
             
             <div class="tooltip">
-                <input type="text" id="gemini-api-key" class="gemini-key-input" placeholder="Clé API Gemini...">
+                <div class="flex gap-2 items-center">
+                    <input type="text" id="gemini-api-key" class="gemini-key-input" placeholder="Clé API Gemini...">
+                    <button id="save-api-key-btn" class="toolbar-btn" style="padding: 6px 10px; font-size: 12px;">
+                        <i class="fas fa-save"></i>
+                    </button>
+                </div>
                 <div class="tooltip-content bottom">
                     <strong>Clé API Gemini</strong><br>
                     Entrez votre clé API Google Gemini pour activer<br>
-                    les fonctionnalités d'intelligence artificielle avancées.
+                    les fonctionnalités d'intelligence artificielle avancées.<br>
+                    Cliquez sur le bouton sauvegarder pour l'enregistrer.
                 </div>
             </div>
         </div>
@@ -625,7 +647,14 @@
         <!-- CONTROLS PANEL -->
         <div id="controls" class="w-full lg:w-1/3 xl:w-1/4 p-6 bg-white shadow-2xl overflow-y-auto flex flex-col no-print">
             <div class="flex justify-between items-center mb-4 flex-shrink-0">
-                <div class="flex items-center gap-3"><i class="fas fa-magic-wand-sparkles text-3xl text-blue-600"></i><h1 class="text-2xl font-bold text-gray-800">Créateur de CV</h1></div>
+                <div class="flex items-center gap-3">
+                    <i class="fas fa-magic-wand-sparkles text-3xl text-blue-600"></i>
+                    <h1 class="text-2xl font-bold text-gray-800">Créateur de CV</h1>
+                    <div id="api-status-indicator" class="flex items-center gap-1">
+                        <i id="api-status-icon" class="fas fa-circle text-red-500 text-xs" title="Clé API non configurée"></i>
+                        <span id="api-status-text" class="text-xs text-gray-500">IA: OFF</span>
+                    </div>
+                </div>
                 <div class="flex items-center gap-2">
                     <!-- Save status removed -->
                     <div class="tooltip">
@@ -1113,6 +1142,10 @@
                 toolbarSaveBtn: document.getElementById('toolbar-save-btn'),
                 toolbarLoadBtn: document.getElementById('toolbar-load-btn'),
                 geminiApiKey: document.getElementById('gemini-api-key'),
+                saveApiKeyBtn: document.getElementById('save-api-key-btn'),
+                // Indicateurs d'état de l'API
+                apiStatusIcon: document.getElementById('api-status-icon'),
+                apiStatusText: document.getElementById('api-status-text'),
                 pageMargin: document.getElementById('page-margin'), pageMarginValue: document.getElementById('page-margin-value'),
                 moduleSpacing: document.getElementById('module-spacing'), moduleSpacingValue: document.getElementById('module-spacing-value'),
                 itemSpacing: document.getElementById('item-spacing'), itemSpacingValue: document.getElementById('item-spacing-value'),
@@ -1930,10 +1963,39 @@
                 updateAllStyles();
             }
 
+            // --- HELPER FUNCTIONS ---
+            function validateApiKey() {
+                const apiKey = controls.geminiApiKey.value.trim() || localStorage.getItem('gemini-api-key') || "";
+                
+                if (!apiKey) {
+                    showNotification("❌ Clé API Gemini manquante ! Configurez votre clé dans la barre d'outils en haut.", "error", 6000);
+                    // Faire clignoter le champ de la clé API
+                    controls.geminiApiKey.style.animation = 'none';
+                    setTimeout(() => {
+                        controls.geminiApiKey.style.animation = 'pulse 1s ease-in-out 3';
+                    }, 10);
+                    return false;
+                }
+                
+                if (!apiKey.startsWith('AIza')) {
+                    showNotification("⚠️ Clé API Gemini invalide ! Elle doit commencer par 'AIza'.", "warning", 5000);
+                    return false;
+                }
+                
+                return true;
+            }
+
             async function callGeminiAPI(prompt, schema) {
+                // Vérifier la clé API avant d'essayer l'appel
+                if (!validateApiKey()) {
+                    return null;
+                }
+                
                 showLoader("L'IA réfléchit...");
                 try {
-                    const apiKey = ""; // Provided automatically by the environment
+                    // Récupérer la clé API depuis le champ ou le localStorage
+                    const apiKey = controls.geminiApiKey.value.trim() || localStorage.getItem('gemini-api-key') || "";
+                    
                     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
                     
                     const payload = {
@@ -1949,7 +2011,12 @@
 
                     if (!response.ok) {
                         const errorBody = await response.text();
-                        throw new Error(`Erreur API: ${response.status} ${response.statusText} - ${errorBody}`);
+                        if (response.status === 400 && errorBody.includes('API_KEY_INVALID')) {
+                            showNotification("🔑 Clé API Gemini invalide ! Vérifiez votre clé dans la barre d'outils.", "error", 6000);
+                            // Faire clignoter le champ de la clé API
+                            controls.geminiApiKey.style.animation = 'pulse 1s ease-in-out 3';
+                        }
+                        throw new Error(`Erreur API: ${response.status} ${response.statusText}`);
                     }
 
                     const result = await response.json();
@@ -2749,7 +2816,25 @@
                 });
 
                 controls.geminiApiKey.addEventListener('input', (e) => {
-                    localStorage.setItem('gemini-api-key', e.target.value);
+                    // Sauvegarder automatiquement la clé pendant la frappe
+                    if (e.target.value.trim()) {
+                        localStorage.setItem('gemini-api-key', e.target.value.trim());
+                    }
+                });
+
+                controls.saveApiKeyBtn.addEventListener('click', () => {
+                    const apiKey = controls.geminiApiKey.value.trim();
+                    if (apiKey) {
+                        localStorage.setItem('gemini-api-key', apiKey);
+                        showNotification("Clé API Gemini sauvegardée avec succès.", "success");
+                        
+                        // Validation basique de la clé (doit commencer par AIza)
+                        if (!apiKey.startsWith('AIza')) {
+                            showNotification("Attention: La clé API ne semble pas valide (doit commencer par 'AIza').", "warning");
+                        }
+                    } else {
+                        showNotification("Veuillez entrer une clé API avant de sauvegarder.", "error");
+                    }
                 });
 
                 // Charger la clé API sauvegardée au démarrage
@@ -2757,6 +2842,59 @@
                 if (savedApiKey) {
                     controls.geminiApiKey.value = savedApiKey;
                 }
+
+                // Fonction pour vérifier si la clé API est configurée
+                function checkApiKeyStatus() {
+                    const apiKey = controls.geminiApiKey.value.trim() || localStorage.getItem('gemini-api-key');
+                    const saveBtn = controls.saveApiKeyBtn;
+                    const input = controls.geminiApiKey;
+                    const statusIcon = controls.apiStatusIcon;
+                    const statusText = controls.apiStatusText;
+                    
+                    // Nettoyer les classes précédentes
+                    input.classList.remove('valid', 'invalid');
+                    
+                    if (apiKey) {
+                        if (apiKey.startsWith('AIza') && apiKey.length > 20) {
+                            // Clé valide
+                            saveBtn.style.backgroundColor = 'rgba(34, 197, 94, 0.3)';
+                            saveBtn.title = 'Clé API configurée - Cliquer pour mettre à jour';
+                            input.classList.add('valid');
+                            saveBtn.innerHTML = '<i class="fas fa-check"></i>';
+                            // Indicateur principal
+                            statusIcon.className = 'fas fa-circle text-green-500 text-xs';
+                            statusIcon.title = 'IA activée - Clé API valide';
+                            statusText.textContent = 'IA: ON';
+                            statusText.className = 'text-xs text-green-600 font-medium';
+                        } else {
+                            // Clé présente mais possiblement invalide
+                            saveBtn.style.backgroundColor = 'rgba(245, 158, 11, 0.3)';
+                            saveBtn.title = 'Clé API présente mais format suspect - Cliquer pour sauvegarder';
+                            input.classList.add('invalid');
+                            saveBtn.innerHTML = '<i class="fas fa-exclamation-triangle"></i>';
+                            // Indicateur principal
+                            statusIcon.className = 'fas fa-circle text-yellow-500 text-xs';
+                            statusIcon.title = 'Clé API invalide';
+                            statusText.textContent = 'IA: ?';
+                            statusText.className = 'text-xs text-yellow-600';
+                        }
+                    } else {
+                        // Aucune clé
+                        saveBtn.style.backgroundColor = 'rgba(239, 68, 68, 0.3)';
+                        saveBtn.title = 'Aucune clé API - Entrez votre clé et cliquez pour sauvegarder';
+                        input.classList.add('invalid');
+                        saveBtn.innerHTML = '<i class="fas fa-save"></i>';
+                        // Indicateur principal
+                        statusIcon.className = 'fas fa-circle text-red-500 text-xs';
+                        statusIcon.title = 'Clé API non configurée';
+                        statusText.textContent = 'IA: OFF';
+                        statusText.className = 'text-xs text-red-600';
+                    }
+                }
+
+                // Vérifier le statut au démarrage et lors des changements
+                checkApiKeyStatus();
+                controls.geminiApiKey.addEventListener('input', checkApiKeyStatus);
 
                 // Tentative de chargement automatique au démarrage
                 if (localStorage.getItem('cv-data')) {
