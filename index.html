@@ -3639,7 +3639,7 @@
                     // 1. Analyse du contenu
                     const contentAnalysis = analyzeContentForLayout();
                     
-                    showAIThinking("Calcul de l'optimisation...", "Choix du meilleur layout et des paramètres");
+                    showAIThinking("Configuration de la bannière...", "Activation et optimisation de la bannière recruteur");
                     
                     // 2. Activation et configuration de la bannière recruteur
                     if (!controls.toggleBanner.checked) {
@@ -3661,71 +3661,91 @@
                     const layoutChoice = contentAnalysis.density > 0.8 ? '2-col-33-67' : 
                                         contentAnalysis.density > 0.6 ? '2-col-50-50' : '1-col';
                     
-                    // Appliquer le layout
+                    // Appliquer le layout en cliquant sur le bouton approprié
                     const layoutButtons = document.querySelectorAll('.layout-btn');
                     layoutButtons.forEach(btn => btn.classList.remove('bg-blue-500', 'text-white'));
-                    document.querySelector(`[data-layout="${layoutChoice}"]`).click();
+                    const layoutBtn = document.querySelector(`[data-layout="${layoutChoice}"]`);
+                    if (layoutBtn) {
+                        layoutBtn.click();
+                    }
                     
                     showAIThinking("Optimisation des polices...", "Ajustement des tailles de texte");
                     
                     // 4. Optimisation des tailles de police
                     const fontSizes = calculateOptimalFontSizes(contentAnalysis);
                     
-                    // Appliquer les tailles
-                    document.getElementById('font-size-h1').value = fontSizes.h1;
-                    document.getElementById('font-size-h1-value').textContent = fontSizes.h1;
-                    document.getElementById('font-size-h2').value = fontSizes.h2;
-                    document.getElementById('font-size-h2-value').textContent = fontSizes.h2;
-                    document.getElementById('font-size-p').value = fontSizes.p;
-                    document.getElementById('font-size-p-value').textContent = fontSizes.p;
-                    document.getElementById('font-size-banner').value = fontSizes.banner;
-                    document.getElementById('font-size-banner-value').textContent = fontSizes.banner;
+                    // Simuler les changements de sliders pour déclencher les événements
+                    triggerSliderChange('font-size-h1', fontSizes.h1);
+                    triggerSliderChange('font-size-h2', fontSizes.h2);
+                    triggerSliderChange('font-size-p', fontSizes.p);
+                    triggerSliderChange('font-size-banner', fontSizes.banner);
                     
                     showAIThinking("Optimisation des marges...", "Ajustement de l'espacement");
                     
                     // 5. Optimisation des marges et espacements
                     const spacing = calculateOptimalSpacing(contentAnalysis);
                     
-                    document.getElementById('page-margin').value = spacing.pageMargin;
-                    document.getElementById('page-margin-value').textContent = spacing.pageMargin;
-                    document.getElementById('module-spacing').value = spacing.moduleSpacing;
-                    document.getElementById('module-spacing-value').textContent = spacing.moduleSpacing;
-                    document.getElementById('paragraph-spacing').value = spacing.paragraphSpacing;
-                    document.getElementById('paragraph-spacing-value').textContent = spacing.paragraphSpacing;
-                    document.getElementById('banner-element-spacing').value = spacing.bannerSpacing;
-                    document.getElementById('banner-element-spacing-value').textContent = spacing.bannerSpacing;
+                    triggerSliderChange('page-margin', spacing.pageMargin);
+                    triggerSliderChange('module-spacing', spacing.moduleSpacing);
+                    triggerSliderChange('paragraph-spacing', spacing.paragraphSpacing);
+                    triggerSliderChange('banner-element-spacing', spacing.bannerSpacing);
                     
-                    showAIThinking("Finalisation...", "Application des optimisations");
+                    showAIThinking("Optimisation des styles...", "Configuration des titres de section");
                     
                     // 6. Optimisation des styles de titre pour gagner de l'espace
                     const titleStyle = contentAnalysis.density > 0.7 ? 'style-side-line' : 'style-underline';
                     const titleButtons = document.querySelectorAll('.section-title-style-btn');
                     titleButtons.forEach(btn => btn.classList.remove('active', 'bg-blue-500', 'text-white'));
-                    document.querySelector(`[data-title-style="${titleStyle}"]`).classList.add('active', 'bg-blue-500', 'text-white');
+                    const titleBtn = document.querySelector(`[data-title-style="${titleStyle}"]`);
+                    if (titleBtn) {
+                        titleBtn.classList.add('active', 'bg-blue-500', 'text-white');
+                        titleBtn.click();
+                    }
                     
-                    // 7. Mise à jour du CSS et du preview
-                    updateCSSVariables();
-                    updatePreview('form');
+                    showAIThinking("Finalisation...", "Application des optimisations");
                     
-                    // 8. Vérification finale
+                    // 7. Mise à jour finale
                     setTimeout(() => {
-                        const isOverflowing = checkPageOverflow();
-                        if (isOverflowing) {
-                            // Ajustements d'urgence
-                            document.getElementById('font-size-p').value = Math.max(8, parseFloat(document.getElementById('font-size-p').value) - 0.5);
-                            document.getElementById('module-spacing').value = Math.max(0.5, parseFloat(document.getElementById('module-spacing').value) - 0.2);
-                            updateCSSVariables();
-                            updatePreview('form');
-                        }
+                        updatePreview('form');
                         
-                        hideAIThinking();
-                        showNotification(`CV optimisé ! Layout: ${layoutChoice}, Densité: ${(contentAnalysis.density * 100).toFixed(0)}%`, "success", 5000);
-                    }, 1000);
+                        // 8. Vérification finale et ajustements d'urgence si nécessaire
+                        setTimeout(() => {
+                            const isOverflowing = checkPageOverflow();
+                            if (isOverflowing) {
+                                // Ajustements d'urgence
+                                const currentPSize = parseFloat(document.getElementById('font-size-p').value);
+                                const currentModuleSpacing = parseFloat(document.getElementById('module-spacing').value);
+                                
+                                triggerSliderChange('font-size-p', Math.max(8, currentPSize - 0.5));
+                                triggerSliderChange('module-spacing', Math.max(0.5, currentModuleSpacing - 0.2));
+                                
+                                updatePreview('form');
+                                showNotification("Ajustements d'urgence appliqués pour éviter le débordement", "warning");
+                            }
+                            
+                            hideAIThinking();
+                            showNotification(`✨ CV optimisé par l'IA ! Layout: ${layoutChoice.replace('-col', ' colonne').replace('-', ' ')}, Densité: ${(contentAnalysis.density * 100).toFixed(0)}%`, "success", 6000);
+                        }, 500);
+                    }, 500);
                     
                 } catch (error) {
                     hideAIThinking();
                     console.error('Erreur lors de l\'optimisation layout:', error);
                     showNotification("Erreur lors de l'optimisation du layout", "error");
+                }
+            }
+            
+            function triggerSliderChange(sliderId, newValue) {
+                const slider = document.getElementById(sliderId);
+                const valueDisplay = document.getElementById(sliderId + '-value');
+                
+                if (slider && valueDisplay) {
+                    slider.value = newValue;
+                    valueDisplay.textContent = newValue;
+                    
+                    // Déclencher l'événement change/input pour que les listeners existants se déclenchent
+                    slider.dispatchEvent(new Event('input', { bubbles: true }));
+                    slider.dispatchEvent(new Event('change', { bubbles: true }));
                 }
             }
             
