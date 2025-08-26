@@ -1412,6 +1412,146 @@
             border-right-color: #1f2937;
         }
 
+        /* --- ANIMATIONS MATRIX RAIN SPECTACULAIRES --- */
+        
+        @keyframes matrixFall {
+            from {
+                transform: translateY(-100%);
+                opacity: 1;
+            }
+            to {
+                transform: translateY(100vh);
+                opacity: 0;
+            }
+        }
+        
+        @keyframes matrixGlow {
+            0%, 100% {
+                text-shadow: 0 0 5px currentColor;
+                opacity: 0.8;
+            }
+            50% {
+                text-shadow: 0 0 15px currentColor, 0 0 25px currentColor;
+                opacity: 1;
+            }
+        }
+        
+        @keyframes matrixPulse {
+            0%, 100% {
+                box-shadow: 0 0 20px rgba(0, 255, 65, 0.3);
+                border-color: rgba(0, 255, 65, 0.5);
+            }
+            50% {
+                box-shadow: 0 0 40px rgba(0, 255, 65, 0.8);
+                border-color: rgba(0, 255, 65, 1);
+            }
+        }
+        
+        @keyframes matrixReconstruct {
+            0% {
+                opacity: 0.3;
+                transform: scale(0.95);
+                filter: blur(2px);
+            }
+            50% {
+                opacity: 0.8;
+                transform: scale(1.02);
+                filter: blur(1px);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+                filter: blur(0);
+            }
+        }
+        
+        @keyframes scanHorizontal {
+            0% {
+                transform: translateX(-100%);
+                opacity: 0;
+            }
+            50% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+        
+        @keyframes fadeInOut {
+            0% {
+                opacity: 0;
+            }
+            50% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+            }
+        }
+        
+        @keyframes typeIn {
+            from {
+                opacity: 0;
+                transform: translateX(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        @keyframes compilationFlash {
+            0% {
+                opacity: 0;
+                background: linear-gradient(45deg, rgba(0, 255, 65, 0.1), rgba(0, 255, 65, 0.3));
+            }
+            25% {
+                opacity: 0.8;
+                background: linear-gradient(45deg, rgba(0, 255, 65, 0.3), rgba(0, 255, 65, 0.6));
+            }
+            75% {
+                opacity: 0.6;
+                background: linear-gradient(45deg, rgba(0, 255, 65, 0.2), rgba(0, 255, 65, 0.4));
+            }
+            100% {
+                opacity: 0;
+                background: linear-gradient(45deg, transparent, transparent);
+            }
+        }
+        
+        @keyframes matrixReveal {
+            0% {
+                filter: brightness(1.5) contrast(1.2);
+                transform: scale(1.02);
+            }
+            100% {
+                filter: brightness(1) contrast(1);
+                transform: scale(1);
+            }
+        }
+        
+        /* Styles pour les éléments Matrix */
+        .matrix-column {
+            will-change: transform;
+        }
+        
+        .matrix-code-overlay {
+            backdrop-filter: blur(2px);
+        }
+        
+        .matrix-rain-container {
+            background: radial-gradient(ellipse at center, rgba(0, 255, 65, 0.05) 0%, transparent 70%);
+        }
+        
+        /* Effet de typing Matrix sur le texte */
+        .matrix-typing {
+            color: #00ff41;
+            font-family: 'Courier New', monospace;
+            text-shadow: 0 0 10px currentColor;
+        }
+
     </style>
 </head>
 <body class="bg-gray-200 font-sans">
@@ -6855,93 +6995,559 @@
                 }
             }
 
-            // --- FONCTIONS D'ANIMATION DE RESTRUCTURATION SPECTACULAIRE ---
+            // --- FONCTIONS D'ANIMATION MATRIX RAIN INTÉGRÉE SPECTACULAIRE ---
             
             function showCVRestructureAnimation() {
-                const overlay = document.getElementById('cv-restructure-overlay');
                 const cvPreview = document.querySelector('#cv-preview-wrapper');
+                const cvPages = document.querySelectorAll('.a4-page');
                 
-                if (!overlay) return Promise.resolve();
+                if (!cvPreview || !cvPages.length) return Promise.resolve();
                 
-                overlay.classList.add('active');
-                
-                // Ajouter des effets sur l'aperçu du CV
-                if (cvPreview) {
-                    cvPreview.classList.add('cv-restructuring');
-                }
-                
+                // Démarrer l'animation Matrix directement sur le CV
                 return new Promise((resolve) => {
-                    // Créer les lettres volantes
-                    createFlyingLetters();
+                    // PHASE 1: Initialisation de la pluie Matrix (0-500ms)
+                    startMatrixRainEffect(cvPages);
+                    showNotification("🔍 Scanning CV data...", "info", 1000);
                     
-                    // Créer les particules magiques
-                    createMagicParticles();
-                    
-                    // Séquence d'animation améliorée
                     setTimeout(() => {
-                        document.getElementById('restructure-progress').textContent = "🔍 Analyse intelligente des sections...";
+                        // PHASE 2: Intensification de la pluie + transformation du contenu (500ms-2000ms)
+                        intensifyMatrixRain(cvPages);
+                        transformCVContentMatrix(cvPages);
+                        showNotification("💻 Processing with AI matrix...", "info", 1500);
                     }, 500);
                     
                     setTimeout(() => {
-                        document.getElementById('restructure-progress').textContent = "💫 Dispersion des éléments...";
-                        // Ajouter effet de brillance
-                        if (cvPreview) {
-                            cvPreview.classList.add('shine-effect');
-                        }
-                    }, 1200);
+                        // PHASE 3: Reconstruction avec effet de digitalisation (2000ms-3500ms)
+                        startMatrixReconstruction(cvPages);
+                        showNotification("🧠 Optimizing layout matrix...", "info", 1500);
+                    }, 2000);
                     
                     setTimeout(() => {
-                        document.getElementById('restructure-progress').textContent = "🧠 Optimisation par l'IA...";
-                        createBuildingElements();
-                    }, 2200);
+                        // PHASE 4: Finalisation avec effet de compilation (3500ms-4500ms)
+                        finalizeMatrixCompilation(cvPages);
+                        showNotification("✨ Compilation complete...", "success", 1000);
+                    }, 3500);
                     
                     setTimeout(() => {
-                        document.getElementById('restructure-progress').textContent = "🔧 Reconstruction optimisée...";
-                        // Préparer la reconstruction
-                        if (cvPreview) {
-                            cvPreview.classList.remove('cv-restructuring');
-                            cvPreview.classList.add('cv-rebuilding');
-                        }
-                    }, 3200);
-                    
-                    setTimeout(() => {
-                        document.getElementById('restructure-progress').textContent = "✨ Finalisation parfaite...";
-                        // Effet final
-                        if (cvPreview) {
-                            cvPreview.classList.remove('cv-rebuilding');
-                            cvPreview.classList.add('cv-restructuring-complete');
-                        }
-                    }, 4200);
-                    
-                    setTimeout(() => {
-                        hideCVRestructureAnimation();
-                        // Nettoyer les classes d'effet
-                        if (cvPreview) {
-                            cvPreview.classList.remove('cv-restructuring-complete', 'shine-effect');
-                            cvPreview.classList.add('cv-sparkling');
-                            
-                            // Retirer l'effet de scintillement après un délai
-                            setTimeout(() => {
-                                cvPreview.classList.remove('cv-sparkling');
-                            }, 1500);
-                        }
+                        // PHASE 5: Nettoyage et révélation finale (4500ms-5000ms)
+                        cleanupMatrixEffects(cvPages);
                         resolve();
-                    }, 5200);
+                    }, 4500);
                 });
             }
             
             function hideCVRestructureAnimation() {
-                const overlay = document.getElementById('cv-restructure-overlay');
-                if (overlay) {
-                    overlay.classList.remove('active');
+                const cvPages = document.querySelectorAll('.a4-page');
+                cleanupMatrixEffects(cvPages);
+            }
+            
+            function startMatrixRainEffect(cvPages) {
+                cvPages.forEach((page, pageIndex) => {
+                    // Créer le conteneur pour la pluie Matrix
+                    const matrixContainer = document.createElement('div');
+                    matrixContainer.className = 'matrix-rain-container';
+                    matrixContainer.style.cssText = `
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        right: 0;
+                        bottom: 0;
+                        z-index: 1000;
+                        pointer-events: none;
+                        overflow: hidden;
+                    `;
                     
-                    // Nettoyer les éléments créés
+                    page.style.position = 'relative';
+                    page.appendChild(matrixContainer);
+                    
+                    // Créer 15 colonnes de pluie Matrix
+                    for (let i = 0; i < 15; i++) {
+                        setTimeout(() => {
+                            createMatrixColumn(matrixContainer, i);
+                        }, i * 100);
+                    }
+                    
+                    // Effet de glow vert sur la page
+                    page.style.transition = 'all 1s ease';
+                    page.style.boxShadow = '0 0 30px rgba(0, 255, 65, 0.3)';
+                });
+            }
+            
+            function createMatrixColumn(container, columnIndex) {
+                const column = document.createElement('div');
+                column.className = 'matrix-column';
+                column.style.cssText = `
+                    position: absolute;
+                    left: ${(columnIndex * 6.67)}%;
+                    top: -100%;
+                    width: 20px;
+                    height: 120%;
+                    z-index: 1001;
+                    animation: matrixFall ${2 + Math.random() * 3}s linear infinite;
+                    animation-delay: ${Math.random() * 2}s;
+                `;
+                
+                // Caractères Matrix (japonais, chiffres, lettres)
+                const matrixChars = '田由甲申囗十丨ノ口卄1010110011アイウエオカキクケコサシスセソ';
+                const chars = matrixChars.split('');
+                
+                // Créer 20 caractères par colonne
+                for (let i = 0; i < 20; i++) {
+                    const char = document.createElement('div');
+                    char.textContent = chars[Math.floor(Math.random() * chars.length)];
+                    char.style.cssText = `
+                        color: ${i === 0 ? '#ffffff' : `rgba(0, 255, 65, ${1 - (i * 0.05)})`};
+                        font-family: 'Courier New', monospace;
+                        font-size: 14px;
+                        line-height: 16px;
+                        text-align: center;
+                        text-shadow: 0 0 5px currentColor;
+                        animation: matrixGlow 0.5s ease-in-out infinite alternate;
+                        animation-delay: ${i * 0.1}s;
+                    `;
+                    
+                    column.appendChild(char);
+                    
+                    // Changer le caractère périodiquement
+                    setInterval(() => {
+                        char.textContent = chars[Math.floor(Math.random() * chars.length)];
+                    }, 150 + Math.random() * 300);
+                }
+                
+                container.appendChild(column);
+            }
+            
+            function intensifyMatrixRain(cvPages) {
+                cvPages.forEach(page => {
+                    const container = page.querySelector('.matrix-rain-container');
+                    if (container) {
+                        // Ajouter plus de colonnes pour intensifier
+                        for (let i = 15; i < 25; i++) {
+                            createMatrixColumn(container, i);
+                        }
+                        
+                        // Effet de surge électrique sur les modules
+                        const modules = page.querySelectorAll('.cv-module');
+                        modules.forEach((module, index) => {
+                            setTimeout(() => {
+                                module.style.transition = 'all 0.3s ease';
+                                module.style.background = 'rgba(0, 255, 65, 0.1)';
+                                module.style.borderLeft = '3px solid #00ff41';
+                                module.style.boxShadow = '0 0 20px rgba(0, 255, 65, 0.5)';
+                                
+                                // Effet de typing sur le texte
+                                startMatrixTypingEffect(module);
+                                
+                            }, index * 200);
+                        });
+                    }
+                });
+            }
+            
+            function startMatrixTypingEffect(module) {
+                const textElements = module.querySelectorAll('h1, h2, h3, p, li, [contenteditable]');
+                textElements.forEach((element, index) => {
                     setTimeout(() => {
-                        const lettersContainer = document.getElementById('letters-container');
-                        const particlesContainer = document.getElementById('magic-particles');
-                        if (lettersContainer) lettersContainer.innerHTML = '';
-                        if (particlesContainer) particlesContainer.innerHTML = '';
+                        const originalText = element.textContent;
+                        const chars = '田由甲申囗十丨ノ口卄1010110011アイウエオカキクケコサシスセソ';
+                        
+                        // Phase de scramble
+                        let scrambleInterval = setInterval(() => {
+                            let scrambledText = '';
+                            for (let i = 0; i < originalText.length; i++) {
+                                if (originalText[i] === ' ') {
+                                    scrambledText += ' ';
+                                } else {
+                                    scrambledText += chars[Math.floor(Math.random() * chars.length)];
+                                }
+                            }
+                            element.textContent = scrambledText;
+                        }, 50);
+                        
+                        // Phase de reconstruction
+                        setTimeout(() => {
+                            clearInterval(scrambleInterval);
+                            let currentPos = 0;
+                            let reconstructInterval = setInterval(() => {
+                                let newText = originalText.substring(0, currentPos + 1);
+                                for (let i = currentPos + 1; i < originalText.length; i++) {
+                                    if (originalText[i] === ' ') {
+                                        newText += ' ';
+                                    } else {
+                                        newText += chars[Math.floor(Math.random() * chars.length)];
+                                    }
+                                }
+                                element.textContent = newText;
+                                currentPos++;
+                                
+                                if (currentPos >= originalText.length) {
+                                    clearInterval(reconstructInterval);
+                                    element.textContent = originalText;
+                                }
+                            }, 30);
+                        }, 800);
+                        
+                    }, index * 100);
+                });
+            }
+            
+            function transformCVContentMatrix(cvPages) {
+                cvPages.forEach(page => {
+                    // Effet de transformation des données en code
+                    const modules = page.querySelectorAll('.cv-module');
+                    modules.forEach((module, index) => {
+                        setTimeout(() => {
+                            // Créer des lignes de code qui apparaissent
+                            createCodeLinesEffect(module);
+                            
+                            // Effet de pulse vert
+                            module.style.animation = 'matrixPulse 1s ease-in-out infinite';
+                            
+                        }, index * 150);
+                    });
+                });
+            }
+            
+            function createCodeLinesEffect(module) {
+                const codeLines = [
+                    'function optimizeCV() {',
+                    '  analyzing_content...',
+                    '  layout.optimize();',
+                    '  fonts.adjust();',
+                    '  spacing.calculate();',
+                    '  return enhanced_cv;',
+                    '}'
+                ];
+                
+                const codeContainer = document.createElement('div');
+                codeContainer.className = 'matrix-code-overlay';
+                codeContainer.style.cssText = `
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background: rgba(0, 0, 0, 0.8);
+                    color: #00ff41;
+                    font-family: 'Courier New', monospace;
+                    font-size: 12px;
+                    padding: 10px;
+                    z-index: 1002;
+                    opacity: 0;
+                    animation: fadeInOut 2s ease-in-out;
+                `;
+                
+                codeLines.forEach((line, index) => {
+                    const codeLine = document.createElement('div');
+                    codeLine.textContent = line;
+                    codeLine.style.cssText = `
+                        margin: 3px 0;
+                        animation: typeIn 0.5s ease-out;
+                        animation-delay: ${index * 0.2}s;
+                        animation-fill-mode: both;
+                        opacity: 0;
+                    `;
+                    codeContainer.appendChild(codeLine);
+                });
+                
+                module.appendChild(codeContainer);
+                
+                // Retirer l'overlay après l'animation
+                setTimeout(() => {
+                    if (codeContainer.parentNode) {
+                        codeContainer.remove();
+                    }
+                }, 3000);
+            }
+            
+            function startMatrixReconstruction(cvPages) {
+                cvPages.forEach(page => {
+                    const modules = page.querySelectorAll('.cv-module');
+                    modules.forEach((module, index) => {
+                        setTimeout(() => {
+                            // Reconstruction avec effet de digitalisation
+                            module.style.animation = 'matrixReconstruct 1s ease-out';
+                            module.style.background = '';
+                            module.style.borderLeft = '';
+                            
+                            // Effet de scan horizontal
+                            const scanLine = document.createElement('div');
+                            scanLine.style.cssText = `
+                                position: absolute;
+                                top: 0;
+                                left: 0;
+                                right: 0;
+                                height: 2px;
+                                background: linear-gradient(90deg, transparent, #00ff41, transparent);
+                                z-index: 1003;
+                                animation: scanHorizontal 0.8s ease-out;
+                            `;
+                            module.appendChild(scanLine);
+                            
+                            setTimeout(() => {
+                                if (scanLine.parentNode) {
+                                    scanLine.remove();
+                                }
+                            }, 800);
+                            
+                        }, index * 100);
+                    });
+                });
+            }
+            
+            function finalizeMatrixCompilation(cvPages) {
+                cvPages.forEach(page => {
+                    // Effet de compilation final
+                    const compilationOverlay = document.createElement('div');
+                    compilationOverlay.style.cssText = `
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        right: 0;
+                        bottom: 0;
+                        background: linear-gradient(45deg, 
+                            rgba(0, 255, 65, 0.1) 0%, 
+                            rgba(0, 255, 65, 0.3) 50%, 
+                            rgba(0, 255, 65, 0.1) 100%);
+                        z-index: 1004;
+                        animation: compilationFlash 1s ease-out;
+                        pointer-events: none;
+                    `;
+                    
+                    page.appendChild(compilationOverlay);
+                    
+                    // Messages de compilation
+                    const messages = [
+                        'COMPILING CV_OPTIMIZATION.exe',
+                        'LOADING LAYOUT_MATRIX.dll',
+                        'INITIALIZING AI_ENHANCEMENT.sys',
+                        'COMPILATION SUCCESSFUL'
+                    ];
+                    
+                    const messageContainer = document.createElement('div');
+                    messageContainer.style.cssText = `
+                        position: absolute;
+                        bottom: 20px;
+                        left: 20px;
+                        color: #00ff41;
+                        font-family: 'Courier New', monospace;
+                        font-size: 10px;
+                        z-index: 1005;
+                    `;
+                    
+                    messages.forEach((message, index) => {
+                        setTimeout(() => {
+                            const msgLine = document.createElement('div');
+                            msgLine.textContent = '> ' + message;
+                            msgLine.style.animation = 'typeIn 0.3s ease-out';
+                            messageContainer.appendChild(msgLine);
+                        }, index * 250);
+                    });
+                    
+                    compilationOverlay.appendChild(messageContainer);
+                    
+                    // Retirer l'overlay après l'animation
+                    setTimeout(() => {
+                        if (compilationOverlay.parentNode) {
+                            compilationOverlay.remove();
+                        }
+                    }, 1000);
+                });
+            }
+            
+            function cleanupMatrixEffects(cvPages) {
+                cvPages.forEach(page => {
+                    // Nettoyer tous les effets Matrix
+                    page.style.animation = '';
+                    page.style.boxShadow = '';
+                    page.style.transition = '';
+                    
+                    const modules = page.querySelectorAll('.cv-module');
+                    modules.forEach(module => {
+                        module.style.transition = '';
+                        module.style.background = '';
+                        module.style.borderLeft = '';
+                        module.style.boxShadow = '';
+                        module.style.animation = '';
+                    });
+                    
+                    // Retirer tous les éléments d'animation Matrix
+                    const matrixElements = page.querySelectorAll(
+                        '.matrix-rain-container, .matrix-code-overlay, .scan-line'
+                    );
+                    matrixElements.forEach(el => el.remove());
+                    
+                    // Effet de révélation finale
+                    page.style.animation = 'matrixReveal 0.5s ease-out';
+                    setTimeout(() => {
+                        page.style.animation = '';
                     }, 500);
+                });
+            }
+            
+            function simulateTyping(element, text, speed = 50) {
+                if (!element) return Promise.resolve();
+                
+                return new Promise((resolve) => {
+                    let i = 0;
+                    element.value = '';
+                    
+                    const typeInterval = setInterval(() => {
+                        if (i < text.length) {
+                            element.value += text.charAt(i);
+                            i++;
+                            // Déclencher l'événement input pour mettre à jour l'aperçu
+                            element.dispatchEvent(new Event('input'));
+                        } else {
+                            clearInterval(typeInterval);
+                            resolve();
+                        }
+                    }, speed);
+                });
+            }
+            
+            // --- NOUVELLES FONCTIONS IA AVANCÉES ---
+            
+            async function generateAchievements() {
+                cvPages.forEach(page => {
+                    const modules = page.querySelectorAll('.cv-module');
+                    
+                    // Effet de reconstruction avec particules dorées
+                    modules.forEach((module, index) => {
+                        setTimeout(() => {
+                            // Créer l'effet de reconstruction
+                            module.style.transition = 'all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+                            module.style.transform = 'translateX(0) translateY(0) scale(1.05) rotate(0deg)';
+                            module.style.opacity = '1';
+                            module.style.filter = 'blur(0)';
+                            module.style.boxShadow = '0 8px 25px rgba(255, 215, 0, 0.4)';
+                            
+                            // Effet de construction avec lignes dorées
+                            createReconstructionLines(module);
+                            
+                            setTimeout(() => {
+                                module.style.transform = 'scale(1)';
+                                module.style.boxShadow = '';
+                            }, 800);
+                            
+                        }, index * 200);
+                    });
+                    
+                    // Arrêter l'effet de tremblement
+                    page.style.animation = '';
+                });
+            }
+            
+            function startCVFinalizationEffect(cvPages) {
+                cvPages.forEach(page => {
+                    // Effet d'éclat final sur toute la page
+                    const glowOverlay = document.createElement('div');
+                    glowOverlay.style.cssText = `
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        right: 0;
+                        bottom: 0;
+                        background: radial-gradient(circle at center, rgba(255, 215, 0, 0.3) 0%, transparent 70%);
+                        z-index: 999;
+                        animation: finalGlow 1s ease-out;
+                        pointer-events: none;
+                    `;
+                    
+                    page.appendChild(glowOverlay);
+                    
+                    // Effet de brillance sur les textes
+                    const textElements = page.querySelectorAll('h1, h2, .section-title');
+                    textElements.forEach((element, index) => {
+                        setTimeout(() => {
+                            element.style.animation = 'textSparkle 0.8s ease-out';
+                        }, index * 100);
+                    });
+                    
+                    // Retirer l'overlay après l'animation
+                    setTimeout(() => {
+                        if (glowOverlay.parentNode) {
+                            glowOverlay.remove();
+                        }
+                    }, 1000);
+                });
+            }
+            
+            function cleanupCVAnimationEffects(cvPages) {
+                cvPages.forEach(page => {
+                    // Nettoyer tous les effets
+                    page.style.animation = '';
+                    
+                    const modules = page.querySelectorAll('.cv-module');
+                    modules.forEach(module => {
+                        module.style.transition = '';
+                        module.style.transform = '';
+                        module.style.opacity = '';
+                        module.style.filter = '';
+                        module.style.boxShadow = '';
+                        module.style.animation = '';
+                    });
+                    
+                    const textElements = page.querySelectorAll('h1, h2, .section-title');
+                    textElements.forEach(element => {
+                        element.style.animation = '';
+                    });
+                    
+                    // Retirer tous les éléments d'animation ajoutés
+                    const animationElements = page.querySelectorAll('.cv-scan-line, .module-particle, .reconstruction-line, .glow-overlay');
+                    animationElements.forEach(el => el.remove());
+                });
+            }
+            
+            function createModuleParticles(module) {
+                for (let i = 0; i < 8; i++) {
+                    const particle = document.createElement('div');
+                    particle.className = 'module-particle';
+                    particle.style.cssText = `
+                        position: absolute;
+                        width: 4px;
+                        height: 4px;
+                        background: #0088ff;
+                        border-radius: 50%;
+                        z-index: 1001;
+                        pointer-events: none;
+                        top: ${Math.random() * 100}%;
+                        left: ${Math.random() * 100}%;
+                        animation: particleFloat 1.5s ease-out forwards;
+                    `;
+                    
+                    module.appendChild(particle);
+                    
+                    // Retirer la particule après l'animation
+                    setTimeout(() => {
+                        if (particle.parentNode) {
+                            particle.remove();
+                        }
+                    }, 1500);
+                }
+            }
+            
+            function createReconstructionLines(module) {
+                // Créer des lignes dorées qui "construisent" le module
+                for (let i = 0; i < 4; i++) {
+                    const line = document.createElement('div');
+                    line.className = 'reconstruction-line';
+                    line.style.cssText = `
+                        position: absolute;
+                        background: linear-gradient(90deg, transparent, #ffd700, transparent);
+                        z-index: 1001;
+                        pointer-events: none;
+                        ${i % 2 === 0 ? 'height: 2px; width: 100%; top: ' + (25 * i) + '%; left: 0;' : 'width: 2px; height: 100%; left: ' + (25 * (i-1)) + '%; top: 0;'}
+                        animation: lineConstruct 0.8s ease-out;
+                    `;
+                    
+                    module.appendChild(line);
+                    
+                    setTimeout(() => {
+                        if (line.parentNode) {
+                            line.remove();
+                        }
+                    }, 800);
                 }
             }
             
