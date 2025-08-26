@@ -178,6 +178,167 @@
         #cv-competences-preview[data-style="tags"] ul li.skill-item:hover { background-color: #e5e7eb; }
         #cv-competences-preview[data-style="tags"] ul li::before { content: none; }
         .skills-ghost { opacity: 0.4; background: #cce7ff; border-radius: 12px; }
+
+        /* Styles pour les options de mise en page avancées */
+        .layout-control-row {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            align-items: center;
+        }
+        .layout-control-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        .control-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .control-item label {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #374151;
+        }
+        .control-item input[type="range"] {
+            width: 100%;
+            accent-color: var(--primary-color);
+        }
+        .control-item input[type="color"] {
+            width: 50px;
+            height: 32px;
+            border: none;
+            border-radius: 0.25rem;
+            cursor: pointer;
+        }
+        .range-value {
+            font-size: 0.75rem;
+            color: #6b7280;
+            text-align: center;
+        }
+        .button-group {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        .button-group button {
+            padding: 0.5rem 1rem;
+            border: 1px solid #d1d5db;
+            background: white;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+        }
+        .button-group button:hover {
+            background: #f3f4f6;
+        }
+        .button-group button.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 0.5rem;
+        }
+        .checkbox-group label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            font-size: 0.875rem;
+        }
+        .pattern-preview {
+            width: 30px;
+            height: 30px;
+            border: 1px solid #d1d5db;
+            border-radius: 0.25rem;
+            margin-left: 0.5rem;
+        }
+        .shape-preview {
+            width: 40px;
+            height: 30px;
+            border: 1px solid #d1d5db;
+            margin-left: 0.5rem;
+            display: inline-block;
+        }
+        .animation-preview {
+            width: 20px;
+            height: 20px;
+            background: var(--primary-color);
+            margin-left: 0.5rem;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Classes CSS pour les effets de mise en page */
+        .bg-solid { background-color: var(--bg-color, #ffffff); }
+        .bg-gradient-linear { background: linear-gradient(var(--gradient-direction, to right), var(--gradient-color1, #ffffff), var(--gradient-color2, #f3f4f6)); }
+        .bg-gradient-radial { background: radial-gradient(circle, var(--gradient-color1, #ffffff), var(--gradient-color2, #f3f4f6)); }
+        .bg-pattern-dots { background-image: radial-gradient(circle, var(--pattern-color, #e5e7eb) 1px, transparent 1px); background-size: 20px 20px; }
+        .bg-pattern-lines { background-image: linear-gradient(90deg, var(--pattern-color, #e5e7eb) 1px, transparent 1px); background-size: 20px 20px; }
+        .bg-pattern-grid { background-image: linear-gradient(var(--pattern-color, #e5e7eb) 1px, transparent 1px), linear-gradient(90deg, var(--pattern-color, #e5e7eb) 1px, transparent 1px); background-size: 20px 20px; }
+        .bg-texture-paper { background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><defs><filter id="noise"><feTurbulence baseFrequency="0.9" numOctaves="1" seed="1"/><feComponentTransfer><feFuncA type="discrete" tableValues="0 .5 0 1 0 .5 0 1"/></feComponentTransfer></filter></defs><rect width="100%" height="100%" filter="url(%23noise)" opacity="0.03"/></svg>'); }
+        .bg-texture-fabric { background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"><rect width="40" height="40" fill="white"/><path d="M0 0h40v40H0z" fill="none" stroke="rgba(0,0,0,0.05)" stroke-width="0.5"/></svg>'); }
+        
+        .border-style-solid { border-style: solid; }
+        .border-style-dashed { border-style: dashed; }
+        .border-style-dotted { border-style: dotted; }
+        .border-style-double { border-style: double; }
+        
+        .shadow-soft { box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); }
+        .shadow-medium { box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
+        .shadow-strong { box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1); }
+        .shadow-colored { box-shadow: 0 4px 6px rgba(var(--shadow-color-rgb), 0.2); }
+        .shadow-inset { box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1); }
+        
+        .shape-rectangle { border-radius: 0; }
+        .shape-rounded { border-radius: 0.5rem; }
+        .shape-circle { border-radius: 50%; }
+        .shape-pill { border-radius: 50px; }
+        .shape-custom { border-radius: var(--custom-radius, 0.5rem); }
+        
+        .text-align-left { text-align: left; }
+        .text-align-center { text-align: center; }
+        .text-align-right { text-align: right; }
+        .text-align-justify { text-align: justify; }
+        
+        .animation-fade-in { animation: fadeIn 1s ease-in; }
+        .animation-slide-in { animation: slideIn 0.5s ease-out; }
+        .animation-zoom-in { animation: zoomIn 0.3s ease-out; }
+        .animation-bounce { animation: bounce 0.6s ease-out; }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideIn {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes zoomIn {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+        }
+        
+        .filter-blur { filter: blur(2px); }
+        .filter-brightness { filter: brightness(1.2); }
+        .filter-contrast { filter: contrast(1.2); }
+        .filter-grayscale { filter: grayscale(0.5); }
+        .filter-sepia { filter: sepia(0.3); }
         .skill-item .delete-skill-btn { display: none; position: absolute; top: 50%; right: 5px; transform: translateY(-50%); cursor: pointer; font-size: 14px; line-height: 1; color: #9ca3af; padding: 2px; }
         .skill-item:hover .delete-skill-btn { display: inline-block; }
         .skill-item .delete-skill-btn:hover { color: #ef4444; }
@@ -1113,6 +1274,249 @@
                                 <div class="col-span-2">
                                     <label for="body-text-color-picker" class="block text-sm font-medium text-gray-700">Texte du corps</label>
                                     <input type="color" id="body-text-color-picker" value="#334155" class="cv-input w-full h-10 p-1 border rounded-md">
+                                </div>
+                            </div>
+                        </div>
+                    </details>
+
+                    <details class="control-group">
+                        <summary><span>Arrière-plans & Textures</span><label class="completion-label"><input type="checkbox" id="completion-layout-backgrounds" class="completion-checkbox"><span>Fait ✅</span></label></summary>
+                        <div class="control-group-content space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Style d'arrière-plan</label>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <button data-bg-style="solid" class="bg-style-btn bg-gray-200 p-2 rounded-md text-sm active">Uni</button>
+                                    <button data-bg-style="gradient" class="bg-style-btn bg-gray-200 p-2 rounded-md text-sm">Dégradé</button>
+                                    <button data-bg-style="pattern" class="bg-style-btn bg-gray-200 p-2 rounded-md text-sm">Motif</button>
+                                    <button data-bg-style="texture" class="bg-style-btn bg-gray-200 p-2 rounded-md text-sm">Texture</button>
+                                </div>
+                            </div>
+                            <div id="gradient-controls" class="hidden space-y-2">
+                                <label class="block text-sm font-medium text-gray-700">Direction du dégradé</label>
+                                <div class="grid grid-cols-4 gap-2">
+                                    <button data-gradient-dir="to-r" class="gradient-dir-btn bg-gray-200 p-2 rounded-md text-sm">→</button>
+                                    <button data-gradient-dir="to-br" class="gradient-dir-btn bg-gray-200 p-2 rounded-md text-sm">↘</button>
+                                    <button data-gradient-dir="to-b" class="gradient-dir-btn bg-gray-200 p-2 rounded-md text-sm">↓</button>
+                                    <button data-gradient-dir="to-bl" class="gradient-dir-btn bg-gray-200 p-2 rounded-md text-sm">↙</button>
+                                </div>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div>
+                                        <label class="text-xs">Couleur 1</label>
+                                        <input type="color" id="gradient-color-1" value="#f3f4f6" class="cv-input w-full h-8 p-1 border rounded-md">
+                                    </div>
+                                    <div>
+                                        <label class="text-xs">Couleur 2</label>
+                                        <input type="color" id="gradient-color-2" value="#e5e7eb" class="cv-input w-full h-8 p-1 border rounded-md">
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="pattern-controls" class="hidden space-y-2">
+                                <label class="block text-sm font-medium text-gray-700">Motifs prédéfinis</label>
+                                <div class="grid grid-cols-3 gap-2">
+                                    <button data-pattern="dots" class="pattern-btn bg-gray-200 p-2 rounded-md text-sm">Points</button>
+                                    <button data-pattern="lines" class="pattern-btn bg-gray-200 p-2 rounded-md text-sm">Lignes</button>
+                                    <button data-pattern="grid" class="pattern-btn bg-gray-200 p-2 rounded-md text-sm">Grille</button>
+                                </div>
+                                <div>
+                                    <label for="pattern-opacity" class="block text-sm font-medium text-gray-700">Opacité motif: <span id="pattern-opacity-value">0.1</span></label>
+                                    <input type="range" id="pattern-opacity" min="0" max="1" step="0.05" value="0.1" class="cv-input w-full h-2 bg-gray-200 rounded-lg cursor-pointer">
+                                </div>
+                            </div>
+                        </div>
+                    </details>
+
+                    <details class="control-group">
+                        <summary><span>Bordures & Ombres</span><label class="completion-label"><input type="checkbox" id="completion-layout-borders" class="completion-checkbox"><span>Fait ✅</span></label></summary>
+                        <div class="control-group-content space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Bordures des sections</label>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <button data-border-style="none" class="border-style-btn bg-gray-200 p-2 rounded-md text-sm active">Aucune</button>
+                                    <button data-border-style="solid" class="border-style-btn bg-gray-200 p-2 rounded-md text-sm">Solide</button>
+                                    <button data-border-style="dashed" class="border-style-btn bg-gray-200 p-2 rounded-md text-sm">Pointillés</button>
+                                    <button data-border-style="dotted" class="border-style-btn bg-gray-200 p-2 rounded-md text-sm">Points</button>
+                                </div>
+                            </div>
+                            <div id="border-controls" class="hidden space-y-2">
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div>
+                                        <label for="border-width" class="block text-xs text-gray-700">Épaisseur: <span id="border-width-value">1</span>px</label>
+                                        <input type="range" id="border-width" min="1" max="5" step="1" value="1" class="cv-input w-full h-2 bg-gray-200 rounded-lg cursor-pointer">
+                                    </div>
+                                    <div>
+                                        <label class="text-xs">Couleur</label>
+                                        <input type="color" id="border-color" value="#d1d5db" class="cv-input w-full h-8 p-1 border rounded-md">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label for="border-radius" class="block text-xs text-gray-700">Arrondis: <span id="border-radius-value">0</span>px</label>
+                                    <input type="range" id="border-radius" min="0" max="20" step="1" value="0" class="cv-input w-full h-2 bg-gray-200 rounded-lg cursor-pointer">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Ombres</label>
+                                <div class="space-y-2">
+                                    <label class="flex items-center gap-2 text-sm">
+                                        <input type="checkbox" id="enable-shadows" class="cv-input">
+                                        Activer les ombres
+                                    </label>
+                                    <div id="shadow-controls" class="hidden space-y-2">
+                                        <div class="grid grid-cols-3 gap-2">
+                                            <div>
+                                                <label class="text-xs">X: <span id="shadow-x-value">0</span>px</label>
+                                                <input type="range" id="shadow-x" min="-10" max="10" step="1" value="0" class="cv-input w-full h-2 bg-gray-200 rounded-lg cursor-pointer">
+                                            </div>
+                                            <div>
+                                                <label class="text-xs">Y: <span id="shadow-y-value">2</span>px</label>
+                                                <input type="range" id="shadow-y" min="-10" max="10" step="1" value="2" class="cv-input w-full h-2 bg-gray-200 rounded-lg cursor-pointer">
+                                            </div>
+                                            <div>
+                                                <label class="text-xs">Flou: <span id="shadow-blur-value">4</span>px</label>
+                                                <input type="range" id="shadow-blur" min="0" max="20" step="1" value="4" class="cv-input w-full h-2 bg-gray-200 rounded-lg cursor-pointer">
+                                            </div>
+                                        </div>
+                                        <div class="grid grid-cols-2 gap-2">
+                                            <div>
+                                                <label class="text-xs">Couleur ombre</label>
+                                                <input type="color" id="shadow-color" value="#000000" class="cv-input w-full h-8 p-1 border rounded-md">
+                                            </div>
+                                            <div>
+                                                <label for="shadow-opacity" class="text-xs">Opacité: <span id="shadow-opacity-value">0.1</span></label>
+                                                <input type="range" id="shadow-opacity" min="0" max="1" step="0.05" value="0.1" class="cv-input w-full h-2 bg-gray-200 rounded-lg cursor-pointer">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </details>
+
+                    <details class="control-group">
+                        <summary><span>Géométrie & Formes</span><label class="completion-label"><input type="checkbox" id="completion-layout-geometry" class="completion-checkbox"><span>Fait ✅</span></label></summary>
+                        <div class="control-group-content space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Forme des sections</label>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <button data-section-shape="rectangle" class="shape-btn bg-gray-200 p-2 rounded-md text-sm active">Rectangle</button>
+                                    <button data-section-shape="rounded" class="shape-btn bg-gray-200 p-2 rounded-md text-sm">Arrondi</button>
+                                    <button data-section-shape="circle" class="shape-btn bg-gray-200 p-2 rounded-md text-sm">Cercle</button>
+                                    <button data-section-shape="hexagon" class="shape-btn bg-gray-200 p-2 rounded-md text-sm">Hexagone</button>
+                                </div>
+                            </div>
+                            <div>
+                                <label for="section-padding" class="block text-sm font-medium text-gray-700">Padding sections: <span id="section-padding-value">1</span>rem</label>
+                                <input type="range" id="section-padding" min="0" max="3" step="0.1" value="1" class="cv-input w-full h-2 bg-gray-200 rounded-lg cursor-pointer">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Orientation page</label>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <button data-orientation="portrait" class="orientation-btn bg-gray-200 p-2 rounded-md text-sm active">Portrait</button>
+                                    <button data-orientation="landscape" class="orientation-btn bg-gray-200 p-2 rounded-md text-sm">Paysage</button>
+                                </div>
+                            </div>
+                            <div>
+                                <label for="page-scale" class="block text-sm font-medium text-gray-700">Échelle d'affichage: <span id="page-scale-value">1</span></label>
+                                <input type="range" id="page-scale" min="0.5" max="2" step="0.1" value="1" class="cv-input w-full h-2 bg-gray-200 rounded-lg cursor-pointer">
+                            </div>
+                        </div>
+                    </details>
+
+                    <details class="control-group">
+                        <summary><span>Mise en Page Avancée</span><label class="completion-label"><input type="checkbox" id="completion-layout-advanced" class="completion-checkbox"><span>Fait ✅</span></label></summary>
+                        <div class="control-group-content space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Alignement du contenu</label>
+                                <div class="grid grid-cols-3 gap-2">
+                                    <button data-align="left" class="align-btn bg-gray-200 p-2 rounded-md text-sm active"><i class="fas fa-align-left"></i></button>
+                                    <button data-align="center" class="align-btn bg-gray-200 p-2 rounded-md text-sm"><i class="fas fa-align-center"></i></button>
+                                    <button data-align="right" class="align-btn bg-gray-200 p-2 rounded-md text-sm"><i class="fas fa-align-right"></i></button>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Espacement entre colonnes</label>
+                                <div>
+                                    <label for="column-gap" class="text-xs">Gap: <span id="column-gap-value">2</span>rem</label>
+                                    <input type="range" id="column-gap" min="0" max="5" step="0.2" value="2" class="cv-input w-full h-2 bg-gray-200 rounded-lg cursor-pointer">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Justification du texte</label>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <button data-text-justify="left" class="justify-btn bg-gray-200 p-2 rounded-md text-sm active">Gauche</button>
+                                    <button data-text-justify="justify" class="justify-btn bg-gray-200 p-2 rounded-md text-sm">Justifié</button>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="flex items-center gap-2 text-sm">
+                                    <input type="checkbox" id="hyphenation" class="cv-input">
+                                    Césure automatique
+                                </label>
+                            </div>
+                            <div>
+                                <label class="flex items-center gap-2 text-sm">
+                                    <input type="checkbox" id="widow-orphan" class="cv-input">
+                                    Contrôle veuves et orphelines
+                                </label>
+                            </div>
+                        </div>
+                    </details>
+
+                    <details class="control-group">
+                        <summary><span>Effets Visuels</span><label class="completion-label"><input type="checkbox" id="completion-layout-effects" class="completion-checkbox"><span>Fait ✅</span></label></summary>
+                        <div class="control-group-content space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Animations</label>
+                                <div class="space-y-2">
+                                    <label class="flex items-center gap-2 text-sm">
+                                        <input type="checkbox" id="enable-animations" class="cv-input">
+                                        Activer les animations
+                                    </label>
+                                    <div id="animation-controls" class="hidden space-y-2">
+                                        <select id="animation-type" class="cv-input w-full p-2 border rounded-md text-sm">
+                                            <option value="fade">Fondu</option>
+                                            <option value="slide">Glissement</option>
+                                            <option value="bounce">Rebond</option>
+                                            <option value="scale">Mise à l'échelle</option>
+                                        </select>
+                                        <div>
+                                            <label for="animation-duration" class="text-xs">Durée: <span id="animation-duration-value">0.3</span>s</label>
+                                            <input type="range" id="animation-duration" min="0.1" max="2" step="0.1" value="0.3" class="cv-input w-full h-2 bg-gray-200 rounded-lg cursor-pointer">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Filtres</label>
+                                <div class="space-y-2">
+                                    <div>
+                                        <label for="blur-filter" class="text-xs">Flou: <span id="blur-filter-value">0</span>px</label>
+                                        <input type="range" id="blur-filter" min="0" max="5" step="0.1" value="0" class="cv-input w-full h-2 bg-gray-200 rounded-lg cursor-pointer">
+                                    </div>
+                                    <div>
+                                        <label for="brightness-filter" class="text-xs">Luminosité: <span id="brightness-filter-value">100</span>%</label>
+                                        <input type="range" id="brightness-filter" min="50" max="150" step="5" value="100" class="cv-input w-full h-2 bg-gray-200 rounded-lg cursor-pointer">
+                                    </div>
+                                    <div>
+                                        <label for="contrast-filter" class="text-xs">Contraste: <span id="contrast-filter-value">100</span>%</label>
+                                        <input type="range" id="contrast-filter" min="50" max="200" step="5" value="100" class="cv-input w-full h-2 bg-gray-200 rounded-lg cursor-pointer">
+                                    </div>
+                                    <div>
+                                        <label for="saturate-filter" class="text-xs">Saturation: <span id="saturate-filter-value">100</span>%</label>
+                                        <input type="range" id="saturate-filter" min="0" max="200" step="5" value="100" class="cv-input w-full h-2 bg-gray-200 rounded-lg cursor-pointer">
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Mode d'impression</label>
+                                <div class="space-y-2">
+                                    <label class="flex items-center gap-2 text-sm">
+                                        <input type="checkbox" id="print-optimized" class="cv-input">
+                                        Optimiser pour l'impression
+                                    </label>
+                                    <label class="flex items-center gap-2 text-sm">
+                                        <input type="checkbox" id="high-contrast-print" class="cv-input">
+                                        Contraste élevé pour impression
+                                    </label>
                                 </div>
                             </div>
                         </div>
@@ -2496,6 +2900,7 @@
                 
                 populateFontSelectors();
                 populateIconPicker();
+                initializeAdvancedLayoutControls();
 
                 // --- EVENT LISTENERS ---
 
@@ -3087,6 +3492,352 @@
                 });
 
                 document.querySelectorAll('.a4-page').forEach(setupOverflowObserver);
+            }
+
+            // --- FONCTIONS POUR LES OPTIONS DE MISE EN PAGE AVANCÉES ---
+            
+            function initializeAdvancedLayoutControls() {
+                console.log("Initializing advanced layout controls...");
+                
+                // Gestionnaires pour les arrière-plans
+                const bgTypeButtons = document.querySelectorAll('[data-bg-type]');
+                bgTypeButtons.forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const type = this.dataset.bgType;
+                        updateBackgroundType(type);
+                        setActiveButton(bgTypeButtons, this);
+                    });
+                });
+
+                // Couleurs d'arrière-plan
+                const bgColorInput = document.getElementById('bg-color');
+                if (bgColorInput) {
+                    bgColorInput.addEventListener('input', function() {
+                        const preview = document.querySelector('.a4-page');
+                        if (preview) {
+                            preview.style.setProperty('--bg-color', this.value);
+                        }
+                    });
+                }
+
+                // Dégradés
+                const gradientColor1 = document.getElementById('gradient-color1');
+                const gradientColor2 = document.getElementById('gradient-color2');
+                const gradientDirection = document.getElementById('gradient-direction');
+                
+                [gradientColor1, gradientColor2, gradientDirection].forEach(input => {
+                    if (input) {
+                        input.addEventListener('input', updateGradient);
+                    }
+                });
+
+                // Motifs
+                const patternButtons = document.querySelectorAll('[data-pattern]');
+                patternButtons.forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const pattern = this.dataset.pattern;
+                        updatePattern(pattern);
+                        setActiveButton(patternButtons, this);
+                    });
+                });
+
+                // Couleur des motifs
+                const patternColorInput = document.getElementById('pattern-color');
+                if (patternColorInput) {
+                    patternColorInput.addEventListener('input', function() {
+                        const preview = document.querySelector('.a4-page');
+                        if (preview) {
+                            preview.style.setProperty('--pattern-color', this.value);
+                        }
+                    });
+                }
+
+                // Textures
+                const textureButtons = document.querySelectorAll('[data-texture]');
+                textureButtons.forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const texture = this.dataset.texture;
+                        updateTexture(texture);
+                        setActiveButton(textureButtons, this);
+                    });
+                });
+
+                // Bordures
+                const borderStyleButtons = document.querySelectorAll('[data-border-style]');
+                borderStyleButtons.forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const style = this.dataset.borderStyle;
+                        updateBorderStyle(style);
+                        setActiveButton(borderStyleButtons, this);
+                    });
+                });
+
+                // Épaisseur de bordure
+                const borderWidthInput = document.getElementById('border-width');
+                if (borderWidthInput) {
+                    borderWidthInput.addEventListener('input', function() {
+                        const preview = document.querySelector('.a4-page');
+                        if (preview) {
+                            preview.style.borderWidth = this.value + 'px';
+                        }
+                        updateRangeValue(this);
+                    });
+                }
+
+                // Couleur de bordure
+                const borderColorInput = document.getElementById('border-color');
+                if (borderColorInput) {
+                    borderColorInput.addEventListener('input', function() {
+                        const preview = document.querySelector('.a4-page');
+                        if (preview) {
+                            preview.style.borderColor = this.value;
+                        }
+                    });
+                }
+
+                // Ombres
+                const shadowButtons = document.querySelectorAll('[data-shadow]');
+                shadowButtons.forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const shadow = this.dataset.shadow;
+                        updateShadow(shadow);
+                        setActiveButton(shadowButtons, this);
+                    });
+                });
+
+                // Formes de section
+                const shapeButtons = document.querySelectorAll('[data-shape]');
+                shapeButtons.forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const shape = this.dataset.shape;
+                        updateSectionShape(shape);
+                        setActiveButton(shapeButtons, this);
+                    });
+                });
+
+                // Padding personnalisé
+                const paddingInputs = ['padding-top', 'padding-right', 'padding-bottom', 'padding-left'];
+                paddingInputs.forEach(id => {
+                    const input = document.getElementById(id);
+                    if (input) {
+                        input.addEventListener('input', function() {
+                            updateCustomPadding();
+                            updateRangeValue(this);
+                        });
+                    }
+                });
+
+                // Alignement de texte
+                const textAlignButtons = document.querySelectorAll('[data-text-align]');
+                textAlignButtons.forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const align = this.dataset.textAlign;
+                        updateTextAlignment(align);
+                        setActiveButton(textAlignButtons, this);
+                    });
+                });
+
+                // Espacements entre colonnes
+                const columnGapInput = document.getElementById('column-gap');
+                if (columnGapInput) {
+                    columnGapInput.addEventListener('input', function() {
+                        const preview = document.querySelector('.a4-page .cv-grid');
+                        if (preview) {
+                            preview.style.gap = this.value + 'px';
+                        }
+                        updateRangeValue(this);
+                    });
+                }
+
+                // Animations
+                const animationButtons = document.querySelectorAll('[data-animation]');
+                animationButtons.forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const animation = this.dataset.animation;
+                        updateAnimation(animation);
+                        setActiveButton(animationButtons, this);
+                    });
+                });
+
+                // Filtres
+                const filterCheckboxes = document.querySelectorAll('[data-filter]');
+                filterCheckboxes.forEach(checkbox => {
+                    checkbox.addEventListener('change', updateFilters);
+                });
+
+                // Options d'impression
+                const printOptionsCheckboxes = document.querySelectorAll('.print-option');
+                printOptionsCheckboxes.forEach(checkbox => {
+                    checkbox.addEventListener('change', updatePrintOptions);
+                });
+
+                // Initialiser les valeurs de range
+                document.querySelectorAll('input[type="range"]').forEach(range => {
+                    updateRangeValue(range);
+                    range.addEventListener('input', () => updateRangeValue(range));
+                });
+            }
+
+            function updateBackgroundType(type) {
+                const preview = document.querySelector('.a4-page');
+                if (!preview) return;
+
+                // Retirer toutes les classes de background
+                preview.classList.remove('bg-solid', 'bg-gradient-linear', 'bg-gradient-radial');
+                
+                // Ajouter la classe appropriée
+                if (type !== 'none') {
+                    preview.classList.add(`bg-${type}`);
+                }
+            }
+
+            function updateGradient() {
+                const color1 = document.getElementById('gradient-color1')?.value || '#ffffff';
+                const color2 = document.getElementById('gradient-color2')?.value || '#f3f4f6';
+                const direction = document.getElementById('gradient-direction')?.value || 'to right';
+                
+                const preview = document.querySelector('.a4-page');
+                if (preview) {
+                    preview.style.setProperty('--gradient-color1', color1);
+                    preview.style.setProperty('--gradient-color2', color2);
+                    preview.style.setProperty('--gradient-direction', direction);
+                }
+            }
+
+            function updatePattern(pattern) {
+                const preview = document.querySelector('.a4-page');
+                if (!preview) return;
+
+                // Retirer toutes les classes de motifs
+                preview.classList.remove('bg-pattern-dots', 'bg-pattern-lines', 'bg-pattern-grid');
+                
+                // Ajouter la classe appropriée
+                if (pattern !== 'none') {
+                    preview.classList.add(`bg-pattern-${pattern}`);
+                }
+            }
+
+            function updateTexture(texture) {
+                const preview = document.querySelector('.a4-page');
+                if (!preview) return;
+
+                // Retirer toutes les classes de textures
+                preview.classList.remove('bg-texture-paper', 'bg-texture-fabric');
+                
+                // Ajouter la classe appropriée
+                if (texture !== 'none') {
+                    preview.classList.add(`bg-texture-${texture}`);
+                }
+            }
+
+            function updateBorderStyle(style) {
+                const preview = document.querySelector('.a4-page');
+                if (!preview) return;
+
+                // Retirer toutes les classes de style de bordure
+                preview.classList.remove('border-style-solid', 'border-style-dashed', 'border-style-dotted', 'border-style-double');
+                
+                // Ajouter la classe appropriée
+                if (style !== 'none') {
+                    preview.classList.add(`border-style-${style}`);
+                }
+            }
+
+            function updateShadow(shadow) {
+                const preview = document.querySelector('.a4-page');
+                if (!preview) return;
+
+                // Retirer toutes les classes d'ombre
+                preview.classList.remove('shadow-soft', 'shadow-medium', 'shadow-strong', 'shadow-colored', 'shadow-inset');
+                
+                // Ajouter la classe appropriée
+                if (shadow !== 'none') {
+                    preview.classList.add(`shadow-${shadow}`);
+                }
+            }
+
+            function updateSectionShape(shape) {
+                const sections = document.querySelectorAll('.cv-module');
+                sections.forEach(section => {
+                    // Retirer toutes les classes de forme
+                    section.classList.remove('shape-rectangle', 'shape-rounded', 'shape-circle', 'shape-pill', 'shape-custom');
+                    
+                    // Ajouter la classe appropriée
+                    if (shape !== 'none') {
+                        section.classList.add(`shape-${shape}`);
+                    }
+                });
+            }
+
+            function updateCustomPadding() {
+                const top = document.getElementById('padding-top')?.value || '0';
+                const right = document.getElementById('padding-right')?.value || '0';
+                const bottom = document.getElementById('padding-bottom')?.value || '0';
+                const left = document.getElementById('padding-left')?.value || '0';
+                
+                const preview = document.querySelector('.a4-page');
+                if (preview) {
+                    preview.style.padding = `${top}px ${right}px ${bottom}px ${left}px`;
+                }
+            }
+
+            function updateTextAlignment(align) {
+                const preview = document.querySelector('.a4-page');
+                if (!preview) return;
+
+                // Retirer toutes les classes d'alignement
+                preview.classList.remove('text-align-left', 'text-align-center', 'text-align-right', 'text-align-justify');
+                
+                // Ajouter la classe appropriée
+                preview.classList.add(`text-align-${align}`);
+            }
+
+            function updateAnimation(animation) {
+                const sections = document.querySelectorAll('.cv-module');
+                sections.forEach(section => {
+                    // Retirer toutes les classes d'animation
+                    section.classList.remove('animation-fade-in', 'animation-slide-in', 'animation-zoom-in', 'animation-bounce');
+                    
+                    // Ajouter la classe appropriée
+                    if (animation !== 'none') {
+                        section.classList.add(`animation-${animation}`);
+                    }
+                });
+            }
+
+            function updateFilters() {
+                const filters = [];
+                document.querySelectorAll('[data-filter]:checked').forEach(checkbox => {
+                    filters.push(checkbox.dataset.filter);
+                });
+
+                const preview = document.querySelector('.a4-page');
+                if (preview) {
+                    // Retirer toutes les classes de filtre
+                    preview.classList.remove('filter-blur', 'filter-brightness', 'filter-contrast', 'filter-grayscale', 'filter-sepia');
+                    
+                    // Ajouter les filtres sélectionnés
+                    filters.forEach(filter => {
+                        preview.classList.add(`filter-${filter}`);
+                    });
+                }
+            }
+
+            function updatePrintOptions() {
+                // Cette fonction peut être étendue pour gérer des options d'impression spécifiques
+                console.log('Print options updated');
+            }
+
+            function setActiveButton(buttons, activeButton) {
+                buttons.forEach(btn => btn.classList.remove('active'));
+                activeButton.classList.add('active');
+            }
+
+            function updateRangeValue(rangeInput) {
+                const valueDisplay = rangeInput.parentNode.querySelector('.range-value');
+                if (valueDisplay) {
+                    valueDisplay.textContent = rangeInput.value + (rangeInput.dataset.unit || '');
+                }
             }
             
             // --- START THE APP ---
