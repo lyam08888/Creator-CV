@@ -378,6 +378,19 @@
                 color: black !important;
             }
         }
+
+        /* Style pour le bouton réduire tout */
+        #collapse-all-btn {
+            transition: all 0.2s ease;
+            border: 1px solid #e5e7eb;
+        }
+        #collapse-all-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        #collapse-all-btn:active {
+            transform: translateY(0);
+        }
         .skill-item .delete-skill-btn { display: none; position: absolute; top: 50%; right: 5px; transform: translateY(-50%); cursor: pointer; font-size: 14px; line-height: 1; color: #9ca3af; padding: 2px; }
         .skill-item:hover .delete-skill-btn { display: inline-block; }
         .skill-item .delete-skill-btn:hover { color: #ef4444; }
@@ -975,6 +988,21 @@
                     <div id="progress-bar" class="bg-green-500 h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
                 </div>
                 <p id="progress-text" class="text-xs text-right text-gray-500 mt-1">0/X sections complétées</p>
+            </div>
+
+            <!-- NEW: Collapse All Button -->
+            <div class="mb-4 flex-shrink-0">
+                <div class="tooltip">
+                    <button id="collapse-all-btn" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-4 rounded-md flex items-center justify-center gap-2 text-sm font-medium transition-colors duration-200">
+                        <i class="fas fa-compress-alt"></i>
+                        <span id="collapse-btn-text">Réduire toutes les sections</span>
+                    </button>
+                    <div class="tooltip-content top">
+                        <strong>Réduire/Développer toutes les sections</strong><br>
+                        Ferme ou ouvre toutes les sections d'un coup<br>
+                        pour une navigation plus facile dans l'interface.
+                    </div>
+                </div>
             </div>
 
 
@@ -1755,6 +1783,7 @@
                 bannerPosteSize: document.getElementById('banner-poste-size'), bannerPosteSizeValue: document.getElementById('banner-poste-size-value'), bannerPosteColor: document.getElementById('banner-poste-color'), bannerPosteBold: document.getElementById('banner-poste-bold'), bannerPosteItalic: document.getElementById('banner-poste-italic'),
                 bannerContactSize: document.getElementById('banner-contact-size'), bannerContactSizeValue: document.getElementById('banner-contact-size-value'), bannerContactColor: document.getElementById('banner-contact-color'), bannerContactBold: document.getElementById('banner-contact-bold'), bannerContactItalic: document.getElementById('banner-contact-italic'),
                 undoBtn: document.getElementById('undo-btn'), redoBtn: document.getElementById('redo-btn'),
+                collapseAllBtn: document.getElementById('collapse-all-btn'),
                 addSectionBtn: document.getElementById('add-section-btn'), customSectionsList: document.getElementById('custom-sections-list'), sectionSuggestionSelect: document.getElementById('section-suggestion-select'), newSectionTitleInput: document.getElementById('new-section-title-input'),
                 primaryColorPicker: document.getElementById('primary-color-picker'),
                 secondaryColorPicker: document.getElementById('secondary-color-picker'),
@@ -3003,6 +3032,7 @@
                 populateFontSelectors();
                 populateIconPicker();
                 initializeAdvancedLayoutControls();
+                initializeCollapseAllButton();
 
                 // --- EVENT LISTENERS ---
 
@@ -4291,6 +4321,45 @@
                 const valueDisplay = rangeInput.parentNode.querySelector('.range-value');
                 if (valueDisplay) {
                     valueDisplay.textContent = rangeInput.value + (rangeInput.dataset.unit || '');
+                }
+            }
+
+            // --- FONCTION POUR RÉDUIRE/DÉVELOPPER TOUTES LES SECTIONS ---
+            
+            function initializeCollapseAllButton() {
+                if (!controls.collapseAllBtn) return;
+                
+                controls.collapseAllBtn.addEventListener('click', function() {
+                    toggleAllSections();
+                });
+            }
+
+            function toggleAllSections() {
+                const allDetails = document.querySelectorAll('details.control-group');
+                const btnText = document.getElementById('collapse-btn-text');
+                const btnIcon = controls.collapseAllBtn.querySelector('i');
+                
+                if (allDetails.length === 0) return;
+                
+                // Vérifier si toutes les sections sont fermées
+                const allClosed = Array.from(allDetails).every(detail => !detail.open);
+                
+                if (allClosed) {
+                    // Ouvrir toutes les sections
+                    allDetails.forEach(detail => {
+                        detail.open = true;
+                    });
+                    btnText.textContent = 'Réduire toutes les sections';
+                    btnIcon.className = 'fas fa-compress-alt';
+                    showNotification('Toutes les sections ont été développées', 'success', 2000);
+                } else {
+                    // Fermer toutes les sections
+                    allDetails.forEach(detail => {
+                        detail.open = false;
+                    });
+                    btnText.textContent = 'Développer toutes les sections';
+                    btnIcon.className = 'fas fa-expand-alt';
+                    showNotification('Toutes les sections ont été réduites', 'success', 2000);
                 }
             }
             
