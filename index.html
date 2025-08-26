@@ -4139,58 +4139,39 @@
                     // Attendre que l'animation démarre avant de continuer
                     await new Promise(resolve => setTimeout(resolve, 1000));
                     
-                    // ÉTAPE 1: Analyse complète du contenu
-                    const contentAnalysis = analyzeContentForLayout();
-                    console.log("Analyse du contenu:", contentAnalysis);
+                    showNotification("🧠 IA : Analyse intelligente du contenu...", "info");
                     
-                    // ÉTAPE 2: Optimisation intelligente de la largeur de page
-                    await optimizePageWidth(contentAnalysis);
+                    // ÉTAPE 1: Analyse ultra-complète du contenu avec scoring avancé
+                    const contentAnalysis = analyzeContentForLayoutAdvanced();
+                    console.log("Analyse complète du contenu:", contentAnalysis);
                     
-                    // ÉTAPE 3: Reformulation automatique si le texte est trop long
-                    if (contentAnalysis.avgExpLength > 300 || contentAnalysis.totalChars > 2500) {
-                        await reformulateContentWithAI(contentAnalysis);
+                    // ÉTAPE 2: Décision intelligente du layout optimal avec justification
+                    const optimalLayout = await chooseOptimalLayoutIntelligent(contentAnalysis);
+                    showNotification(`📊 Layout sélectionné: ${optimalLayout.name} (${optimalLayout.justification})`, "success");
+                    
+                    // ÉTAPE 3: Configuration automatique de la bannière avec positionnement optimal
+                    await configureBannerIntelligent(contentAnalysis, optimalLayout);
+                    
+                    // ÉTAPE 4: Optimisation complète de l'utilisation de l'espace (marges, colonnes)
+                    const spaceOptimization = await optimizePageSpaceIntelligent(contentAnalysis, optimalLayout);
+                    showNotification(`📐 Espace optimisé: ${spaceOptimization.strategy}`, "info");
+                    
+                    // ÉTAPE 5: Ajustement intelligent des tailles de police selon la densité
+                    const fontOptimization = await optimizeFontsIntelligent(contentAnalysis, optimalLayout);
+                    showNotification(`🔤 Polices optimisées: ${fontOptimization.strategy}`, "info");
+                    
+                    // ÉTAPE 6: Reformulation automatique du contenu si nécessaire
+                    if (contentAnalysis.needsContentReduction) {
+                        await reformulateContentIntelligent(contentAnalysis);
                     }
                     
-                    // ÉTAPE 4: Activation et configuration de la bannière recruteur
-                    if (!controls.toggleBanner.checked) {
-                        controls.toggleBanner.checked = true;
-                        showNotification("Bannière recruteur activée", "info");
+                    // ÉTAPE 7: Répartition automatique des modules dans les colonnes
+                    if (optimalLayout.columns > 1) {
+                        await distributeModulesIntelligent(optimalLayout, contentAnalysis);
                     }
                     
-                    // Configuration bannière par défaut si vide
-                    if (!controls.bannerNom.value || !controls.bannerEmail.value) {
-                        setDefaultRecruiterInfo();
-                    }
-                    
-                    // Style bannière optimisé selon la densité
-                    controls.bannerStyleSelect.value = contentAnalysis.density > 0.7 ? 'banner-style-minimal' : 'banner-style-modern';
-                    
-                    // ÉTAPE 5: Choix intelligent du layout avec répartition des blocs
-                    const optimalLayout = await chooseOptimalLayoutAndDistribution(contentAnalysis);
-                    
-                    // ÉTAPE 6: Optimisation des tailles de police
-                    const fontSizes = calculateOptimalFontSizes(contentAnalysis);
-                    triggerSliderChange('font-size-h1', fontSizes.h1);
-                    triggerSliderChange('font-size-h2', fontSizes.h2);
-                    triggerSliderChange('font-size-p', fontSizes.p);
-                    triggerSliderChange('font-size-banner', fontSizes.banner);
-                    
-                    // ÉTAPE 7: Optimisation des marges et espacements
-                    const spacing = calculateOptimalSpacing(contentAnalysis);
-                    triggerSliderChange('page-margin', spacing.pageMargin);
-                    triggerSliderChange('module-spacing', spacing.moduleSpacing);
-                    triggerSliderChange('paragraph-spacing', spacing.paragraphSpacing);
-                    triggerSliderChange('banner-element-spacing', spacing.bannerSpacing);
-                    
-                    // ÉTAPE 8: Optimisation des styles de titre pour gagner de l'espace
-                    const titleStyle = contentAnalysis.density > 0.7 ? 'style-side-line' : 'style-underline';
-                    const titleButtons = document.querySelectorAll('.section-title-style-btn');
-                    titleButtons.forEach(btn => btn.classList.remove('active', 'bg-blue-500', 'text-white'));
-                    const titleBtn = document.querySelector(`[data-title-style="${titleStyle}"]`);
-                    if (titleBtn) {
-                        titleBtn.classList.add('active', 'bg-blue-500', 'text-white');
-                        titleBtn.click();
-                    }
+                    // ÉTAPE 8: Optimisation fine des styles pour économiser l'espace
+                    await optimizeStylesForSpace(contentAnalysis);
                     
                     // Attendre la fin de l'animation avant les vérifications finales
                     await animationPromise;
@@ -4198,21 +4179,30 @@
                     // ÉTAPE 9: Mise à jour finale et vérifications
                     updatePreview('form');
                     
-                    // ÉTAPE 10: Vérification finale et ajustements d'urgence si nécessaire
+                    // ÉTAPE 10: Vérifications multiples et ajustements progressifs jusqu'à une page
                     setTimeout(async () => {
-                        const isOverflowing = checkPageOverflow();
-                        if (isOverflowing) {
-                            await emergencyContentOptimization();
-                        }
+                        const finalResult = await ensureSinglePageCV(contentAnalysis, optimalLayout);
                         
-                        showNotification(`✨ CV complètement restructuré par l'IA ! Layout: ${optimalLayout.description}, Optimisations: ${optimalLayout.optimizations.join(', ')}`, "success", 8000);
+                        let successMessage = `✨ CV ULTRA-OPTIMISÉ par l'IA ! 
+📊 Layout: ${optimalLayout.name} 
+📏 Ratio colonnes: ${optimalLayout.ratio}
+🎯 Stratégie: ${finalResult.strategy}
+✅ Optimisations: ${finalResult.optimizations.join(', ')}`;
+                        
+                        if (finalResult.isOnePage) {
+                            successMessage += "\n🎉 OBJECTIF ATTEINT: CV sur une seule page !";
+                            showNotification(successMessage, "success", 10000);
+                        } else {
+                            successMessage += "\n⚠️ Contenu très dense - quelques ajustements manuels peuvent être nécessaires";
+                            showNotification(successMessage, "warning", 8000);
+                        }
                     }, 500);
                     
                 } catch (error) {
                     // Masquer l'animation en cas d'erreur
                     hideCVRestructureAnimation();
                     console.error('Erreur lors de l\'optimisation layout:', error);
-                    showNotification("Erreur lors de l'optimisation du layout", "error");
+                    showNotification("Erreur lors de l'optimisation intelligente du layout", "error");
                 }
             }
             
@@ -4402,8 +4392,8 @@
                 }
             }
             
-            function analyzeContentForLayout() {
-                // Analyse complète du contenu pour déterminer la stratégie optimale
+            function analyzeContentForLayoutAdvanced() {
+                // Analyse ultra-complète avec scoring avancé pour optimisation intelligente
                 const description = controls.description.value || '';
                 const competences = controls.competences.value || '';
                 const experiences = Array.from(controls.experienceList.querySelectorAll('[data-field="desc"]')).map(el => el.value).join(' ');
@@ -4412,57 +4402,518 @@
                 const totalContent = description + competences + experiences + formations;
                 const totalChars = totalContent.length;
                 
-                // Comptage des éléments
+                // Comptage détaillé des éléments
                 const expCount = controls.experienceList.querySelectorAll('.experience-item').length;
                 const formCount = controls.formationList.querySelectorAll('.formation-item').length;
                 const skillsCount = competences.split(',').filter(s => s.trim()).length;
                 
-                // Analyse des descriptions d'expérience
+                // Analyse fine des descriptions
                 const expDescriptions = Array.from(controls.experienceList.querySelectorAll('[data-field="desc"]')).map(el => el.value);
                 const avgExpLength = expDescriptions.length > 0 ? expDescriptions.reduce((sum, desc) => sum + desc.length, 0) / expDescriptions.length : 0;
                 const maxExpLength = expDescriptions.length > 0 ? Math.max(...expDescriptions.map(desc => desc.length)) : 0;
                 
-                // Calcul de la densité plus précis (0 = vide, 1 = très dense)
-                let density = 0;
+                // Calcul de densité multi-facteurs (0-1)
+                let densityScore = 0;
+                densityScore += Math.min(totalChars / 3500, 1) * 0.35;  // Caractères total
+                densityScore += Math.min(expCount / 6, 1) * 0.25;       // Nombre d'expériences
+                densityScore += Math.min(avgExpLength / 350, 1) * 0.2;  // Longueur moyenne
+                densityScore += Math.min(formCount / 5, 1) * 0.1;       // Formations
+                densityScore += Math.min(skillsCount / 30, 1) * 0.1;    // Compétences
                 
-                // Facteur caractères total (max 3000 chars = 0.3 de densité)
-                density += Math.min(totalChars / 3000, 1) * 0.3;
+                // Score de complexité visuelle
+                const visualComplexity = (expCount * 0.4) + (formCount * 0.3) + (skillsCount / 5 * 0.3);
                 
-                // Facteur expériences (max 5 exp = 0.25 de densité)
-                density += Math.min(expCount / 5, 1) * 0.25;
+                // Prédiction de la stratégie optimale
+                let optimalStrategy;
+                if (densityScore > 0.8) optimalStrategy = 'ultra-compress';
+                else if (densityScore > 0.6) optimalStrategy = 'compress';
+                else if (densityScore > 0.4) optimalStrategy = 'balance';
+                else if (densityScore > 0.2) optimalStrategy = 'expand';
+                else optimalStrategy = 'minimal';
                 
-                // Facteur longueur moyenne des expériences (max 400 chars = 0.2 de densité)
-                density += Math.min(avgExpLength / 400, 1) * 0.2;
-                
-                // Facteur formations (max 4 formations = 0.1 de densité)
-                density += Math.min(formCount / 4, 1) * 0.1;
-                
-                // Facteur compétences (max 25 skills = 0.1 de densité)
-                density += Math.min(skillsCount / 25, 1) * 0.1;
-                
-                // Facteur description profil (max 500 chars = 0.05 de densité)
-                density += Math.min(description.length / 500, 1) * 0.05;
-                
-                // Calcul du score de complexité pour la reformulation
-                const needsReformulation = maxExpLength > 300 || avgExpLength > 200 || totalChars > 2500;
+                // Analyse de la répartition idéale des colonnes
+                const leftColumnContent = competences.length + (description.length * 0.3);
+                const rightColumnContent = experiences.length + formations.length;
+                const balanceRatio = leftColumnContent / (leftColumnContent + rightColumnContent);
                 
                 return {
-                    density: Math.min(density, 1),
+                    density: Math.min(densityScore, 1),
                     totalChars,
                     expCount,
                     formCount,
                     skillsCount,
                     avgExpLength,
                     maxExpLength,
-                    needsReformulation,
+                    visualComplexity,
+                    strategy: optimalStrategy,
+                    balanceRatio,
                     contentDistribution: {
                         experiences: experiences.length,
                         formations: formations.length,
                         competences: competences.length,
                         description: description.length
                     },
-                    recommendedStrategy: density > 0.7 ? 'compress' : density > 0.4 ? 'balance' : 'expand'
+                    needsContentReduction: maxExpLength > 280 || avgExpLength > 180 || totalChars > 3000,
+                    pageUtilization: densityScore,
+                    recommendedColumns: densityScore > 0.5 ? 2 : 1,
+                    estimatedPageUsage: Math.min((densityScore * 1.3) + 0.2, 1.1)  // Estimation si dépasse 1 page
                 };
+            }
+            
+            async function chooseOptimalLayoutIntelligent(analysis) {
+                console.log("🧠 Choix intelligent du layout optimal...");
+                
+                let layout, justification, ratio;
+                
+                // Logique ultra-intelligente basée sur l'analyse complète
+                if (analysis.density > 0.85) {
+                    // Ultra-dense : priorité à l'efficacité d'espace
+                    layout = '2-col-33-67';
+                    ratio = '33/67';
+                    justification = "Contenu très dense - colonne étroite pour infos compactes, large pour détails";
+                } else if (analysis.density > 0.7) {
+                    // Dense : équilibrer lisibilité et espace
+                    if (analysis.balanceRatio > 0.4) {
+                        layout = '2-col-50-50';
+                        ratio = '50/50';
+                        justification = "Contenu équilibré - colonnes égales pour répartition harmonieuse";
+                    } else {
+                        layout = '2-col-33-67';
+                        ratio = '33/67';
+                        justification = "Plus d'expériences - priorité à la colonne principale";
+                    }
+                } else if (analysis.density > 0.45) {
+                    // Modéré : privilégier la lisibilité
+                    if (analysis.expCount > analysis.formCount + 2) {
+                        layout = '2-col-67-33';
+                        ratio = '67/33';
+                        justification = "Beaucoup d'expériences - colonne large pour le contenu principal";
+                    } else {
+                        layout = '2-col-50-50';
+                        ratio = '50/50';
+                        justification = "Contenu modéré - équilibre optimal";
+                    }
+                } else if (analysis.density > 0.25) {
+                    // Léger : maximiser l'impact visuel
+                    layout = '2-col-67-33';
+                    ratio = '67/33';
+                    justification = "Contenu léger - colonne large pour impact visuel";
+                } else {
+                    // Minimal : clarté absolue
+                    layout = '1-col';
+                    ratio = '100';
+                    justification = "Contenu minimal - colonne unique pour clarté maximale";
+                }
+                
+                // Application du layout avec animation
+                const layoutButtons = document.querySelectorAll('.layout-btn');
+                layoutButtons.forEach(btn => btn.classList.remove('bg-blue-500', 'text-white'));
+                const layoutBtn = document.querySelector(`[data-layout="${layout}"]`);
+                if (layoutBtn) {
+                    layoutBtn.click();
+                }
+                
+                return {
+                    type: layout,
+                    name: layout === '1-col' ? 'Colonne unique' : `2 colonnes ${ratio}`,
+                    ratio: ratio,
+                    justification: justification,
+                    columns: layout === '1-col' ? 1 : 2,
+                    primaryColumn: layout.includes('67-33') ? 'left' : layout.includes('33-67') ? 'right' : 'balanced'
+                };
+            }
+            
+            async function configureBannerIntelligent(analysis, layout) {
+                console.log("🎯 Configuration intelligente de la bannière...");
+                
+                // Activation automatique de la bannière
+                if (!controls.toggleBanner.checked) {
+                    controls.toggleBanner.checked = true;
+                    showNotification("📢 Bannière activée automatiquement", "info");
+                }
+                
+                // Configuration automatique des informations manquantes
+                if (!controls.bannerNom.value || !controls.bannerEmail.value) {
+                    setDefaultRecruiterInfo();
+                }
+                
+                // Choix intelligent du style de bannière selon la densité
+                let bannerStyle, bannerPosition, logoSize;
+                
+                if (analysis.density > 0.8) {
+                    // Ultra-compact pour contenu dense
+                    bannerStyle = 'banner-style-minimal';
+                    bannerPosition = 'bottom';  // En bas pour ne pas gêner
+                    logoSize = 'logo-sm';
+                    showNotification("📐 Style bannière: Minimal (optimisé pour contenu dense)", "info");
+                } else if (analysis.density > 0.6) {
+                    // Équilibré
+                    bannerStyle = 'banner-style-modern';
+                    bannerPosition = analysis.strategy === 'compress' ? 'bottom' : 'top';
+                    logoSize = 'logo-md';
+                    showNotification("🎨 Style bannière: Moderne (équilibré)", "info");
+                } else {
+                    // Généreux pour contenu léger
+                    bannerStyle = 'banner-style-elegant';
+                    bannerPosition = 'top';
+                    logoSize = 'logo-lg';
+                    showNotification("✨ Style bannière: Élégant (design aéré)", "info");
+                }
+                
+                // Application des paramètres
+                controls.bannerStyleSelect.value = bannerStyle;
+                controls.bannerPosition.value = bannerPosition;
+                
+                // Configuration du logo si présent
+                if (preview.bannerImg.src) {
+                    preview.bannerImg.className = `${logoSize}`;
+                }
+                
+                // Alignement intelligent selon le layout
+                let alignment = 'center';
+                if (layout.type === '2-col-33-67') alignment = 'left';
+                else if (layout.type === '2-col-67-33') alignment = 'right';
+                
+                const alignButtons = document.querySelectorAll('.banner-align-btn');
+                alignButtons.forEach(btn => btn.classList.remove('active', 'bg-blue-500', 'text-white'));
+                const alignBtn = document.querySelector(`[data-align="${alignment}"]`);
+                if (alignBtn) {
+                    alignBtn.classList.add('active', 'bg-blue-500', 'text-white');
+                    alignBtn.click();
+                }
+            }
+            
+            async function optimizePageSpaceIntelligent(analysis, layout) {
+                console.log("📏 Optimisation intelligente de l'espace page...");
+                
+                let margins, strategy;
+                
+                // Stratégie d'optimisation de l'espace basée sur l'analyse
+                switch (analysis.strategy) {
+                    case 'ultra-compress':
+                        margins = 1.0;  // Marges minimales pour utiliser tout l'espace
+                        strategy = "Marges ultra-réduites (1cm) - Utilisation maximale de l'espace";
+                        break;
+                    case 'compress':
+                        margins = 1.3;  // Marges réduites mais lisibles
+                        strategy = "Marges réduites (1.3cm) - Bon compromis espace/lisibilité";
+                        break;
+                    case 'balance':
+                        margins = 1.7;  // Marges équilibrées
+                        strategy = "Marges équilibrées (1.7cm) - Confort de lecture";
+                        break;
+                    case 'expand':
+                        margins = 2.0;  // Marges standard
+                        strategy = "Marges standard (2cm) - Design aéré";
+                        break;
+                    default:
+                        margins = 2.5;  // Marges généreuses
+                        strategy = "Marges généreuses (2.5cm) - Maximum d'élégance";
+                        break;
+                }
+                
+                // Application des marges optimisées
+                triggerSliderChange('page-margin', margins);
+                
+                return { strategy, margins };
+            }
+            
+            async function optimizeFontsIntelligent(analysis, layout) {
+                console.log("🔤 Optimisation intelligente des polices...");
+                
+                let fonts, strategy;
+                
+                // Calcul intelligent des tailles selon la stratégie
+                switch (analysis.strategy) {
+                    case 'ultra-compress':
+                        fonts = { h1: 22, h2: 14, p: 8, banner: 7.5 };
+                        strategy = "Polices ultra-compactes - Maximum de contenu";
+                        break;
+                    case 'compress':
+                        fonts = { h1: 26, h2: 15.5, p: 8.5, banner: 8 };
+                        strategy = "Polices compactes - Bon compromis";
+                        break;
+                    case 'balance':
+                        fonts = { h1: 30, h2: 17, p: 9.5, banner: 9 };
+                        strategy = "Polices équilibrées - Lisibilité optimale";
+                        break;
+                    case 'expand':
+                        fonts = { h1: 34, h2: 19, p: 10.5, banner: 9.5 };
+                        strategy = "Polices généreuses - Confort de lecture";
+                        break;
+                    default:
+                        fonts = { h1: 38, h2: 21, p: 11, banner: 10 };
+                        strategy = "Polices élégantes - Impact visuel maximum";
+                        break;
+                }
+                
+                // Ajustements fins selon le layout
+                if (layout.columns === 2) {
+                    fonts.h1 -= 2;  // Réduction pour colonnes
+                    fonts.h2 -= 1;
+                }
+                
+                // Application des tailles optimisées
+                triggerSliderChange('font-size-h1', fonts.h1);
+                triggerSliderChange('font-size-h2', fonts.h2);
+                triggerSliderChange('font-size-p', fonts.p);
+                triggerSliderChange('font-size-banner', fonts.banner);
+                
+                return { strategy, fonts };
+            }
+            
+            async function reformulateContentIntelligent(analysis) {
+                if (!validateApiKey()) {
+                    showNotification("🔑 API key requise pour la reformulation automatique", "warning");
+                    return;
+                }
+                
+                console.log("🤖 Reformulation intelligente du contenu...");
+                showNotification("🧠 IA: Reformulation intelligente en cours...", "info");
+                
+                let reformulationCount = 0;
+                
+                // Reformulation ciblée des expériences trop longues
+                const experienceItems = controls.experienceList.querySelectorAll('.experience-item');
+                for (let item of experienceItems) {
+                    const descTextarea = item.querySelector('[data-field="desc"]');
+                    if (descTextarea && descTextarea.value.length > 280) {
+                        const originalDesc = descTextarea.value;
+                        const targetLength = analysis.strategy === 'ultra-compress' ? '2 lignes maximum' : '3 lignes maximum';
+                        
+                        const prompt = `Reformule cette description d'expérience en la condensant à ${targetLength}. Garde seulement l'essentiel, utilise des verbes d'action percutants et des bullet points avec •. Reste professionnel et impactant. Description: "${originalDesc}"`;
+                        
+                        try {
+                            const condensedDesc = await callGeminiAPI(prompt);
+                            if (condensedDesc) {
+                                descTextarea.value = condensedDesc;
+                                reformulationCount++;
+                            }
+                        } catch (error) {
+                            console.error("Erreur reformulation expérience:", error);
+                        }
+                    }
+                }
+                
+                // Reformulation du profil si nécessaire
+                if (controls.description.value.length > 350) {
+                    const originalDesc = controls.description.value;
+                    const targetLength = analysis.strategy === 'ultra-compress' ? '3 lignes' : '4 lignes';
+                    
+                    const prompt = `Reformule ce profil professionnel en le condensant à ${targetLength} maximum. Garde l'impact et la personnalité, mais sois plus concis et percutant. Profil: "${originalDesc}"`;
+                    
+                    try {
+                        const condensedProfile = await callGeminiAPI(prompt);
+                        if (condensedProfile) {
+                            controls.description.value = condensedProfile;
+                            reformulationCount++;
+                        }
+                    } catch (error) {
+                        console.error("Erreur reformulation profil:", error);
+                    }
+                }
+                
+                if (reformulationCount > 0) {
+                    showNotification(`✂️ ${reformulationCount} sections reformulées intelligemment`, "success");
+                }
+            }
+            
+            async function distributeModulesIntelligent(layout, analysis) {
+                console.log("🎯 Répartition intelligente des modules...");
+                
+                // Recommandations basées sur le type de layout et le contenu
+                let recommendation = "";
+                
+                switch (layout.type) {
+                    case '2-col-33-67':
+                        recommendation = "Colonne étroite (33%): Contact, Compétences, Formation | Colonne large (67%): Expériences, Projets, Description détaillée";
+                        break;
+                    case '2-col-50-50':
+                        recommendation = "Répartition équilibrée: Alternez les sections pour un équilibre visuel optimal";
+                        break;
+                    case '2-col-67-33':
+                        recommendation = "Colonne large (67%): Expériences principales, Description | Colonne étroite (33%): Contact, Compétences";
+                        break;
+                }
+                
+                if (recommendation) {
+                    showNotification(`🎯 Répartition recommandée: ${recommendation}`, "info", 6000);
+                }
+                
+                // TODO: Implémentation future du drag & drop automatique
+                // Cette fonction pourrait être étendue pour déplacer automatiquement les modules
+            }
+            
+            async function optimizeStylesForSpace(analysis) {
+                console.log("🎨 Optimisation des styles pour économiser l'espace...");
+                
+                // Choix intelligent du style de titre selon la stratégie
+                let titleStyle;
+                switch (analysis.strategy) {
+                    case 'ultra-compress':
+                    case 'compress':
+                        titleStyle = 'style-side-line';  // Plus compact
+                        break;
+                    case 'balance':
+                        titleStyle = 'style-underline';  // Équilibré
+                        break;
+                    default:
+                        titleStyle = 'style-background';  // Plus visible
+                        break;
+                }
+                
+                // Application du style de titre
+                const titleButtons = document.querySelectorAll('.section-title-style-btn');
+                titleButtons.forEach(btn => btn.classList.remove('active', 'bg-blue-500', 'text-white'));
+                const titleBtn = document.querySelector(`[data-title-style="${titleStyle}"]`);
+                if (titleBtn) {
+                    titleBtn.classList.add('active', 'bg-blue-500', 'text-white');
+                    titleBtn.click();
+                }
+                
+                // Optimisation des espacements selon la stratégie
+                let spacing;
+                switch (analysis.strategy) {
+                    case 'ultra-compress':
+                        spacing = { module: 0.8, paragraph: 0.2, banner: 0.6 };
+                        break;
+                    case 'compress':
+                        spacing = { module: 1.0, paragraph: 0.3, banner: 0.8 };
+                        break;
+                    case 'balance':
+                        spacing = { module: 1.3, paragraph: 0.4, banner: 1.0 };
+                        break;
+                    default:
+                        spacing = { module: 1.6, paragraph: 0.5, banner: 1.2 };
+                        break;
+                }
+                
+                triggerSliderChange('module-spacing', spacing.module);
+                triggerSliderChange('paragraph-spacing', spacing.paragraph);
+                triggerSliderChange('banner-element-spacing', spacing.banner);
+                
+                showNotification(`🎨 Styles optimisés: ${titleStyle}, espacement ${analysis.strategy}`, "info");
+            }
+            
+            async function ensureSinglePageCV(analysis, layout) {
+                console.log("🎯 Vérification finale et ajustements pour une page...");
+                
+                const maxAttempts = 5;
+                let attempt = 0;
+                let optimizations = [];
+                let strategy = "Optimisation standard";
+                
+                while (attempt < maxAttempts) {
+                    await new Promise(resolve => setTimeout(resolve, 300)); // Laisser le DOM se mettre à jour
+                    
+                    const isOverflowing = checkPageOverflow();
+                    
+                    if (!isOverflowing) {
+                        return {
+                            isOnePage: true,
+                            strategy: strategy,
+                            optimizations: optimizations,
+                            attempts: attempt
+                        };
+                    }
+                    
+                    attempt++;
+                    console.log(`Tentative ${attempt}/${maxAttempts} d'optimisation pour une page`);
+                    
+                    switch (attempt) {
+                        case 1:
+                            // Niveau 1: Réduction des marges
+                            const currentMargin = parseFloat(document.getElementById('page-margin').value);
+                            if (currentMargin > 1.0) {
+                                triggerSliderChange('page-margin', Math.max(1.0, currentMargin - 0.4));
+                                optimizations.push("Marges réduites");
+                                strategy = "Réduction marges";
+                            }
+                            break;
+                            
+                        case 2:
+                            // Niveau 2: Compression des espacements
+                            triggerSliderChange('module-spacing', 0.8);
+                            triggerSliderChange('paragraph-spacing', 0.2);
+                            optimizations.push("Espacements compressés");
+                            strategy = "Compression espacements";
+                            break;
+                            
+                        case 3:
+                            // Niveau 3: Réduction des polices
+                            const currentH1 = parseFloat(document.getElementById('font-size-h1').value);
+                            const currentP = parseFloat(document.getElementById('font-size-p').value);
+                            triggerSliderChange('font-size-h1', Math.max(20, currentH1 - 3));
+                            triggerSliderChange('font-size-h2', Math.max(13, currentP + 4));
+                            triggerSliderChange('font-size-p', Math.max(7.5, currentP - 0.5));
+                            optimizations.push("Polices réduites");
+                            strategy = "Compression polices";
+                            break;
+                            
+                        case 4:
+                            // Niveau 4: Reformulation d'urgence si API disponible
+                            if (validateApiKey()) {
+                                await reformulateContentUrgent(analysis);
+                                optimizations.push("Reformulation d'urgence");
+                                strategy = "Reformulation IA d'urgence";
+                            } else {
+                                // Sinon, ajustements maximaux
+                                triggerSliderChange('page-margin', 0.8);
+                                triggerSliderChange('module-spacing', 0.6);
+                                optimizations.push("Compression maximale");
+                                strategy = "Compression maximale";
+                            }
+                            break;
+                            
+                        case 5:
+                            // Niveau 5: Ajustements extrêmes
+                            triggerSliderChange('font-size-p', 7);
+                            triggerSliderChange('paragraph-spacing', 0.1);
+                            triggerSliderChange('page-margin', 0.7);
+                            optimizations.push("Ajustements extrêmes");
+                            strategy = "Compression extrême";
+                            break;
+                    }
+                    
+                    updatePreview('form');
+                    showNotification(`🔧 Ajustement niveau ${attempt}: ${strategy}`, "info");
+                }
+                
+                return {
+                    isOnePage: false,
+                    strategy: strategy,
+                    optimizations: optimizations,
+                    attempts: attempt
+                };
+            }
+            
+            async function reformulateContentUrgent(analysis) {
+                console.log("🚨 Reformulation d'urgence...");
+                
+                // Reformulation ultra-agressive pour tenir sur une page
+                const experiences = controls.experienceList.querySelectorAll('.experience-item [data-field="desc"]');
+                for (let desc of experiences) {
+                    if (desc.value.length > 150) {
+                        const prompt = `Résume cette expérience en 1 ligne maximum, garde seulement l'essentiel: "${desc.value}"`;
+                        try {
+                            const ultra_short = await callGeminiAPI(prompt);
+                            if (ultra_short) desc.value = ultra_short;
+                        } catch (error) {
+                            console.error("Erreur reformulation urgente:", error);
+                        }
+                    }
+                }
+                
+                // Réduction du profil aussi
+                if (controls.description.value.length > 200) {
+                    const prompt = `Résume ce profil en 2 lignes maximum: "${controls.description.value}"`;
+                    try {
+                        const short_profile = await callGeminiAPI(prompt);
+                        if (short_profile) controls.description.value = short_profile;
+                    } catch (error) {
+                        console.error("Erreur reformulation profil urgent:", error);
+                    }
+                }
             }
             
             function calculateOptimalFontSizes(analysis) {
