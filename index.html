@@ -5327,7 +5327,7 @@
             }
             
             function setDefaultRecruiterInfo() {
-                controls.bannerNom.value = "Lyes AMARA";
+                if (controls.bannerNom) controls.bannerNom.value = "Lyes AMARA";
                 controls.bannerPoste.value = "Responsable d’activité recrutement – BTP – France";
                 controls.bannerEmail.value = "l.amara@ltd-international.com";
                 controls.bannerTel.value = "01 56 02 12 25 / 06 34 25 32 96";
@@ -6005,7 +6005,7 @@
                 }
                 
                 // Configuration automatique des informations manquantes
-                if (!controls.bannerNom.value || !controls.bannerEmail.value) {
+                if ((!controls.bannerNom || !controls.bannerNom.value) || (!controls.bannerEmail || !controls.bannerEmail.value)) {
                     setDefaultRecruiterInfo();
                 }
                 
@@ -6033,11 +6033,23 @@
                 }
                 
                 // Application des paramètres
-                controls.bannerStyleSelect.value = bannerStyle;
-                controls.bannerPosition.value = bannerPosition;
+                if (controls.bannerStyleSelect) {
+                    controls.bannerStyleSelect.value = bannerStyle;
+                }
+                
+                // Application de la position de la bannière
+                if (bannerPosition === 'top') {
+                    if (controls.fixBannerTopBtn) {
+                        controls.fixBannerTopBtn.click();
+                    }
+                } else if (bannerPosition === 'bottom') {
+                    if (controls.fixBannerBottomBtn) {
+                        controls.fixBannerBottomBtn.click();
+                    }
+                }
                 
                 // Configuration du logo si présent
-                if (preview.bannerImg.src) {
+                if (preview && preview.bannerImg && preview.bannerImg.src) {
                     preview.bannerImg.className = `${logoSize}`;
                 }
                 
