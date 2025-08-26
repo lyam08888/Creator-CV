@@ -3475,7 +3475,41 @@
                 controls.toggleOverflowBtn.addEventListener('click', (e) => {
                     document.body.classList.toggle('overflow-check-active');
                     e.currentTarget.classList.toggle('active');
+                    
+                    const isActive = document.body.classList.contains('overflow-check-active');
+                    
+                    if (isActive) {
+                        showNotification('Mode détection de dépassement activé', 'info', 3000);
+                        e.currentTarget.style.backgroundColor = '#ef4444';
+                        e.currentTarget.style.color = 'white';
+                    } else {
+                        showNotification('Mode détection de dépassement désactivé', 'info', 3000);
+                        e.currentTarget.style.backgroundColor = '';
+                        e.currentTarget.style.color = '';
+                    }
+                    
                     checkAllPagesOverflow();
+                });
+
+                // Gestionnaire pour le bouton partager
+                controls.shareBtn.addEventListener('click', () => {
+                    openShareModal();
+                });
+
+                // Gestionnaires pour le modal de partage
+                controls.closeShareModal.addEventListener('click', () => {
+                    controls.shareModal.classList.remove('active');
+                });
+
+                controls.copyShareLinkBtn.addEventListener('click', () => {
+                    copyShareLink();
+                });
+
+                // Fermer le modal en cliquant à l'extérieur
+                controls.shareModal.addEventListener('click', (e) => {
+                    if (e.target === controls.shareModal) {
+                        controls.shareModal.classList.remove('active');
+                    }
                 });
 
                 controls.aiSummarizeBtn.addEventListener('click', summarizeAllExperiencesAI);
@@ -4362,9 +4396,161 @@
                     showNotification('Toutes les sections ont été réduites', 'success', 2000);
                 }
             }
+
+            // --- FONCTIONS POUR LE PARTAGE ---
+            
+            function openShareModal() {
+                if (!controls.shareModal) return;
+                
+                // Générer le lien de partage
+                const shareData = generateShareData();
+                const shareUrl = generateShareUrl(shareData);
+                
+                // Mettre à jour le champ input avec l'URL
+                if (controls.shareLinkInput) {
+                    controls.shareLinkInput.value = shareUrl;
+                }
+                
+                // Afficher le modal
+                controls.shareModal.classList.add('active');
+                
+                showNotification('Lien de partage généré !', 'success', 3000);
+            }
+
+            function generateShareData() {
+                // Récupérer toutes les données du CV
+                const cvData = {
+                    // Informations personnelles
+                    nom: document.getElementById('nom')?.value || '',
+                    prenom: document.getElementById('prenom')?.value || '',
+                    poste: document.getElementById('poste')?.value || '',
+                    email: document.getElementById('email')?.value || '',
+                    telephone: document.getElementById('telephone')?.value || '',
+                    adresse: document.getElementById('adresse')?.value || '',
+                    description: document.getElementById('description')?.value || '',
+                    
+                    // Expériences
+                    experiences: Array.from(document.querySelectorAll('#experience-list .experience-item')).map(item => ({
+                        title: item.querySelector('[data-field="title"]')?.value || '',
+                        meta: item.querySelector('[data-field="meta"]')?.value || '',
+                        desc: item.querySelector('[data-field="desc"]')?.value || ''
+                    })),
+                    
+                    // Formations
+                    formations: Array.from(document.querySelectorAll('#formation-list .formation-item')).map(item => ({
+                        title: item.querySelector('[data-field="title"]')?.value || '',
+                        meta: item.querySelector('[data-field="meta"]')?.value || '',
+                        desc: item.querySelector('[data-field="desc"]')?.value || ''
+                    })),
+                    
+                    // Compétences
+                    competences: document.getElementById('competences')?.value || '',
+                    
+                    // Style et couleurs
+                    primaryColor: document.getElementById('primary-color-picker')?.value || '#3b82f6',
+                    secondaryColor: document.getElementById('secondary-color-picker')?.value || '#334155',
+                    layout: document.querySelector('.layout-btn.active')?.dataset.layout || 'layout-2-col-33-67'
+                };
+                
+                return cvData;
+            }
+
+            function generateShareUrl(data) {
+                // Encoder les données en base64 pour l'URL
+                const encodedData = btoa(encodeURIComponent(JSON.stringify(data)));
+                
+                // Créer l'URL de partage
+                const baseUrl = window.location.origin + window.location.pathname;
+                const shareUrl = `${baseUrl}?shared=${encodedData}`;
+                
+                return shareUrl;
+            }
+
+            function copyShareLink() {
+                if (!controls.shareLinkInput) return;
+                
+                // Sélectionner et copier le lien
+                controls.shareLinkInput.select();
+                controls.shareLinkInput.setSelectionRange(0, 99999); // Pour mobile
+                
+                try {
+                    document.execCommand('copy');
+                    showNotification('Lien copié dans le presse-papiers !', 'success', 3000);
+                } catch (err) {
+                    // Fallback avec l'API moderne si disponible
+                    if (navigator.clipboard) {
+                        navigator.clipboard.writeText(controls.shareLinkInput.value).then(() => {
+                            showNotification('Lien copié dans le presse-papiers !', 'success', 3000);
+                        }).catch(() => {
+                            showNotification('Erreur lors de la copie', 'error', 3000);
+                        });
+                    } else {
+                        showNotification('Copiez manuellement le lien', 'info', 5000);
+                    }
+                }
+            }
+
+            function loadSharedCV() {
+                // Vérifier s'il y a des données partagées dans l'URL
+                const urlParams = new URLSearchParams(window.location.search);
+                const sharedData = urlParams.get('shared');
+                
+                if (sharedData) {
+                    try {
+                        // Décoder les données
+                        const decodedData = JSON.parse(decodeURIComponent(atob(sharedData)));
+                        
+                        // Charger les données dans le formulaire
+                        loadCVData(decodedData);
+                        
+                        showNotification('CV partagé chargé avec succès !', 'success', 5000);
+                        
+                        // Nettoyer l'URL
+                        window.history.replaceState({}, document.title, window.location.pathname);
+                        
+                    } catch (error) {
+                        console.error('Erreur lors du chargement du CV partagé:', error);
+                        showNotification('Erreur lors du chargement du CV partagé', 'error', 5000);
+                    }
+                }
+            }
+
+            function loadCVData(data) {
+                // Charger les informations personnelles
+                if (data.nom) document.getElementById('nom').value = data.nom;
+                if (data.prenom) document.getElementById('prenom').value = data.prenom;
+                if (data.poste) document.getElementById('poste').value = data.poste;
+                if (data.email) document.getElementById('email').value = data.email;
+                if (data.telephone) document.getElementById('telephone').value = data.telephone;
+                if (data.adresse) document.getElementById('adresse').value = data.adresse;
+                if (data.description) document.getElementById('description').value = data.description;
+                if (data.competences) document.getElementById('competences').value = data.competences;
+                
+                // Charger les couleurs
+                if (data.primaryColor) {
+                    document.getElementById('primary-color-picker').value = data.primaryColor;
+                    document.getElementById('primary-color-picker').dispatchEvent(new Event('input'));
+                }
+                if (data.secondaryColor) {
+                    document.getElementById('secondary-color-picker').value = data.secondaryColor;
+                    document.getElementById('secondary-color-picker').dispatchEvent(new Event('input'));
+                }
+                
+                // Charger la mise en page
+                if (data.layout) {
+                    const layoutBtn = document.querySelector(`[data-layout="${data.layout}"]`);
+                    if (layoutBtn) {
+                        layoutBtn.click();
+                    }
+                }
+                
+                // Mettre à jour l'aperçu
+                updatePreview('all');
+            }
             
             // --- START THE APP ---
             initializeAll();
+            loadSharedCV(); // Vérifier s'il y a un CV partagé à charger
             resetCVToDefault(); // Start with a clean slate
         });
 
