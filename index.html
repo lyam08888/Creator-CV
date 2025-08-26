@@ -1281,6 +1281,19 @@
             background: linear-gradient(135deg, #15803d, #16a34a);
         }
         
+        #toolbar-accessibility-btn {
+            background: linear-gradient(135deg, #7c3aed, #a855f7);
+            color: white;
+            border-color: #7c3aed;
+            font-weight: 600;
+        }
+        
+        #toolbar-accessibility-btn:hover {
+            background: linear-gradient(135deg, #6d28d9, #7c3aed);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
+        }
+        
         #toolbar-load-btn {
             background: linear-gradient(135deg, #0891b2, #06b6d4);
             color: white;
@@ -1650,6 +1663,118 @@
             }
         }
 
+        /* === STYLES D'ACCESSIBILITÉ === */
+        
+        /* Classes d'accessibilité dynamiques */
+        .high-contrast {
+            filter: contrast(150%) brightness(1.1);
+        }
+        
+        .dark-mode {
+            filter: invert(1) hue-rotate(180deg);
+        }
+        
+        .enhanced-focus *:focus {
+            outline: 3px solid #7c3aed !important;
+            outline-offset: 2px !important;
+        }
+        
+        .reduced-animations * {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+        }
+        
+        .screen-reader-optimized .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+        
+        /* Styles pour la popup d'accessibilité */
+        .contrast-btn {
+            transition: all 0.2s ease;
+        }
+        
+        .contrast-btn.active {
+            background-color: #7c3aed;
+            color: white;
+            border-color: #7c3aed;
+        }
+        
+        .contrast-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Styles pour les sliders */
+        input[type="range"]::-webkit-slider-thumb {
+            appearance: none;
+            height: 20px;
+            width: 20px;
+            border-radius: 50%;
+            background: #7c3aed;
+            cursor: pointer;
+            border: 2px solid #ffffff;
+            box-shadow: 0 0 0 1px #d1d5db;
+        }
+        
+        input[type="range"]::-moz-range-thumb {
+            height: 20px;
+            width: 20px;
+            border-radius: 50%;
+            background: #7c3aed;
+            cursor: pointer;
+            border: 2px solid #ffffff;
+            box-shadow: 0 0 0 1px #d1d5db;
+        }
+        
+        input[type="range"]:focus {
+            outline: none;
+        }
+        
+        input[type="range"]:focus::-webkit-slider-thumb {
+            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.2);
+        }
+        
+        /* Styles pour les checkboxes accessibles */
+        input[type="checkbox"]:focus {
+            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.2);
+        }
+        
+        /* Styles pour les éléments kbd */
+        kbd {
+            background-color: #f3f4f6;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            font-family: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 2px 6px;
+        }
+        
+        /* Animation pour la modal d'accessibilité */
+        #accessibility-modal {
+            backdrop-filter: blur(4px);
+            transition: opacity 0.3s ease;
+        }
+        
+        #accessibility-modal.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        #accessibility-modal:not(.hidden) {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
     </style>
 </head>
 <body class="bg-gray-200 font-sans">
@@ -1660,6 +1785,18 @@
         <div class="resize-handle resize-handle-bottom" data-panel="top-toolbar"></div>
         
         <div class="toolbar-section">
+            <div class="tooltip">
+                <button id="toolbar-accessibility-btn" class="toolbar-btn" aria-label="Ouvrir les paramètres d'accessibilité">
+                    <i class="fas fa-universal-access"></i>
+                    ACCESSIBILITÉ
+                </button>
+                <div class="tooltip-content bottom">
+                    <strong>Paramètres d'accessibilité</strong><br>
+                    Personnalisez l'affichage selon vos besoins :<br>
+                    contraste, taille de texte, navigation clavier, etc.
+                </div>
+            </div>
+            
             <div class="tooltip">
                 <button id="toolbar-pdf-btn" class="toolbar-btn">
                     <i class="fas fa-file-pdf"></i>
@@ -1785,6 +1922,190 @@
     <div id="loader-overlay" class="hidden fixed inset-0 bg-white bg-opacity-75 flex-col items-center justify-center z-[9999]" style="pointer-events: none;">
         <div class="h-16 w-16 rounded-full border-4 border-gray-200 border-t-blue-600 animate-spin"></div>
         <p id="loader-text" class="mt-4 text-gray-600 font-medium">Chargement...</p>
+    </div>
+
+    <!-- FENÊTRE POPUP D'ACCESSIBILITÉ -->
+    <div id="accessibility-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[10000] hidden" role="dialog" aria-labelledby="accessibility-title" aria-modal="true">
+        <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <header class="flex items-center justify-between p-6 border-b border-gray-200">
+                <h2 id="accessibility-title" class="text-2xl font-bold text-gray-900 flex items-center gap-3">
+                    <i class="fas fa-universal-access text-purple-600"></i>
+                    Paramètres d'accessibilité
+                </h2>
+                <button id="close-accessibility-modal" class="text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 rounded-md p-2" aria-label="Fermer la fenêtre d'accessibilité">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </header>
+            
+            <div class="p-6 grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Section Affichage -->
+                <section class="space-y-6">
+                    <h3 class="text-xl font-semibold text-gray-800 border-b border-gray-200 pb-2">
+                        <i class="fas fa-eye text-blue-600 mr-2"></i>
+                        Affichage et visibilité
+                    </h3>
+                    
+                    <!-- Contraste -->
+                    <div class="space-y-3">
+                        <label class="block text-sm font-medium text-gray-700">Contraste élevé</label>
+                        <div class="flex items-center space-x-4">
+                            <button id="contrast-normal" class="contrast-btn active px-4 py-2 rounded-md border-2 border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500" aria-pressed="true">
+                                Normal
+                            </button>
+                            <button id="contrast-high" class="contrast-btn px-4 py-2 rounded-md border-2 border-gray-900 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500" aria-pressed="false">
+                                Contraste élevé
+                            </button>
+                            <button id="contrast-dark" class="contrast-btn px-4 py-2 rounded-md border-2 border-white bg-gray-900 text-white focus:outline-none focus:ring-2 focus:ring-purple-500" aria-pressed="false">
+                                Mode sombre
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Taille de texte -->
+                    <div class="space-y-3">
+                        <label for="font-size-slider" class="block text-sm font-medium text-gray-700">
+                            Taille du texte: <span id="font-size-value">100%</span>
+                        </label>
+                        <input type="range" id="font-size-slider" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-purple-500" min="80" max="150" value="100" step="10" aria-describedby="font-size-help">
+                        <p id="font-size-help" class="text-xs text-gray-500">Ajustez la taille du texte selon vos besoins de lecture</p>
+                    </div>
+                    
+                    <!-- Espacement des lignes -->
+                    <div class="space-y-3">
+                        <label for="line-height-slider" class="block text-sm font-medium text-gray-700">
+                            Espacement des lignes: <span id="line-height-value">Normal</span>
+                        </label>
+                        <input type="range" id="line-height-slider" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-purple-500" min="1" max="2" value="1.5" step="0.1" aria-describedby="line-height-help">
+                        <p id="line-height-help" class="text-xs text-gray-500">Augmentez l'espacement pour faciliter la lecture</p>
+                    </div>
+                    
+                    <!-- Focus visible -->
+                    <div class="space-y-3">
+                        <div class="flex items-center">
+                            <input type="checkbox" id="enhanced-focus" class="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded">
+                            <label for="enhanced-focus" class="ml-2 block text-sm text-gray-700">
+                                Améliorer la visibilité du focus clavier
+                            </label>
+                        </div>
+                        <p class="text-xs text-gray-500">Rend plus visible l'élément actuellement sélectionné lors de la navigation au clavier</p>
+                    </div>
+                </section>
+                
+                <!-- Section Navigation -->
+                <section class="space-y-6">
+                    <h3 class="text-xl font-semibold text-gray-800 border-b border-gray-200 pb-2">
+                        <i class="fas fa-keyboard text-green-600 mr-2"></i>
+                        Navigation et interactions
+                    </h3>
+                    
+                    <!-- Navigation clavier -->
+                    <div class="space-y-3">
+                        <div class="flex items-center">
+                            <input type="checkbox" id="keyboard-shortcuts" class="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded" checked>
+                            <label for="keyboard-shortcuts" class="ml-2 block text-sm text-gray-700">
+                                Activer les raccourcis clavier
+                            </label>
+                        </div>
+                        <div class="text-xs text-gray-600 ml-6 space-y-1">
+                            <p><kbd class="px-2 py-1 text-xs font-semibold text-gray-800 bg-gray-100 border border-gray-200 rounded">Ctrl+S</kbd> Sauvegarder</p>
+                            <p><kbd class="px-2 py-1 text-xs font-semibold text-gray-800 bg-gray-100 border border-gray-200 rounded">Ctrl+P</kbd> Exporter PDF</p>
+                            <p><kbd class="px-2 py-1 text-xs font-semibold text-gray-800 bg-gray-100 border border-gray-200 rounded">Échap</kbd> Fermer les modales</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Animations réduites -->
+                    <div class="space-y-3">
+                        <div class="flex items-center">
+                            <input type="checkbox" id="reduce-animations" class="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded">
+                            <label for="reduce-animations" class="ml-2 block text-sm text-gray-700">
+                                Réduire les animations
+                            </label>
+                        </div>
+                        <p class="text-xs text-gray-500">Diminue ou désactive les effets visuels et animations pour réduire les distractions</p>
+                    </div>
+                    
+                    <!-- Lecture d'écran -->
+                    <div class="space-y-3">
+                        <div class="flex items-center">
+                            <input type="checkbox" id="screen-reader-mode" class="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded">
+                            <label for="screen-reader-mode" class="ml-2 block text-sm text-gray-700">
+                                Mode optimisé pour les lecteurs d'écran
+                            </label>
+                        </div>
+                        <p class="text-xs text-gray-500">Améliore la compatibilité avec les technologies d'assistance comme NVDA, JAWS, VoiceOver</p>
+                    </div>
+                    
+                    <!-- Descriptions étendues -->
+                    <div class="space-y-3">
+                        <div class="flex items-center">
+                            <input type="checkbox" id="extended-descriptions" class="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded">
+                            <label for="extended-descriptions" class="ml-2 block text-sm text-gray-700">
+                                Descriptions étendues des éléments
+                            </label>
+                        </div>
+                        <p class="text-xs text-gray-500">Ajoute des descriptions détaillées pour les éléments interactifs</p>
+                    </div>
+                </section>
+            </div>
+            
+            <!-- Section Déclaration d'accessibilité -->
+            <div class="p-6 bg-gray-50 border-t border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                    <i class="fas fa-certificate text-green-600"></i>
+                    Déclaration d'accessibilité
+                </h3>
+                <div class="prose prose-sm max-w-none text-gray-700">
+                    <p class="mb-3">
+                        <strong>Créateur de CV</strong> s'engage à rendre cette application accessible conformément aux bonnes pratiques et aux standards d'accessibilité web.
+                    </p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+                        <div>
+                            <h4 class="font-semibold text-gray-800 mb-2">Fonctionnalités accessibles :</h4>
+                            <ul class="list-disc list-inside space-y-1 text-sm">
+                                <li>Navigation complète au clavier</li>
+                                <li>Compatibilité avec les lecteurs d'écran</li>
+                                <li>Contrastes respectant les normes WCAG</li>
+                                <li>Textes alternatifs pour les éléments visuels</li>
+                                <li>Structure sémantique appropriée</li>
+                                <li>Focus visible et ordonné</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-800 mb-2">Technologies supportées :</h4>
+                            <ul class="list-disc list-inside space-y-1 text-sm">
+                                <li>NVDA (Windows)</li>
+                                <li>JAWS (Windows)</li>
+                                <li>VoiceOver (macOS/iOS)</li>
+                                <li>TalkBack (Android)</li>
+                                <li>Navigation clavier</li>
+                                <li>Commandes vocales</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-600">
+                        Pour toute difficulté d'accessibilité ou suggestion d'amélioration, vous pouvez nous contacter.
+                        Nous nous engageons à fournir une version accessible de tout contenu sur demande.
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Actions -->
+            <div class="p-6 bg-white border-t border-gray-200 flex justify-between items-center">
+                <button id="reset-accessibility" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2">
+                    <i class="fas fa-undo mr-2"></i>
+                    Réinitialiser
+                </button>
+                <div class="flex space-x-3">
+                    <button id="save-accessibility" class="px-4 py-2 text-sm font-medium text-white bg-purple-600 border border-transparent rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2">
+                        <i class="fas fa-save mr-2"></i>
+                        Sauvegarder les préférences
+                    </button>
+                    <button id="close-accessibility-modal-bottom" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2">
+                        Fermer
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div id="notification"></div>
@@ -2919,6 +3240,7 @@
                 generateMailBtn: document.getElementById('generate-mail-btn'), recruiterMailContent: document.getElementById('recruiter-mail-content'),
                 anonymizeBtn: document.getElementById('toolbar-anonymize-btn'), 
                 downloadPdfBtn: document.getElementById('toolbar-pdf-btn'),
+                accessibilityBtn: document.getElementById('toolbar-accessibility-btn'),
                 resetCvBtn: document.getElementById('toolbar-new-cv-btn'),
                 togglePresentationModeBtn: document.getElementById('toolbar-presentation-btn'),
                 toggleOverflowBtn: document.getElementById('toolbar-overflow-btn'),
@@ -3103,6 +3425,215 @@
                 controls.loader.classList.add('hidden');
                 controls.loader.classList.remove('flex');
                 controls.loader.style.pointerEvents = 'none';
+            }
+
+            // === GESTION DE L'ACCESSIBILITÉ ===
+            
+            // État des préférences d'accessibilité
+            let accessibilitySettings = {
+                contrast: 'normal',
+                fontSize: 100,
+                lineHeight: 1.5,
+                enhancedFocus: false,
+                keyboardShortcuts: true,
+                reduceAnimations: false,
+                screenReaderMode: false,
+                extendedDescriptions: false
+            };
+            
+            // Charger les préférences sauvegardées
+            function loadAccessibilitySettings() {
+                const saved = localStorage.getItem('accessibilitySettings');
+                if (saved) {
+                    accessibilitySettings = { ...accessibilitySettings, ...JSON.parse(saved) };
+                    applyAccessibilitySettings();
+                }
+            }
+            
+            // Appliquer les paramètres d'accessibilité
+            function applyAccessibilitySettings() {
+                const body = document.body;
+                
+                // Contraste
+                body.classList.remove('high-contrast', 'dark-mode');
+                if (accessibilitySettings.contrast === 'high') {
+                    body.classList.add('high-contrast');
+                } else if (accessibilitySettings.contrast === 'dark') {
+                    body.classList.add('dark-mode');
+                }
+                
+                // Taille de police
+                body.style.fontSize = `${accessibilitySettings.fontSize}%`;
+                
+                // Hauteur de ligne
+                body.style.lineHeight = accessibilitySettings.lineHeight;
+                
+                // Focus amélioré
+                body.classList.toggle('enhanced-focus', accessibilitySettings.enhancedFocus);
+                
+                // Animations réduites
+                body.classList.toggle('reduced-animations', accessibilitySettings.reduceAnimations);
+                
+                // Mode lecteur d'écran
+                body.classList.toggle('screen-reader-optimized', accessibilitySettings.screenReaderMode);
+                
+                // Mise à jour de l'interface
+                updateAccessibilityUI();
+            }
+            
+            // Mettre à jour l'interface de la popup
+            function updateAccessibilityUI() {
+                // Boutons de contraste
+                document.querySelectorAll('.contrast-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                    btn.setAttribute('aria-pressed', 'false');
+                });
+                document.getElementById(`contrast-${accessibilitySettings.contrast}`).classList.add('active');
+                document.getElementById(`contrast-${accessibilitySettings.contrast}`).setAttribute('aria-pressed', 'true');
+                
+                // Sliders
+                const fontSizeSlider = document.getElementById('font-size-slider');
+                const lineHeightSlider = document.getElementById('line-height-slider');
+                if (fontSizeSlider) {
+                    fontSizeSlider.value = accessibilitySettings.fontSize;
+                    document.getElementById('font-size-value').textContent = `${accessibilitySettings.fontSize}%`;
+                }
+                if (lineHeightSlider) {
+                    lineHeightSlider.value = accessibilitySettings.lineHeight;
+                    const lineHeightLabels = { 1: 'Serré', 1.5: 'Normal', 2: 'Large' };
+                    document.getElementById('line-height-value').textContent = lineHeightLabels[accessibilitySettings.lineHeight] || 'Personnalisé';
+                }
+                
+                // Checkboxes
+                document.getElementById('enhanced-focus').checked = accessibilitySettings.enhancedFocus;
+                document.getElementById('keyboard-shortcuts').checked = accessibilitySettings.keyboardShortcuts;
+                document.getElementById('reduce-animations').checked = accessibilitySettings.reduceAnimations;
+                document.getElementById('screen-reader-mode').checked = accessibilitySettings.screenReaderMode;
+                document.getElementById('extended-descriptions').checked = accessibilitySettings.extendedDescriptions;
+            }
+            
+            // Sauvegarder les préférences
+            function saveAccessibilitySettings() {
+                localStorage.setItem('accessibilitySettings', JSON.stringify(accessibilitySettings));
+                showNotification('Préférences d\'accessibilité sauvegardées', 'success');
+            }
+            
+            // Réinitialiser les préférences
+            function resetAccessibilitySettings() {
+                accessibilitySettings = {
+                    contrast: 'normal',
+                    fontSize: 100,
+                    lineHeight: 1.5,
+                    enhancedFocus: false,
+                    keyboardShortcuts: true,
+                    reduceAnimations: false,
+                    screenReaderMode: false,
+                    extendedDescriptions: false
+                };
+                applyAccessibilitySettings();
+                localStorage.removeItem('accessibilitySettings');
+                showNotification('Préférences d\'accessibilité réinitialisées', 'success');
+            }
+            
+            // Gestionnaires d'événements pour la popup d'accessibilité
+            function setupAccessibilityModal() {
+                const modal = document.getElementById('accessibility-modal');
+                const openBtn = controls.accessibilityBtn;
+                const closeBtns = [
+                    document.getElementById('close-accessibility-modal'),
+                    document.getElementById('close-accessibility-modal-bottom')
+                ];
+                
+                // Ouvrir la modal
+                openBtn?.addEventListener('click', () => {
+                    modal.classList.remove('hidden');
+                    updateAccessibilityUI();
+                    // Focus sur le premier élément focusable
+                    const firstFocusable = modal.querySelector('button, input, select, textarea, [tabindex]:not([tabindex="-1"])');
+                    firstFocusable?.focus();
+                });
+                
+                // Fermer la modal
+                closeBtns.forEach(btn => {
+                    btn?.addEventListener('click', () => {
+                        modal.classList.add('hidden');
+                        openBtn?.focus(); // Retourner le focus au bouton d'ouverture
+                    });
+                });
+                
+                // Fermer avec Échap
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+                        modal.classList.add('hidden');
+                        openBtn?.focus();
+                    }
+                });
+                
+                // Fermer en cliquant sur l'arrière-plan
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        modal.classList.add('hidden');
+                        openBtn?.focus();
+                    }
+                });
+                
+                // Boutons de contraste
+                document.querySelectorAll('.contrast-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const contrast = btn.id.replace('contrast-', '');
+                        accessibilitySettings.contrast = contrast;
+                        applyAccessibilitySettings();
+                    });
+                });
+                
+                // Sliders
+                document.getElementById('font-size-slider')?.addEventListener('input', (e) => {
+                    accessibilitySettings.fontSize = parseInt(e.target.value);
+                    applyAccessibilitySettings();
+                });
+                
+                document.getElementById('line-height-slider')?.addEventListener('input', (e) => {
+                    accessibilitySettings.lineHeight = parseFloat(e.target.value);
+                    applyAccessibilitySettings();
+                });
+                
+                // Checkboxes
+                const checkboxes = [
+                    'enhanced-focus', 'keyboard-shortcuts', 'reduce-animations', 
+                    'screen-reader-mode', 'extended-descriptions'
+                ];
+                
+                checkboxes.forEach(id => {
+                    document.getElementById(id)?.addEventListener('change', (e) => {
+                        const setting = id.replace(/-([a-z])/g, (match, letter) => letter.toUpperCase());
+                        accessibilitySettings[setting] = e.target.checked;
+                        applyAccessibilitySettings();
+                    });
+                });
+                
+                // Boutons d'action
+                document.getElementById('save-accessibility')?.addEventListener('click', saveAccessibilitySettings);
+                document.getElementById('reset-accessibility')?.addEventListener('click', resetAccessibilitySettings);
+            }
+            
+            // Raccourcis clavier globaux
+            function setupKeyboardShortcuts() {
+                document.addEventListener('keydown', (e) => {
+                    if (!accessibilitySettings.keyboardShortcuts) return;
+                    
+                    if (e.ctrlKey || e.metaKey) {
+                        switch (e.key) {
+                            case 's':
+                                e.preventDefault();
+                                controls.saveBtn?.click();
+                                break;
+                            case 'p':
+                                e.preventDefault();
+                                controls.downloadPdfBtn?.click();
+                                break;
+                        }
+                    }
+                });
             }
 
             function showNotification(message, type = 'success', duration = 3000) {
@@ -8914,6 +9445,11 @@
                     console.error('Erreur mots-clés:', error);
                 }
             }
+            
+            // Initialisation de l'application
+            setupAccessibilityModal();
+            loadAccessibilitySettings();
+            setupKeyboardShortcuts();
         });
 
     </script>
