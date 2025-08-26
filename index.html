@@ -1900,13 +1900,48 @@
                         <div class="control-group-content space-y-3">
                             <div class="flex justify-between items-center">
                                 <h3 class="font-semibold text-gray-700">Bannière Recruteur</h3>
-                                <div class="tooltip">
-                                    <button id="reset-recruiter-btn" class="text-sm text-gray-500 hover:text-red-600" title="Réinitialiser les informations recruteur"><i class="fas fa-undo"></i></button>
-                                    <div class="tooltip-content left">
-                                        <strong>Réinitialiser la bannière</strong><br>
-                                        Efface toutes les informations personnalisées<br>
-                                        de la bannière recruteur et restaure<br>
-                                        les valeurs par défaut.
+                                <div class="flex gap-2">
+                                    <div class="tooltip">
+                                        <button id="save-banner-preset-btn" class="text-sm text-gray-500 hover:text-blue-600" title="Sauvegarder la bannière actuelle"><i class="fas fa-save"></i></button>
+                                        <div class="tooltip-content left">
+                                            <strong>Sauvegarder bannière</strong><br>
+                                            Sauvegarde la configuration actuelle<br>
+                                            de la bannière (style, couleurs, etc.)
+                                        </div>
+                                    </div>
+                                    <div class="tooltip">
+                                        <button id="load-banner-preset-btn" class="text-sm text-gray-500 hover:text-green-600" title="Charger bannière sauvegardée"><i class="fas fa-folder-open"></i></button>
+                                        <div class="tooltip-content left">
+                                            <strong>Charger bannière</strong><br>
+                                            Charge la configuration<br>
+                                            de bannière sauvegardée
+                                        </div>
+                                    </div>
+                                    <div class="tooltip">
+                                        <button id="save-recruiter-info-btn" class="text-sm text-gray-500 hover:text-indigo-600" title="Sauvegarder les infos recruteur"><i class="fas fa-user-plus"></i></button>
+                                        <div class="tooltip-content left">
+                                            <strong>Sauvegarder infos recruteur</strong><br>
+                                            Sauvegarde vos informations<br>
+                                            personnelles pour éviter de les<br>
+                                            retaper à chaque fois
+                                        </div>
+                                    </div>
+                                    <div class="tooltip">
+                                        <button id="load-recruiter-info-btn" class="text-sm text-gray-500 hover:text-purple-600" title="Charger les infos recruteur"><i class="fas fa-user-check"></i></button>
+                                        <div class="tooltip-content left">
+                                            <strong>Charger infos recruteur</strong><br>
+                                            Charge vos informations<br>
+                                            personnelles sauvegardées
+                                        </div>
+                                    </div>
+                                    <div class="tooltip">
+                                        <button id="reset-recruiter-btn" class="text-sm text-gray-500 hover:text-red-600" title="Réinitialiser les informations recruteur"><i class="fas fa-undo"></i></button>
+                                        <div class="tooltip-content left">
+                                            <strong>Réinitialiser la bannière</strong><br>
+                                            Efface toutes les informations personnalisées<br>
+                                            de la bannière recruteur et restaure<br>
+                                            les valeurs par défaut.
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -2134,6 +2169,10 @@
                 formationList: document.getElementById('formation-list'), addFormationBtn: document.getElementById('add-formation'),
                 toggleBanner: document.getElementById('toggle-banner-checkbox'), bannerNom: document.getElementById('banner-nom'), bannerPoste: document.getElementById('banner-poste'), bannerEmail: document.getElementById('banner-email'), bannerTel: document.getElementById('banner-tel'), bannerImage: document.getElementById('banner-image'),
                 bannerStyleSelect: document.getElementById('banner-style-select'), bannerInvertBtn: document.getElementById('banner-invert-btn'),
+                // Contrôles de style de texte bannière
+                bannerNomBold: document.getElementById('banner-nom-bold'), bannerNomItalic: document.getElementById('banner-nom-italic'),
+                bannerPosteBold: document.getElementById('banner-poste-bold'), bannerPosteItalic: document.getElementById('banner-poste-italic'),
+                bannerContactBold: document.getElementById('banner-contact-bold'), bannerContactItalic: document.getElementById('banner-contact-italic'),
                 fixBannerTopBtn: document.getElementById('fix-banner-top-btn'), fixBannerBottomBtn: document.getElementById('fix-banner-bottom-btn'), modularBannerBtn: document.getElementById('modular-banner-btn'),
                 qualificationDispo: document.getElementById('qualification-dispo'), qualificationSalaire: document.getElementById('qualification-salaire'), qualificationLoc: document.getElementById('qualification-loc'),
                 generateMailBtn: document.getElementById('generate-mail-btn'), recruiterMailContent: document.getElementById('recruiter-mail-content'),
@@ -2159,6 +2198,11 @@
                 aiThinkingSubtitle: document.getElementById('ai-thinking-subtitle'),
                 aiCurrentAction: document.getElementById('ai-current-action'),
                 resetRecruiterBtn: document.getElementById('reset-recruiter-btn'),
+                // Nouveaux boutons pour sauvegarder/charger bannière et info recruteur
+                saveBannerPresetBtn: document.getElementById('save-banner-preset-btn'),
+                loadBannerPresetBtn: document.getElementById('load-banner-preset-btn'),
+                saveRecruiterInfoBtn: document.getElementById('save-recruiter-info-btn'),
+                loadRecruiterInfoBtn: document.getElementById('load-recruiter-info-btn'),
                 aiLimitSkillsBtn: document.getElementById('ai-limit-skills-btn'),
                 // Nouveaux contrôles de la barre d'outils
                 toolbarSaveBtn: document.getElementById('toolbar-save-btn'),
@@ -3328,6 +3372,190 @@
                 updatePreview('form');
             }
 
+            // Fonctions de sauvegarde/chargement de presets bannière
+            function saveBannerPreset() {
+                try {
+                    const bannerPreset = {
+                        style: controls.bannerStyleSelect.value,
+                        alignment: preview.banner.classList.contains('banner-align-center') ? 'center' : 
+                                  preview.banner.classList.contains('banner-align-right') ? 'right' : 'left',
+                        isInverted: preview.banner.classList.contains('banner-layout-inverted'),
+                        logoSize: getBannerLogoSize(),
+                        elementSpacing: document.getElementById('banner-element-spacing').value,
+                        backgroundImage: document.getElementById('banner-bg-img-preview').src !== 'https://placehold.co/100x100/EFEFEF/AAAAAA&text=Photo' ? 
+                                        document.getElementById('banner-bg-img-preview').src : null,
+                        backgroundOpacity: document.getElementById('banner-bg-opacity').value,
+                        backgroundBlur: document.getElementById('banner-bg-blur').value,
+                        backgroundGrayscale: document.getElementById('banner-bg-grayscale').checked,
+                        textStyles: {
+                            nomFont: document.getElementById('banner-nom-font').value,
+                            nomSize: document.getElementById('banner-nom-size').value,
+                            nomColor: document.getElementById('banner-nom-color').value,
+                            nomBold: document.getElementById('banner-nom-bold').classList.contains('active'),
+                            nomItalic: document.getElementById('banner-nom-italic').classList.contains('active'),
+                            posteSize: document.getElementById('banner-poste-size').value,
+                            posteColor: document.getElementById('banner-poste-color').value,
+                            posteBold: document.getElementById('banner-poste-bold').classList.contains('active'),
+                            posteItalic: document.getElementById('banner-poste-italic').classList.contains('active'),
+                            contactSize: document.getElementById('banner-contact-size').value,
+                            contactColor: document.getElementById('banner-contact-color').value,
+                            contactBold: document.getElementById('banner-contact-bold').classList.contains('active'),
+                            contactItalic: document.getElementById('banner-contact-italic').classList.contains('active')
+                        },
+                        savedAt: new Date().toISOString()
+                    };
+                    
+                    localStorage.setItem('banner-preset', JSON.stringify(bannerPreset));
+                    showNotification("Configuration de bannière sauvegardée !", "success");
+                    return true;
+                } catch (error) {
+                    console.error('Erreur lors de la sauvegarde du preset bannière:', error);
+                    showNotification("Erreur lors de la sauvegarde de la bannière.", "error");
+                    return false;
+                }
+            }
+
+            function getBannerLogoSize() {
+                const img = document.getElementById('banner-img-preview');
+                if (img.classList.contains('logo-sm')) return 'sm';
+                if (img.classList.contains('logo-md')) return 'md';
+                if (img.classList.contains('logo-lg')) return 'lg';
+                if (img.classList.contains('logo-xl')) return 'xl';
+                if (img.classList.contains('logo-xxl')) return 'xxl';
+                return 'md'; // default
+            }
+
+            function loadBannerPreset() {
+                try {
+                    const savedPreset = localStorage.getItem('banner-preset');
+                    if (!savedPreset) {
+                        showNotification("Aucune configuration de bannière sauvegardée.", "warning");
+                        return false;
+                    }
+                    
+                    const preset = JSON.parse(savedPreset);
+                    
+                    // Restaurer le style
+                    controls.bannerStyleSelect.value = preset.style;
+                    
+                    // Restaurer l'alignement
+                    const alignButtons = document.querySelectorAll('.banner-align-btn');
+                    alignButtons.forEach(btn => btn.classList.remove('bg-blue-500', 'text-white'));
+                    document.querySelector(`[data-banner-align="${preset.alignment}"]`).click();
+                    
+                    // Restaurer l'inversion
+                    if (preset.isInverted) {
+                        controls.bannerInvertBtn.click();
+                    }
+                    
+                    // Restaurer la taille du logo
+                    const logoSizeButtons = document.querySelectorAll('.logo-size-btn');
+                    logoSizeButtons.forEach(btn => btn.classList.remove('bg-blue-500', 'text-white'));
+                    document.querySelector(`[data-logo-size="${preset.logoSize}"]`).click();
+                    
+                    // Restaurer l'espacement
+                    document.getElementById('banner-element-spacing').value = preset.elementSpacing;
+                    
+                    // Restaurer l'image de fond si elle existe
+                    if (preset.backgroundImage) {
+                        document.getElementById('banner-bg-img-preview').src = preset.backgroundImage;
+                        document.getElementById('banner-bg-opacity').value = preset.backgroundOpacity;
+                        document.getElementById('banner-bg-blur').value = preset.backgroundBlur;
+                        document.getElementById('banner-bg-grayscale').checked = preset.backgroundGrayscale;
+                    }
+                    
+                    // Restaurer les styles de texte
+                    const textStyles = preset.textStyles;
+                    if (textStyles) {
+                        document.getElementById('banner-nom-font').value = textStyles.nomFont;
+                        document.getElementById('banner-nom-size').value = textStyles.nomSize;
+                        document.getElementById('banner-nom-color').value = textStyles.nomColor;
+                        
+                        // Réinitialiser les styles
+                        document.getElementById('banner-nom-bold').classList.remove('active');
+                        document.getElementById('banner-nom-italic').classList.remove('active');
+                        if (textStyles.nomBold) document.getElementById('banner-nom-bold').classList.add('active');
+                        if (textStyles.nomItalic) document.getElementById('banner-nom-italic').classList.add('active');
+                        
+                        document.getElementById('banner-poste-size').value = textStyles.posteSize;
+                        document.getElementById('banner-poste-color').value = textStyles.posteColor;
+                        
+                        document.getElementById('banner-poste-bold').classList.remove('active');
+                        document.getElementById('banner-poste-italic').classList.remove('active');
+                        if (textStyles.posteBold) document.getElementById('banner-poste-bold').classList.add('active');
+                        if (textStyles.posteItalic) document.getElementById('banner-poste-italic').classList.add('active');
+                        
+                        document.getElementById('banner-contact-size').value = textStyles.contactSize;
+                        document.getElementById('banner-contact-color').value = textStyles.contactColor;
+                        
+                        document.getElementById('banner-contact-bold').classList.remove('active');
+                        document.getElementById('banner-contact-italic').classList.remove('active');
+                        if (textStyles.contactBold) document.getElementById('banner-contact-bold').classList.add('active');
+                        if (textStyles.contactItalic) document.getElementById('banner-contact-italic').classList.add('active');
+                    }
+                    
+                    updatePreview('form');
+                    showNotification("Configuration de bannière chargée !", "success");
+                    return true;
+                } catch (error) {
+                    console.error('Erreur lors du chargement du preset bannière:', error);
+                    showNotification("Erreur lors du chargement de la bannière.", "error");
+                    return false;
+                }
+            }
+
+            // Fonctions de sauvegarde/chargement des informations recruteur
+            function saveRecruiterInfo() {
+                try {
+                    const recruiterInfo = {
+                        nom: controls.bannerNom.value,
+                        poste: controls.bannerPoste.value,
+                        email: controls.bannerEmail.value,
+                        tel: controls.bannerTel.value,
+                        photo: document.getElementById('banner-img-preview').src !== 'https://placehold.co/100x100/EFEFEF/AAAAAA&text=Photo' ? 
+                               document.getElementById('banner-img-preview').src : null,
+                        savedAt: new Date().toISOString()
+                    };
+                    
+                    localStorage.setItem('recruiter-info', JSON.stringify(recruiterInfo));
+                    showNotification("Informations recruteur sauvegardées !", "success");
+                    return true;
+                } catch (error) {
+                    console.error('Erreur lors de la sauvegarde des infos recruteur:', error);
+                    showNotification("Erreur lors de la sauvegarde des informations.", "error");
+                    return false;
+                }
+            }
+
+            function loadRecruiterInfo() {
+                try {
+                    const savedInfo = localStorage.getItem('recruiter-info');
+                    if (!savedInfo) {
+                        showNotification("Aucune information recruteur sauvegardée.", "warning");
+                        return false;
+                    }
+                    
+                    const info = JSON.parse(savedInfo);
+                    
+                    controls.bannerNom.value = info.nom || '';
+                    controls.bannerPoste.value = info.poste || '';
+                    controls.bannerEmail.value = info.email || '';
+                    controls.bannerTel.value = info.tel || '';
+                    
+                    if (info.photo) {
+                        document.getElementById('banner-img-preview').src = info.photo;
+                    }
+                    
+                    updatePreview('form');
+                    showNotification("Informations recruteur chargées !", "success");
+                    return true;
+                } catch (error) {
+                    console.error('Erreur lors du chargement des infos recruteur:', error);
+                    showNotification("Erreur lors du chargement des informations.", "error");
+                    return false;
+                }
+            }
+
             async function summarizeAllExperiencesAI() {
                 const experienceItems = controls.experienceList.querySelectorAll('.data-desc');
                 if (experienceItems.length === 0) {
@@ -3948,6 +4176,12 @@
                 controls.aiLimitSkillsBtn.addEventListener('click', limitSkillsWithAI);
                 controls.anonymizeBtn.addEventListener('click', anonymizeCV);
                 controls.resetRecruiterBtn.addEventListener('click', () => { setDefaultRecruiterInfo(); updatePreview('form'); });
+                
+                // Event listeners pour les nouveaux boutons de sauvegarde/chargement
+                controls.saveBannerPresetBtn.addEventListener('click', saveBannerPreset);
+                controls.loadBannerPresetBtn.addEventListener('click', loadBannerPreset);
+                controls.saveRecruiterInfoBtn.addEventListener('click', saveRecruiterInfo);
+                controls.loadRecruiterInfoBtn.addEventListener('click', loadRecruiterInfo);
                 controls.addPageBtn.addEventListener('click', () => addNewPage());
                 controls.removeBannerBgBtn.addEventListener('click', () => removeBannerBackground());
                 controls.addSectionBtn.addEventListener('click', () => {
@@ -4070,6 +4304,16 @@
                         }
                     }, 1000);
                 }
+
+                // Chargement automatique des informations recruteur si disponibles
+                setTimeout(() => {
+                    if (localStorage.getItem('recruiter-info')) {
+                        // Ne charge que si les champs sont vides (pour éviter d'écraser les données chargées du CV)
+                        if (!controls.bannerNom.value && !controls.bannerPoste.value && !controls.bannerEmail.value && !controls.bannerTel.value) {
+                            loadRecruiterInfo();
+                        }
+                    }
+                }, 1200);
 
                 // Fonction pour positionner intelligemment les tooltips
                 function positionTooltip(tooltip) {
