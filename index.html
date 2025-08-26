@@ -416,14 +416,15 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(255, 255, 255, 0.95);
             display: flex;
             align-items: center;
             justify-content: center;
             z-index: 10000;
             opacity: 0;
             pointer-events: none;
-            transition: opacity 0.3s ease;
+            transition: opacity 0.2s ease;
+            backdrop-filter: blur(8px);
         }
 
         .ai-thinking-overlay.active {
@@ -850,16 +851,16 @@
         }
 
         .ai-thinking-container {
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-            border-radius: 20px;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #cbd5e1 100%);
+            border-radius: 16px;
             padding: 2rem;
             text-align: center;
             max-width: 500px;
             width: 90%;
             position: relative;
             overflow: hidden;
-            border: 2px solid #4a9eff;
-            box-shadow: 0 0 30px rgba(74, 158, 255, 0.3), inset 0 0 20px rgba(74, 158, 255, 0.1);
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1), 0 4px 10px rgba(0, 0, 0, 0.05);
         }
 
         .ai-brain {
@@ -868,9 +869,9 @@
             margin: 0 auto 1rem;
             position: relative;
             overflow: hidden;
-            border-radius: 10px;
-            background: linear-gradient(45deg, rgba(15, 52, 96, 0.8), rgba(26, 26, 46, 0.8));
-            border: 1px solid rgba(74, 158, 255, 0.3);
+            border-radius: 8px;
+            background: linear-gradient(45deg, rgba(248, 250, 252, 0.9), rgba(241, 245, 249, 0.8));
+            border: 1px solid rgba(226, 232, 240, 0.6);
         }
 
         .ai-brain::before {
@@ -880,7 +881,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: linear-gradient(to bottom, rgba(74, 158, 255, 0.1), transparent);
+            background: linear-gradient(to bottom, rgba(59, 130, 246, 0.05), transparent);
         }
 
         .ai-neurons {
@@ -893,12 +894,12 @@
 
         .neuron {
             position: absolute;
-            font-family: 'Courier New', monospace;
-            font-size: 12px;
-            color: #4a9eff;
-            text-shadow: 0 0 8px rgba(74, 158, 255, 0.8);
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            font-size: 11px;
+            color: #9ca3af;
+            text-shadow: none;
             animation: matrixFall 3s linear infinite;
-            font-weight: 500;
+            font-weight: 400;
         }
 
         .neuron:nth-child(1) { left: 10%; animation-delay: 0s; }
@@ -918,7 +919,7 @@
         .typing-dot {
             width: 8px;
             height: 8px;
-            background: #3b82f6;
+            background: #6b7280;
             border-radius: 50%;
             animation: typingDots 1.4s ease-in-out infinite;
         }
@@ -929,17 +930,17 @@
 
         .ai-progress-bar {
             width: 100%;
-            height: 6px;
-            background: #e5e7eb;
-            border-radius: 3px;
+            height: 4px;
+            background: #f1f5f9;
+            border-radius: 2px;
             margin: 1rem 0;
             overflow: hidden;
         }
 
         .ai-progress-fill {
             height: 100%;
-            background: linear-gradient(90deg, #3b82f6, #8b5cf6, #06b6d4);
-            border-radius: 3px;
+            background: linear-gradient(90deg, #3b82f6, #1d4ed8, #2563eb);
+            border-radius: 2px;
             animation: aiProgress 3s ease-in-out infinite;
         }
 
@@ -7026,13 +7027,13 @@
             // --- FONCTIONS D'ANIMATION IA ---
             
             function showMatrixProcessing() {
-                // Animation professionnelle légère pour le processus d'API
+                // Animation professionnelle discrète pour le processus d'API
                 const body = document.body;
-                body.style.transition = 'all 0.4s ease';
-                body.style.background = 'linear-gradient(135deg, rgba(26, 26, 46, 0.03), rgba(74, 158, 255, 0.02))';
+                body.style.transition = 'all 0.3s ease';
+                body.style.background = 'linear-gradient(135deg, rgba(248, 250, 252, 0.02), rgba(241, 245, 249, 0.01))';
                 
-                // Créer quelques caractères professionnels flottants
-                for (let i = 0; i < 6; i++) {
+                // Créer quelques indicateurs professionnels discrets
+                for (let i = 0; i < 4; i++) {
                     createGlobalFloatingChar(i);
                 }
             }
@@ -7049,27 +7050,26 @@
             function createGlobalFloatingChar(index) {
                 const char = document.createElement('div');
                 char.className = 'global-matrix-char';
-                char.textContent = Math.random() < 0.7 ? (Math.random() < 0.5 ? '0' : '1') : '▓';
+                char.textContent = ['•', '◦', '▪', '▫'][Math.floor(Math.random() * 4)];
                 char.style.cssText = `
                     position: fixed;
-                    color: rgba(74, 158, 255, 0.25);
-                    font-family: 'Courier New', monospace;
-                    font-size: 12px;
-                    left: ${20 + Math.random() * 60}%;
-                    top: ${20 + Math.random() * 60}%;
+                    color: rgba(156, 163, 175, 0.15);
+                    font-family: 'Inter', 'Segoe UI', sans-serif;
+                    font-size: 10px;
+                    left: ${30 + Math.random() * 40}%;
+                    top: ${30 + Math.random() * 40}%;
                     z-index: 9999;
                     pointer-events: none;
-                    animation: float 4s ease-in-out infinite;
-                    text-shadow: 0 0 4px rgba(74, 158, 255, 0.4);
-                    font-weight: 500;
+                    animation: float 3s ease-in-out infinite;
+                    font-weight: 400;
                 `;
                 
                 document.body.appendChild(char);
                 
-                // Changer le caractère de manière plus contrôlée et rapide
+                // Changer le caractère de manière ultra rapide et contrôlée
                 const changeInterval = setInterval(() => {
-                    char.textContent = Math.random() < 0.8 ? (Math.random() < 0.5 ? '0' : '1') : '▓';
-                }, 150); // Plus rapide: 300ms -> 150ms
+                    char.textContent = ['•', '◦', '▪', '▫'][Math.floor(Math.random() * 4)];
+                }, 75); // Ultra rapide: 150ms -> 75ms
                 
                 // Nettoyer
                 setTimeout(() => {
@@ -7113,17 +7113,17 @@
                     return;
                 }
                 
-                element.style.color = '#4a9eff';
-                element.style.fontFamily = "'Courier New', monospace";
-                element.style.textShadow = '0 0 6px rgba(74, 158, 255, 0.6)';
-                element.style.transition = 'all 0.15s ease';
+                element.style.color = '#374151';
+                element.style.fontFamily = "'Inter', 'Segoe UI', sans-serif";
+                element.style.textShadow = 'none';
+                element.style.transition = 'all 0.08s ease';
                 element.style.fontWeight = '500';
                 
                 let currentIndex = 0;
-                const chars = ['0', '1', '▓', '▒', '░'];
+                const chars = ['0', '1', '•', '◦', '▪'];
                 
-                // Phase 1: Scramble initial professionnel
-                const scramblePhases = 2;
+                // Phase 1: Scramble initial professionnel minimal
+                const scramblePhases = 1; // Réduit pour plus de rapidité
                 let currentPhase = 0;
                 
                 function scrambleText() {
@@ -7132,19 +7132,19 @@
                         if (newText[i] === ' ') {
                             scrambled += ' ';
                         } else {
-                            // Principalement 0 et 1 avec quelques symboles techniques
-                            if (Math.random() < 0.8) {
-                                scrambled += Math.random() < 0.5 ? '0' : '1';
+                            // Principalement des points discrets
+                            if (Math.random() < 0.9) {
+                                scrambled += Math.random() < 0.6 ? '•' : '◦';
                             } else {
                                 scrambled += chars[Math.floor(Math.random() * chars.length)];
                             }
                         }
                     }
                     element.textContent = scrambled;
-                    element.style.textShadow = '0 0 10px rgba(74, 158, 255, 0.8), 0 0 15px rgba(74, 158, 255, 0.5)';
+                    element.style.opacity = '0.6';
                 }
                 
-                // Scrambles contrôlés - plus rapides
+                // Scrambles contrôlés - ultra rapides
                 const scrambleInterval = setInterval(() => {
                     scrambleText();
                     currentPhase++;
@@ -7152,10 +7152,10 @@
                         clearInterval(scrambleInterval);
                         startMatrixWriting();
                     }
-                }, 60); // Plus rapide: 120ms -> 60ms
+                }, 30); // Ultra rapide: 60ms -> 30ms
                 
                 function startMatrixWriting() {
-                    element.style.textShadow = '0 0 6px rgba(74, 158, 255, 0.6)';
+                    element.style.textShadow = '0 0 3px rgba(55, 65, 81, 0.4)';
                     currentIndex = 0;
                     
                     const writeInterval = setInterval(() => {
@@ -7170,8 +7170,8 @@
                                 displayText += ' ';
                                 currentIndex++;
                             } else {
-                                // Alternance plus rapide avant de stabiliser
-                                if (Math.random() < 0.85) { // Plus de chance de stabiliser rapidement
+                                // Alternance ultra rapide avant de stabiliser
+                                if (Math.random() < 0.9) { // Encore plus de chance de stabiliser rapidement
                                     displayText += newText[currentIndex];
                                     currentIndex++;
                                 } else {
@@ -7185,7 +7185,7 @@
                             if (newText[i] === ' ') {
                                 displayText += ' ';
                             } else {
-                                if (Math.random() < 0.9) { // Plus de 0 et 1 pour la fluidité
+                                if (Math.random() < 0.95) { // Presque que des 0 et 1 pour la fluidité
                                     displayText += Math.random() < 0.5 ? '0' : '1';
                                 } else {
                                     displayText += chars[Math.floor(Math.random() * chars.length)];
@@ -7197,30 +7197,30 @@
                         
                         // Effet de flash subtil sur le caractère en cours
                         if (currentIndex < newText.length) {
-                            element.style.textShadow = '0 0 8px rgba(74, 158, 255, 0.8)';
+                            element.style.textShadow = '0 0 5px rgba(55, 65, 81, 0.6)';
                             setTimeout(() => {
-                                element.style.textShadow = '0 0 6px rgba(74, 158, 255, 0.6)';
-                            }, 20); // Plus rapide: 40ms -> 20ms
+                                element.style.textShadow = '0 0 3px rgba(55, 65, 81, 0.4)';
+                            }, 10); // Ultra rapide: 20ms -> 10ms
                         }
                         
                         if (currentIndex >= newText.length) {
                             clearInterval(writeInterval);
                             // Animation finale subtile
                             element.textContent = newText;
-                            element.style.textShadow = '0 0 10px rgba(74, 158, 255, 0.7)';
+                            element.style.textShadow = '0 0 4px rgba(55, 65, 81, 0.5)';
                             setTimeout(() => {
                                 element.style.color = '';
                                 element.style.fontFamily = '';
                                 element.style.textShadow = '';
                                 element.style.fontWeight = '';
                                 if (callback) callback();
-                            }, 400); // Plus rapide: 600ms -> 400ms
+                            }, 200); // Ultra rapide: 400ms -> 200ms
                         }
-                    }, 25); // Plus rapide: 50ms -> 25ms pour une fluidité giga
+                    }, 12); // Ultra rapide: 25ms -> 12ms pour une fluidité giga
                 }
             }
             
-            // Fonction pour écrire plusieurs éléments en séquence - optimisée pour vitesse
+            // Fonction pour écrire plusieurs éléments en séquence - ultra optimisée
             function writeMultipleElementsMatrix(elements, texts, finalCallback = null) {
                 let currentElementIndex = 0;
                 
@@ -7235,7 +7235,7 @@
                     
                     writeTextMatrixStyle(element, text, () => {
                         currentElementIndex++;
-                        setTimeout(writeNext, 100); // Plus rapide: 200ms -> 100ms entre les éléments
+                        setTimeout(writeNext, 50); // Ultra rapide: 100ms -> 50ms entre les éléments
                     });
                 }
                 
@@ -7244,37 +7244,37 @@
 
             function startAIMatrixAnimation() {
                 const neurons = document.querySelectorAll('.ai-brain .neuron');
-                const matrixChars = ['0', '1'];
-                const symbols = ['▓', '▒', '░', '█', '│', '┤'];
+                const professionalChars = ['•', '◦', '▪', '▫', '›', '‹'];
                 
                 neurons.forEach((neuron, index) => {
                     // Style professionnel pour les colonnes de données
                     neuron.style.cssText += `
-                        font-size: 13px;
-                        opacity: 1;
+                        font-size: 11px;
+                        opacity: 0.5;
                         transform: translateY(-20px);
-                        animation: matrixFall 2.5s linear infinite;
-                        animation-delay: ${index * 0.4}s;
-                        font-weight: 500;
+                        animation: matrixFall 2s linear infinite;
+                        animation-delay: ${index * 0.3}s;
+                        font-weight: 400;
+                        color: #9ca3af;
                     `;
                     
-                    // Changer les caractères avec un timing professionnel - optimisé
+                    // Changer les caractères avec un timing professionnel - ultra optimisé
                     neuron.matrixInterval = setInterval(() => {
-                        if (Math.random() < 0.8) {
-                            // 80% de chance d'avoir 0 ou 1
-                            neuron.textContent = Math.random() < 0.5 ? '0' : '1';
+                        if (Math.random() < 0.85) {
+                            // 85% de chance d'avoir des puces professionnelles
+                            neuron.textContent = professionalChars[Math.floor(Math.random() * professionalChars.length)];
                         } else {
-                            // 20% de chance d'avoir un symbole technique
-                            neuron.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+                            // 15% de chance d'avoir 0 ou 1
+                            neuron.textContent = Math.random() < 0.5 ? '0' : '1';
                         }
                         
-                        // Effet de flash professionnel plus rapide
-                        neuron.style.textShadow = '0 0 12px rgba(74, 158, 255, 0.9), 0 0 20px rgba(74, 158, 255, 0.6)';
+                        // Effet subtil sans flash excessif
+                        neuron.style.opacity = '0.6';
                         setTimeout(() => {
-                            neuron.style.textShadow = '0 0 8px rgba(74, 158, 255, 0.8)';
-                        }, 20); // Plus rapide: 40ms -> 20ms
+                            neuron.style.opacity = '0.4';
+                        }, 8); // Ultra rapide
                         
-                    }, 40 + Math.random() * 60); // Plus rapide: 60-140ms -> 40-100ms
+                    }, 25 + Math.random() * 35); // Ultra rapide: 25-60ms
                 });
                 
                 // Créer des éléments flottants plus sophistiqués
