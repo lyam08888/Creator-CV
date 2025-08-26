@@ -1240,6 +1240,20 @@
                         <summary><span>Optimisation IA</span><label class="completion-label"><input type="checkbox" id="completion-ia-optimization" class="completion-checkbox"><span>Fait ✅</span></label></summary>
                         <div class="control-group-content space-y-3">
                             <div class="tooltip">
+                                <button id="ai-layout-optimize-btn" class="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 px-4 rounded-md hover:from-purple-700 hover:to-pink-700 flex items-center justify-center gap-2 font-semibold">
+                                    <i class="fas fa-magic-wand-sparkles"></i> IA Layout Optimisation
+                                </button>
+                                <div class="tooltip-content top">
+                                    <strong>Optimisation Layout IA - NOUVEAU !</strong><br>
+                                    L'IA analyse votre contenu et optimise automatiquement :<br>
+                                    • Layout (1 ou 2 colonnes)<br>
+                                    • Tailles de polices<br>
+                                    • Marges et espacements<br>
+                                    • Bannière recruteur<br>
+                                    • Tout pour tenir sur 1 page parfaite !
+                                </div>
+                            </div>
+                            <div class="tooltip">
                                 <button id="ai-optimize-all-btn" class="w-full bg-purple-600 text-white py-2 px-4 rounded-md hover:bg-purple-700 flex items-center justify-center gap-2">
                                     <i class="fas fa-rocket"></i> Optimiser tout le CV
                                 </button>
@@ -2184,6 +2198,7 @@
                 aiSummarizeBtn: document.getElementById('ai-synthesize-experiences-btn'),
                 
                 // Nouveaux boutons IA
+                aiLayoutOptimizeBtn: document.getElementById('ai-layout-optimize-btn'),
                 aiOptimizeAllBtn: document.getElementById('ai-optimize-all-btn'),
                 aiRewriteDescriptionsBtn: document.getElementById('ai-rewrite-descriptions-btn'),
                 aiGenerateAchievementsBtn: document.getElementById('ai-generate-achievements-btn'),
@@ -3617,6 +3632,202 @@
                 }
             }
             
+            async function aiLayoutOptimization() {
+                try {
+                    showAIThinking("Analyse du contenu en cours...", "L'IA examine votre CV pour optimiser le layout");
+                    
+                    // 1. Analyse du contenu
+                    const contentAnalysis = analyzeContentForLayout();
+                    
+                    showAIThinking("Calcul de l'optimisation...", "Choix du meilleur layout et des paramètres");
+                    
+                    // 2. Activation et configuration de la bannière recruteur
+                    if (!controls.toggleBanner.checked) {
+                        controls.toggleBanner.checked = true;
+                        showNotification("Bannière recruteur activée", "info");
+                    }
+                    
+                    // Configuration bannière par défaut si vide
+                    if (!controls.bannerNom.value || !controls.bannerEmail.value) {
+                        setDefaultRecruiterInfo();
+                    }
+                    
+                    // Style bannière optimisé
+                    controls.bannerStyleSelect.value = contentAnalysis.density > 0.7 ? 'banner-style-minimal' : 'banner-style-modern';
+                    
+                    showAIThinking("Optimisation du layout...", "Configuration du nombre de colonnes");
+                    
+                    // 3. Choix du layout (1 ou 2 colonnes)
+                    const layoutChoice = contentAnalysis.density > 0.8 ? '2-col-33-67' : 
+                                        contentAnalysis.density > 0.6 ? '2-col-50-50' : '1-col';
+                    
+                    // Appliquer le layout
+                    const layoutButtons = document.querySelectorAll('.layout-btn');
+                    layoutButtons.forEach(btn => btn.classList.remove('bg-blue-500', 'text-white'));
+                    document.querySelector(`[data-layout="${layoutChoice}"]`).click();
+                    
+                    showAIThinking("Optimisation des polices...", "Ajustement des tailles de texte");
+                    
+                    // 4. Optimisation des tailles de police
+                    const fontSizes = calculateOptimalFontSizes(contentAnalysis);
+                    
+                    // Appliquer les tailles
+                    document.getElementById('font-size-h1').value = fontSizes.h1;
+                    document.getElementById('font-size-h1-value').textContent = fontSizes.h1;
+                    document.getElementById('font-size-h2').value = fontSizes.h2;
+                    document.getElementById('font-size-h2-value').textContent = fontSizes.h2;
+                    document.getElementById('font-size-p').value = fontSizes.p;
+                    document.getElementById('font-size-p-value').textContent = fontSizes.p;
+                    document.getElementById('font-size-banner').value = fontSizes.banner;
+                    document.getElementById('font-size-banner-value').textContent = fontSizes.banner;
+                    
+                    showAIThinking("Optimisation des marges...", "Ajustement de l'espacement");
+                    
+                    // 5. Optimisation des marges et espacements
+                    const spacing = calculateOptimalSpacing(contentAnalysis);
+                    
+                    document.getElementById('page-margin').value = spacing.pageMargin;
+                    document.getElementById('page-margin-value').textContent = spacing.pageMargin;
+                    document.getElementById('module-spacing').value = spacing.moduleSpacing;
+                    document.getElementById('module-spacing-value').textContent = spacing.moduleSpacing;
+                    document.getElementById('paragraph-spacing').value = spacing.paragraphSpacing;
+                    document.getElementById('paragraph-spacing-value').textContent = spacing.paragraphSpacing;
+                    document.getElementById('banner-element-spacing').value = spacing.bannerSpacing;
+                    document.getElementById('banner-element-spacing-value').textContent = spacing.bannerSpacing;
+                    
+                    showAIThinking("Finalisation...", "Application des optimisations");
+                    
+                    // 6. Optimisation des styles de titre pour gagner de l'espace
+                    const titleStyle = contentAnalysis.density > 0.7 ? 'style-side-line' : 'style-underline';
+                    const titleButtons = document.querySelectorAll('.section-title-style-btn');
+                    titleButtons.forEach(btn => btn.classList.remove('active', 'bg-blue-500', 'text-white'));
+                    document.querySelector(`[data-title-style="${titleStyle}"]`).classList.add('active', 'bg-blue-500', 'text-white');
+                    
+                    // 7. Mise à jour du CSS et du preview
+                    updateCSSVariables();
+                    updatePreview('form');
+                    
+                    // 8. Vérification finale
+                    setTimeout(() => {
+                        const isOverflowing = checkPageOverflow();
+                        if (isOverflowing) {
+                            // Ajustements d'urgence
+                            document.getElementById('font-size-p').value = Math.max(8, parseFloat(document.getElementById('font-size-p').value) - 0.5);
+                            document.getElementById('module-spacing').value = Math.max(0.5, parseFloat(document.getElementById('module-spacing').value) - 0.2);
+                            updateCSSVariables();
+                            updatePreview('form');
+                        }
+                        
+                        hideAIThinking();
+                        showNotification(`CV optimisé ! Layout: ${layoutChoice}, Densité: ${(contentAnalysis.density * 100).toFixed(0)}%`, "success", 5000);
+                    }, 1000);
+                    
+                } catch (error) {
+                    hideAIThinking();
+                    console.error('Erreur lors de l\'optimisation layout:', error);
+                    showNotification("Erreur lors de l'optimisation du layout", "error");
+                }
+            }
+            
+            function analyzeContentForLayout() {
+                // Analyse du contenu pour déterminer la densité
+                const description = controls.description.value || '';
+                const competences = controls.competences.value || '';
+                const experiences = Array.from(controls.experienceList.querySelectorAll('.data-desc')).map(el => el.value).join(' ');
+                const formations = Array.from(controls.formationList.querySelectorAll('.data-desc')).map(el => el.value).join(' ');
+                
+                const totalContent = description + competences + experiences + formations;
+                const totalChars = totalContent.length;
+                
+                // Comptage des éléments
+                const expCount = controls.experienceList.querySelectorAll('.experience-item').length;
+                const formCount = controls.formationList.querySelectorAll('.formation-item').length;
+                const skillsCount = competences.split(',').filter(s => s.trim()).length;
+                
+                // Calcul de la densité (0 = vide, 1 = très dense)
+                let density = 0;
+                
+                // Facteur caractères (max 2000 chars = 0.4 de densité)
+                density += Math.min(totalChars / 2000, 1) * 0.4;
+                
+                // Facteur expériences (max 5 exp = 0.3 de densité)
+                density += Math.min(expCount / 5, 1) * 0.3;
+                
+                // Facteur formations (max 4 formations = 0.15 de densité)
+                density += Math.min(formCount / 4, 1) * 0.15;
+                
+                // Facteur compétences (max 20 skills = 0.15 de densité)
+                density += Math.min(skillsCount / 20, 1) * 0.15;
+                
+                return {
+                    density: Math.min(density, 1),
+                    totalChars,
+                    expCount,
+                    formCount,
+                    skillsCount,
+                    avgExpLength: expCount > 0 ? experiences.length / expCount : 0
+                };
+            }
+            
+            function calculateOptimalFontSizes(analysis) {
+                const baseSizes = { h1: 32, h2: 18, p: 10, banner: 9 };
+                
+                if (analysis.density > 0.8) {
+                    // Très dense - réduire beaucoup
+                    return { h1: 26, h2: 16, p: 9, banner: 8 };
+                } else if (analysis.density > 0.6) {
+                    // Dense - réduire modérément
+                    return { h1: 28, h2: 17, p: 9.5, banner: 8.5 };
+                } else if (analysis.density > 0.4) {
+                    // Normal - légère réduction
+                    return { h1: 30, h2: 17.5, p: 10, banner: 9 };
+                } else {
+                    // Peu dense - tailles standard ou plus grandes
+                    return { h1: 34, h2: 19, p: 10.5, banner: 9.5 };
+                }
+            }
+            
+            function calculateOptimalSpacing(analysis) {
+                if (analysis.density > 0.8) {
+                    // Très dense - espacement minimal
+                    return { 
+                        pageMargin: 1.5, 
+                        moduleSpacing: 1, 
+                        paragraphSpacing: 0.3, 
+                        bannerSpacing: 0.8 
+                    };
+                } else if (analysis.density > 0.6) {
+                    // Dense - espacement réduit
+                    return { 
+                        pageMargin: 1.7, 
+                        moduleSpacing: 1.2, 
+                        paragraphSpacing: 0.4, 
+                        bannerSpacing: 0.9 
+                    };
+                } else if (analysis.density > 0.4) {
+                    // Normal - espacement standard
+                    return { 
+                        pageMargin: 2, 
+                        moduleSpacing: 1.5, 
+                        paragraphSpacing: 0.5, 
+                        bannerSpacing: 1 
+                    };
+                } else {
+                    // Peu dense - espacement généreux
+                    return { 
+                        pageMargin: 2.2, 
+                        moduleSpacing: 1.8, 
+                        paragraphSpacing: 0.6, 
+                        bannerSpacing: 1.2 
+                    };
+                }
+            }
+            
+            function checkPageOverflow() {
+                const pages = document.querySelectorAll('.a4-page');
+                return Array.from(pages).some(page => page.scrollHeight > page.clientHeight);
+            }
+            
             function removeBannerBackground() {
                 preview.bannerBgImg.src = '';
                 controls.bannerBgImage.value = ''; // Reset file input
@@ -4145,6 +4356,10 @@
                 controls.aiSummarizeBtn.addEventListener('click', summarizeAllExperiencesAI);
                 
                 // Nouveaux gestionnaires IA
+                if (controls.aiLayoutOptimizeBtn) {
+                    controls.aiLayoutOptimizeBtn.addEventListener('click', aiLayoutOptimization);
+                }
+                
                 if (controls.aiOptimizeAllBtn) {
                     controls.aiOptimizeAllBtn.addEventListener('click', optimizeAllCV);
                 }
