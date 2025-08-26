@@ -412,6 +412,245 @@
             pointer-events: auto;
         }
 
+        /* Animation de restructuration spectaculaire */
+        .cv-restructure-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, rgba(59, 130, 246, 0.95), rgba(139, 92, 246, 0.95));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10001;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+
+        .cv-restructure-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .cv-restructure-container {
+            text-align: center;
+            color: white;
+            max-width: 800px;
+            width: 90%;
+        }
+
+        .restructure-title {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 2rem;
+            animation: titlePulse 2s ease-in-out infinite;
+        }
+
+        .letters-container {
+            position: relative;
+            height: 400px;
+            overflow: hidden;
+            margin: 2rem 0;
+        }
+
+        .flying-letter {
+            position: absolute;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: white;
+            opacity: 0.9;
+            animation: flyAndRestructure 4s ease-in-out;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        .building-element {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            animation: buildUp 0.8s ease-out forwards;
+            transform: scale(0) rotate(45deg);
+            opacity: 0;
+        }
+
+        .progress-text {
+            font-size: 1.2rem;
+            margin-top: 2rem;
+            animation: textFade 3s ease-in-out infinite;
+        }
+
+        .magic-particles {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: white;
+            border-radius: 50%;
+            animation: magicParticle 3s ease-out infinite;
+            opacity: 0;
+        }
+
+        @keyframes titlePulse {
+            0%, 100% { transform: scale(1); text-shadow: 0 0 20px rgba(255, 255, 255, 0.5); }
+            50% { transform: scale(1.05); text-shadow: 0 0 30px rgba(255, 255, 255, 0.8); }
+        }
+
+        @keyframes flyAndRestructure {
+            0% {
+                transform: translate(0, 0) rotate(0deg) scale(1);
+                opacity: 1;
+            }
+            20% {
+                transform: translate(var(--random-x, 200px), var(--random-y, -150px)) rotate(var(--random-rotation, 180deg)) scale(1.2);
+                opacity: 0.8;
+            }
+            40% {
+                transform: translate(var(--random-x2, -150px), var(--random-y2, 100px)) rotate(var(--random-rotation2, -90deg)) scale(0.8);
+                opacity: 0.6;
+            }
+            60% {
+                transform: translate(var(--random-x3, 100px), var(--random-y3, -50px)) rotate(var(--random-rotation3, 270deg)) scale(1.5);
+                opacity: 0.9;
+            }
+            80% {
+                transform: translate(var(--final-x, 0px), var(--final-y, 50px)) rotate(720deg) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(var(--final-x, 0px), var(--final-y, 50px)) rotate(0deg) scale(1);
+                opacity: 1;
+            }
+        }
+
+        @keyframes buildUp {
+            0% {
+                transform: scale(0) rotate(45deg);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(1.2) rotate(22.5deg);
+                opacity: 0.8;
+            }
+            100% {
+                transform: scale(1) rotate(0deg);
+                opacity: 1;
+            }
+        }
+
+        @keyframes textFade {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 1; }
+        }
+
+        @keyframes magicParticle {
+            0% {
+                transform: translate(0, 0) scale(0);
+                opacity: 0;
+            }
+            20% {
+                transform: translate(var(--particle-x, 50px), var(--particle-y, -30px)) scale(1);
+                opacity: 1;
+            }
+            80% {
+                transform: translate(var(--particle-x2, -30px), var(--particle-y2, 20px)) scale(0.5);
+                opacity: 0.5;
+            }
+            100% {
+                transform: translate(var(--particle-x3, 100px), var(--particle-y3, -100px)) scale(0);
+                opacity: 0;
+            }
+        }
+
+        /* Animations supplémentaires pour un effet spectaculaire */
+        .cv-preview .a4-page {
+            transition: all 0.5s ease !important;
+        }
+
+        .cv-restructuring .a4-page {
+            transform: scale(0.9) rotate(1deg);
+            filter: blur(2px);
+            opacity: 0.8;
+        }
+
+        .cv-restructuring-complete .a4-page {
+            transform: scale(1.05) rotate(0deg);
+            filter: blur(0px) brightness(1.1);
+            opacity: 1;
+            box-shadow: 0 0 30px rgba(59, 130, 246, 0.3) !important;
+        }
+
+        /* Effet de scintillement sur l'aperçu */
+        @keyframes sparkle {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; transform: scale(1.02); }
+        }
+
+        .cv-sparkling {
+            animation: sparkle 0.5s ease-in-out 3;
+        }
+
+        /* Effet de reconstruction progressive */
+        .cv-module {
+            transition: all 0.3s ease;
+        }
+
+        .cv-rebuilding .cv-module {
+            animation: moduleReappear 0.8s ease-out forwards;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .cv-rebuilding .cv-module:nth-child(1) { animation-delay: 0.1s; }
+        .cv-rebuilding .cv-module:nth-child(2) { animation-delay: 0.2s; }
+        .cv-rebuilding .cv-module:nth-child(3) { animation-delay: 0.3s; }
+        .cv-rebuilding .cv-module:nth-child(4) { animation-delay: 0.4s; }
+        .cv-rebuilding .cv-module:nth-child(5) { animation-delay: 0.5s; }
+
+        @keyframes moduleReappear {
+            0% {
+                opacity: 0;
+                transform: translateY(20px) scale(0.8);
+            }
+            50% {
+                opacity: 0.7;
+                transform: translateY(-5px) scale(1.05);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        /* Effet de brillance qui traverse l'écran */
+        .shine-effect {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .shine-effect::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            animation: shine 1.5s ease-in-out;
+        }
+
+        @keyframes shine {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
         .ai-thinking-container {
             background: white;
             border-radius: 20px;
@@ -2139,6 +2378,25 @@
         </div>
     </div>
 
+    <!-- Overlay d'animation de restructuration CV -->
+    <div id="cv-restructure-overlay" class="cv-restructure-overlay">
+        <div class="cv-restructure-container">
+            <h2 class="restructure-title">🚀 Restructuration IA</h2>
+            
+            <div class="letters-container" id="letters-container">
+                <!-- Les lettres volantes seront générées dynamiquement -->
+            </div>
+            
+            <div class="magic-particles" id="magic-particles">
+                <!-- Les particules magiques seront générées dynamiquement -->
+            </div>
+            
+            <div class="progress-text" id="restructure-progress">
+                Analyse et restructuration de votre CV en cours...
+            </div>
+        </div>
+    </div>
+
     <script type="module">
         // This script is now self-contained and does not use Firebase for saving.
         
@@ -3634,12 +3892,14 @@
             
             async function aiLayoutOptimization() {
                 try {
-                    showAIThinking("Analyse du contenu en cours...", "L'IA examine votre CV pour optimiser le layout");
+                    // Lancer l'animation spectaculaire de restructuration
+                    const animationPromise = showCVRestructureAnimation();
+                    
+                    // Attendre que l'animation démarre avant de continuer
+                    await new Promise(resolve => setTimeout(resolve, 1000));
                     
                     // 1. Analyse du contenu
                     const contentAnalysis = analyzeContentForLayout();
-                    
-                    showAIThinking("Configuration de la bannière...", "Activation et optimisation de la bannière recruteur");
                     
                     // 2. Activation et configuration de la bannière recruteur
                     if (!controls.toggleBanner.checked) {
@@ -3655,8 +3915,6 @@
                     // Style bannière optimisé
                     controls.bannerStyleSelect.value = contentAnalysis.density > 0.7 ? 'banner-style-minimal' : 'banner-style-modern';
                     
-                    showAIThinking("Optimisation du layout...", "Configuration du nombre de colonnes");
-                    
                     // 3. Choix du layout (1 ou 2 colonnes)
                     const layoutChoice = contentAnalysis.density > 0.8 ? '2-col-33-67' : 
                                         contentAnalysis.density > 0.6 ? '2-col-50-50' : '1-col';
@@ -3669,8 +3927,6 @@
                         layoutBtn.click();
                     }
                     
-                    showAIThinking("Optimisation des polices...", "Ajustement des tailles de texte");
-                    
                     // 4. Optimisation des tailles de police
                     const fontSizes = calculateOptimalFontSizes(contentAnalysis);
                     
@@ -3680,8 +3936,6 @@
                     triggerSliderChange('font-size-p', fontSizes.p);
                     triggerSliderChange('font-size-banner', fontSizes.banner);
                     
-                    showAIThinking("Optimisation des marges...", "Ajustement de l'espacement");
-                    
                     // 5. Optimisation des marges et espacements
                     const spacing = calculateOptimalSpacing(contentAnalysis);
                     
@@ -3689,8 +3943,6 @@
                     triggerSliderChange('module-spacing', spacing.moduleSpacing);
                     triggerSliderChange('paragraph-spacing', spacing.paragraphSpacing);
                     triggerSliderChange('banner-element-spacing', spacing.bannerSpacing);
-                    
-                    showAIThinking("Optimisation des styles...", "Configuration des titres de section");
                     
                     // 6. Optimisation des styles de titre pour gagner de l'espace
                     const titleStyle = contentAnalysis.density > 0.7 ? 'style-side-line' : 'style-underline';
@@ -3702,34 +3954,33 @@
                         titleBtn.click();
                     }
                     
-                    showAIThinking("Finalisation...", "Application des optimisations");
+                    // Attendre la fin de l'animation avant les vérifications finales
+                    await animationPromise;
                     
                     // 7. Mise à jour finale
+                    updatePreview('form');
+                    
+                    // 8. Vérification finale et ajustements d'urgence si nécessaire
                     setTimeout(() => {
-                        updatePreview('form');
-                        
-                        // 8. Vérification finale et ajustements d'urgence si nécessaire
-                        setTimeout(() => {
-                            const isOverflowing = checkPageOverflow();
-                            if (isOverflowing) {
-                                // Ajustements d'urgence
-                                const currentPSize = parseFloat(document.getElementById('font-size-p').value);
-                                const currentModuleSpacing = parseFloat(document.getElementById('module-spacing').value);
-                                
-                                triggerSliderChange('font-size-p', Math.max(8, currentPSize - 0.5));
-                                triggerSliderChange('module-spacing', Math.max(0.5, currentModuleSpacing - 0.2));
-                                
-                                updatePreview('form');
-                                showNotification("Ajustements d'urgence appliqués pour éviter le débordement", "warning");
-                            }
+                        const isOverflowing = checkPageOverflow();
+                        if (isOverflowing) {
+                            // Ajustements d'urgence
+                            const currentPSize = parseFloat(document.getElementById('font-size-p').value);
+                            const currentModuleSpacing = parseFloat(document.getElementById('module-spacing').value);
                             
-                            hideAIThinking();
-                            showNotification(`✨ CV optimisé par l'IA ! Layout: ${layoutChoice.replace('-col', ' colonne').replace('-', ' ')}, Densité: ${(contentAnalysis.density * 100).toFixed(0)}%`, "success", 6000);
-                        }, 500);
+                            triggerSliderChange('font-size-p', Math.max(8, currentPSize - 0.5));
+                            triggerSliderChange('module-spacing', Math.max(0.5, currentModuleSpacing - 0.2));
+                            
+                            updatePreview('form');
+                            showNotification("Ajustements d'urgence appliqués pour éviter le débordement", "warning");
+                        }
+                        
+                        showNotification(`✨ CV restructuré par l'IA ! Layout: ${layoutChoice.replace('-col', ' colonne').replace('-', ' ')}, Densité: ${(contentAnalysis.density * 100).toFixed(0)}%`, "success", 6000);
                     }, 500);
                     
                 } catch (error) {
-                    hideAIThinking();
+                    // Masquer l'animation en cas d'erreur
+                    hideCVRestructureAnimation();
                     console.error('Erreur lors de l\'optimisation layout:', error);
                     showNotification("Erreur lors de l'optimisation du layout", "error");
                 }
@@ -4170,6 +4421,10 @@
                 controls.analyzeBtn.addEventListener('click', async () => {
                     const text = controls.aiInput.value;
                     if (!text) { showNotification("Veuillez coller du texte à analyser.", "error"); return; }
+                    
+                    // Lancer l'animation spectaculaire
+                    const animationPromise = showCVRestructureAnimation();
+                    
                     const schema = {
                         type: "OBJECT",
                         properties: {
@@ -4184,6 +4439,9 @@
                     const extractedData = await callGeminiAPI(prompt, schema);
                     
                     if (extractedData) {
+                        // Attendre que l'animation soit bien avancée avant de remplir
+                        await new Promise(resolve => setTimeout(resolve, 2000));
+                        
                         controls.nom.value = extractedData.nom || '';
                         controls.prenom.value = extractedData.prenom || '';
                         controls.poste.value = extractedData.poste || '';
@@ -4196,8 +4454,13 @@
                         controls.formationList.innerHTML = '';
                         (extractedData.formations || []).forEach(form => createDynamicItem(controls.formationList, [{ key: 'title', placeholder: 'Nom du diplôme' }, { key: 'meta', placeholder: 'Établissement & Année' }], form));
 
+                        // Attendre la fin de l'animation avant de mettre à jour l'aperçu
+                        await animationPromise;
                         updatePreview('form');
-                        showNotification("CV rempli par l'IA !", "success");
+                        showNotification("✨ CV restructuré et rempli par l'IA !", "success");
+                    } else {
+                        // En cas d'erreur, masquer l'animation
+                        hideCVRestructureAnimation();
                     }
                 });
                 
@@ -5450,6 +5713,197 @@
                 }
             }
 
+            // --- FONCTIONS D'ANIMATION DE RESTRUCTURATION SPECTACULAIRE ---
+            
+            function showCVRestructureAnimation() {
+                const overlay = document.getElementById('cv-restructure-overlay');
+                const cvPreview = document.querySelector('#cv-preview-wrapper');
+                
+                if (!overlay) return Promise.resolve();
+                
+                overlay.classList.add('active');
+                
+                // Ajouter des effets sur l'aperçu du CV
+                if (cvPreview) {
+                    cvPreview.classList.add('cv-restructuring');
+                }
+                
+                return new Promise((resolve) => {
+                    // Créer les lettres volantes
+                    createFlyingLetters();
+                    
+                    // Créer les particules magiques
+                    createMagicParticles();
+                    
+                    // Séquence d'animation améliorée
+                    setTimeout(() => {
+                        document.getElementById('restructure-progress').textContent = "🔍 Analyse intelligente des sections...";
+                    }, 500);
+                    
+                    setTimeout(() => {
+                        document.getElementById('restructure-progress').textContent = "💫 Dispersion des éléments...";
+                        // Ajouter effet de brillance
+                        if (cvPreview) {
+                            cvPreview.classList.add('shine-effect');
+                        }
+                    }, 1200);
+                    
+                    setTimeout(() => {
+                        document.getElementById('restructure-progress').textContent = "🧠 Optimisation par l'IA...";
+                        createBuildingElements();
+                    }, 2200);
+                    
+                    setTimeout(() => {
+                        document.getElementById('restructure-progress').textContent = "🔧 Reconstruction optimisée...";
+                        // Préparer la reconstruction
+                        if (cvPreview) {
+                            cvPreview.classList.remove('cv-restructuring');
+                            cvPreview.classList.add('cv-rebuilding');
+                        }
+                    }, 3200);
+                    
+                    setTimeout(() => {
+                        document.getElementById('restructure-progress').textContent = "✨ Finalisation parfaite...";
+                        // Effet final
+                        if (cvPreview) {
+                            cvPreview.classList.remove('cv-rebuilding');
+                            cvPreview.classList.add('cv-restructuring-complete');
+                        }
+                    }, 4200);
+                    
+                    setTimeout(() => {
+                        hideCVRestructureAnimation();
+                        // Nettoyer les classes d'effet
+                        if (cvPreview) {
+                            cvPreview.classList.remove('cv-restructuring-complete', 'shine-effect');
+                            cvPreview.classList.add('cv-sparkling');
+                            
+                            // Retirer l'effet de scintillement après un délai
+                            setTimeout(() => {
+                                cvPreview.classList.remove('cv-sparkling');
+                            }, 1500);
+                        }
+                        resolve();
+                    }, 5200);
+                });
+            }
+            
+            function hideCVRestructureAnimation() {
+                const overlay = document.getElementById('cv-restructure-overlay');
+                if (overlay) {
+                    overlay.classList.remove('active');
+                    
+                    // Nettoyer les éléments créés
+                    setTimeout(() => {
+                        const lettersContainer = document.getElementById('letters-container');
+                        const particlesContainer = document.getElementById('magic-particles');
+                        if (lettersContainer) lettersContainer.innerHTML = '';
+                        if (particlesContainer) particlesContainer.innerHTML = '';
+                    }, 500);
+                }
+            }
+            
+            function createFlyingLetters() {
+                const lettersContainer = document.getElementById('letters-container');
+                if (!lettersContainer) return;
+                
+                const words = ['CV', 'EXPÉRIENCE', 'FORMATION', 'COMPÉTENCES', 'PROJET', 'OPTIMISATION', 'IA', 'DESIGN', 'CARRIÈRE', 'TALENT'];
+                const letters = words.join(' ').split('');
+                const colors = ['#3b82f6', '#8b5cf6', '#06b6d4', '#10b981', '#f59e0b', '#ef4444'];
+                
+                letters.forEach((letter, index) => {
+                    if (letter.trim()) {
+                        const letterEl = document.createElement('div');
+                        letterEl.className = 'flying-letter';
+                        letterEl.textContent = letter;
+                        
+                        // Couleur aléatoire
+                        letterEl.style.color = colors[Math.floor(Math.random() * colors.length)];
+                        
+                        // Position initiale aléatoire dans un cercle
+                        const angle = (index / letters.length) * 360 + Math.random() * 60;
+                        const radius = 200 + Math.random() * 100;
+                        const startX = Math.cos(angle * Math.PI / 180) * radius;
+                        const startY = Math.sin(angle * Math.PI / 180) * radius;
+                        
+                        letterEl.style.left = `50%`;
+                        letterEl.style.top = `50%`;
+                        letterEl.style.transform = `translate(${startX}px, ${startY}px)`;
+                        
+                        // Variables CSS personnalisées pour l'animation plus complexe
+                        letterEl.style.setProperty('--random-x', `${Math.random() * 500 - 250}px`);
+                        letterEl.style.setProperty('--random-y', `${Math.random() * 400 - 200}px`);
+                        letterEl.style.setProperty('--random-x2', `${Math.random() * 300 - 150}px`);
+                        letterEl.style.setProperty('--random-y2', `${Math.random() * 200 - 100}px`);
+                        letterEl.style.setProperty('--random-x3', `${Math.random() * 200 - 100}px`);
+                        letterEl.style.setProperty('--random-y3', `${Math.random() * 150 - 75}px`);
+                        letterEl.style.setProperty('--final-x', `${(index % 8 - 4) * 15}px`);
+                        letterEl.style.setProperty('--final-y', `${Math.floor(index / 8) * 40 - 60}px`);
+                        letterEl.style.setProperty('--random-rotation', `${Math.random() * 720 - 360}deg`);
+                        letterEl.style.setProperty('--random-rotation2', `${Math.random() * 720 - 360}deg`);
+                        letterEl.style.setProperty('--random-rotation3', `${Math.random() * 720 - 360}deg`);
+                        
+                        letterEl.style.animationDelay = `${index * 0.05}s`;
+                        letterEl.style.fontSize = `${1.2 + Math.random() * 0.8}rem`;
+                        
+                        lettersContainer.appendChild(letterEl);
+                    }
+                });
+            }
+            
+            function createMagicParticles() {
+                const particlesContainer = document.getElementById('magic-particles');
+                if (!particlesContainer) return;
+                
+                for (let i = 0; i < 50; i++) {
+                    const particle = document.createElement('div');
+                    particle.className = 'particle';
+                    
+                    // Position initiale aléatoire
+                    particle.style.left = `${Math.random() * 100}%`;
+                    particle.style.top = `${Math.random() * 100}%`;
+                    
+                    // Variables CSS pour l'animation
+                    particle.style.setProperty('--particle-x', `${Math.random() * 200 - 100}px`);
+                    particle.style.setProperty('--particle-y', `${Math.random() * 200 - 100}px`);
+                    particle.style.setProperty('--particle-x2', `${Math.random() * 150 - 75}px`);
+                    particle.style.setProperty('--particle-y2', `${Math.random() * 150 - 75}px`);
+                    particle.style.setProperty('--particle-x3', `${Math.random() * 300 - 150}px`);
+                    particle.style.setProperty('--particle-y3', `${Math.random() * 300 - 150}px`);
+                    
+                    particle.style.animationDelay = `${Math.random() * 3}s`;
+                    particle.style.animationDuration = `${2 + Math.random() * 2}s`;
+                    
+                    particlesContainer.appendChild(particle);
+                }
+            }
+            
+            function createBuildingElements() {
+                const lettersContainer = document.getElementById('letters-container');
+                if (!lettersContainer) return;
+                
+                // Créer des éléments de construction (rectangles représentant les sections du CV)
+                const elements = [
+                    { width: 200, height: 40, x: 300, y: 150, delay: 0 }, // Titre
+                    { width: 150, height: 20, x: 325, y: 200, delay: 0.2 }, // Contact
+                    { width: 180, height: 60, x: 310, y: 240, delay: 0.4 }, // Expérience
+                    { width: 160, height: 40, x: 320, y: 320, delay: 0.6 }, // Formation
+                    { width: 140, height: 50, x: 330, y: 380, delay: 0.8 }  // Compétences
+                ];
+                
+                elements.forEach((elem, index) => {
+                    const buildEl = document.createElement('div');
+                    buildEl.className = 'building-element';
+                    buildEl.style.width = `${elem.width}px`;
+                    buildEl.style.height = `${elem.height}px`;
+                    buildEl.style.left = `${elem.x}px`;
+                    buildEl.style.top = `${elem.y}px`;
+                    buildEl.style.animationDelay = `${elem.delay}s`;
+                    
+                    lettersContainer.appendChild(buildEl);
+                });
+            }
+
             function startAIStepAnimation() {
                 const steps = document.querySelectorAll('.ai-step');
                 const actions = [
@@ -5517,7 +5971,8 @@
                     return;
                 }
 
-                showAIThinking("Optimisation complète du CV", "Analyse et amélioration de tous les éléments");
+                // Lancer l'animation spectaculaire de restructuration
+                const animationPromise = showCVRestructureAnimation();
                 
                 try {
                     const cvContent = {
@@ -5586,13 +6041,17 @@
                             }
                         }
                         
-                        showNotification("CV optimisé avec succès ! ✨", "success", 5000);
+                        // Attendre la fin de l'animation
+                        await animationPromise;
+                        
+                        showNotification("✨ CV entièrement restructuré et optimisé ! ✨", "success", 5000);
                     }
                 } catch (error) {
                     console.error("Erreur lors de l'optimisation:", error);
                     showNotification("Erreur lors de l'optimisation du CV", "error");
+                    hideCVRestructureAnimation();
                 } finally {
-                    hideAIThinking();
+                    // L'animation se cache automatiquement
                 }
             }
 
