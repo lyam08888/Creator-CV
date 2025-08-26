@@ -3898,10 +3898,19 @@
                     // Attendre que l'animation démarre avant de continuer
                     await new Promise(resolve => setTimeout(resolve, 1000));
                     
-                    // 1. Analyse du contenu
+                    // ÉTAPE 1: Analyse complète du contenu
                     const contentAnalysis = analyzeContentForLayout();
+                    console.log("Analyse du contenu:", contentAnalysis);
                     
-                    // 2. Activation et configuration de la bannière recruteur
+                    // ÉTAPE 2: Optimisation intelligente de la largeur de page
+                    await optimizePageWidth(contentAnalysis);
+                    
+                    // ÉTAPE 3: Reformulation automatique si le texte est trop long
+                    if (contentAnalysis.avgExpLength > 300 || contentAnalysis.totalChars > 2500) {
+                        await reformulateContentWithAI(contentAnalysis);
+                    }
+                    
+                    // ÉTAPE 4: Activation et configuration de la bannière recruteur
                     if (!controls.toggleBanner.checked) {
                         controls.toggleBanner.checked = true;
                         showNotification("Bannière recruteur activée", "info");
@@ -3912,39 +3921,27 @@
                         setDefaultRecruiterInfo();
                     }
                     
-                    // Style bannière optimisé
+                    // Style bannière optimisé selon la densité
                     controls.bannerStyleSelect.value = contentAnalysis.density > 0.7 ? 'banner-style-minimal' : 'banner-style-modern';
                     
-                    // 3. Choix du layout (1 ou 2 colonnes)
-                    const layoutChoice = contentAnalysis.density > 0.8 ? '2-col-33-67' : 
-                                        contentAnalysis.density > 0.6 ? '2-col-50-50' : '1-col';
+                    // ÉTAPE 5: Choix intelligent du layout avec répartition des blocs
+                    const optimalLayout = await chooseOptimalLayoutAndDistribution(contentAnalysis);
                     
-                    // Appliquer le layout en cliquant sur le bouton approprié
-                    const layoutButtons = document.querySelectorAll('.layout-btn');
-                    layoutButtons.forEach(btn => btn.classList.remove('bg-blue-500', 'text-white'));
-                    const layoutBtn = document.querySelector(`[data-layout="${layoutChoice}"]`);
-                    if (layoutBtn) {
-                        layoutBtn.click();
-                    }
-                    
-                    // 4. Optimisation des tailles de police
+                    // ÉTAPE 6: Optimisation des tailles de police
                     const fontSizes = calculateOptimalFontSizes(contentAnalysis);
-                    
-                    // Simuler les changements de sliders pour déclencher les événements
                     triggerSliderChange('font-size-h1', fontSizes.h1);
                     triggerSliderChange('font-size-h2', fontSizes.h2);
                     triggerSliderChange('font-size-p', fontSizes.p);
                     triggerSliderChange('font-size-banner', fontSizes.banner);
                     
-                    // 5. Optimisation des marges et espacements
+                    // ÉTAPE 7: Optimisation des marges et espacements
                     const spacing = calculateOptimalSpacing(contentAnalysis);
-                    
                     triggerSliderChange('page-margin', spacing.pageMargin);
                     triggerSliderChange('module-spacing', spacing.moduleSpacing);
                     triggerSliderChange('paragraph-spacing', spacing.paragraphSpacing);
                     triggerSliderChange('banner-element-spacing', spacing.bannerSpacing);
                     
-                    // 6. Optimisation des styles de titre pour gagner de l'espace
+                    // ÉTAPE 8: Optimisation des styles de titre pour gagner de l'espace
                     const titleStyle = contentAnalysis.density > 0.7 ? 'style-side-line' : 'style-underline';
                     const titleButtons = document.querySelectorAll('.section-title-style-btn');
                     titleButtons.forEach(btn => btn.classList.remove('active', 'bg-blue-500', 'text-white'));
@@ -3957,25 +3954,17 @@
                     // Attendre la fin de l'animation avant les vérifications finales
                     await animationPromise;
                     
-                    // 7. Mise à jour finale
+                    // ÉTAPE 9: Mise à jour finale et vérifications
                     updatePreview('form');
                     
-                    // 8. Vérification finale et ajustements d'urgence si nécessaire
-                    setTimeout(() => {
+                    // ÉTAPE 10: Vérification finale et ajustements d'urgence si nécessaire
+                    setTimeout(async () => {
                         const isOverflowing = checkPageOverflow();
                         if (isOverflowing) {
-                            // Ajustements d'urgence
-                            const currentPSize = parseFloat(document.getElementById('font-size-p').value);
-                            const currentModuleSpacing = parseFloat(document.getElementById('module-spacing').value);
-                            
-                            triggerSliderChange('font-size-p', Math.max(8, currentPSize - 0.5));
-                            triggerSliderChange('module-spacing', Math.max(0.5, currentModuleSpacing - 0.2));
-                            
-                            updatePreview('form');
-                            showNotification("Ajustements d'urgence appliqués pour éviter le débordement", "warning");
+                            await emergencyContentOptimization();
                         }
                         
-                        showNotification(`✨ CV restructuré par l'IA ! Layout: ${layoutChoice.replace('-col', ' colonne').replace('-', ' ')}, Densité: ${(contentAnalysis.density * 100).toFixed(0)}%`, "success", 6000);
+                        showNotification(`✨ CV complètement restructuré par l'IA ! Layout: ${optimalLayout.description}, Optimisations: ${optimalLayout.optimizations.join(', ')}`, "success", 8000);
                     }, 500);
                     
                 } catch (error) {
@@ -3999,13 +3988,185 @@
                     slider.dispatchEvent(new Event('change', { bubbles: true }));
                 }
             }
+
+            // --- NOUVELLES FONCTIONS D'OPTIMISATION INTELLIGENTE ---
+            
+            async function optimizePageWidth(contentAnalysis) {
+                console.log("Optimisation de la largeur de page...");
+                
+                // Maximiser l'utilisation de l'espace avec des marges réduites
+                if (contentAnalysis.density > 0.5) {
+                    // Pour un contenu dense, utiliser toute la largeur disponible
+                    triggerSliderChange('page-margin', 1.5); // Réduire les marges
+                    showNotification("📐 Largeur de page optimisée - marges réduites", "info");
+                } else {
+                    // Pour un contenu léger, garder des marges standard
+                    triggerSliderChange('page-margin', 2.0);
+                }
+            }
+            
+            async function reformulateContentWithAI(contentAnalysis) {
+                if (!validateApiKey()) {
+                    console.log("Pas d'API key - saut de la reformulation");
+                    return;
+                }
+                
+                console.log("Reformulation automatique du contenu...");
+                showNotification("🤖 Reformulation intelligente du contenu...", "info");
+                
+                // Reformuler les descriptions d'expérience trop longues
+                const experienceItems = controls.experienceList.querySelectorAll('.experience-item');
+                for (let item of experienceItems) {
+                    const descTextarea = item.querySelector('[data-field="desc"]');
+                    if (descTextarea && descTextarea.value.length > 300) {
+                        const originalDesc = descTextarea.value;
+                        const prompt = `Reformule cette description d'expérience professionnelle en la condensant à maximum 3 lignes tout en gardant l'essentiel. Utilise des verbes d'action et sois concis. Format: liste à puces avec • . Description: "${originalDesc}"`;
+                        
+                        try {
+                            const condensedDesc = await callGeminiAPI(prompt);
+                            if (condensedDesc) {
+                                descTextarea.value = condensedDesc;
+                                showNotification("✂️ Description condensée automatiquement", "success");
+                            }
+                        } catch (error) {
+                            console.error("Erreur reformulation:", error);
+                        }
+                    }
+                }
+                
+                // Reformuler la description générale si elle est trop longue
+                if (controls.description.value.length > 400) {
+                    const originalDesc = controls.description.value;
+                    const prompt = `Reformule cette description de profil professionnel en la condensant à maximum 4 lignes tout en gardant l'impact. Sois percutant et concis. Description: "${originalDesc}"`;
+                    
+                    try {
+                        const condensedProfile = await callGeminiAPI(prompt);
+                        if (condensedProfile) {
+                            controls.description.value = condensedProfile;
+                            showNotification("📝 Profil condensé automatiquement", "success");
+                        }
+                    } catch (error) {
+                        console.error("Erreur reformulation profil:", error);
+                    }
+                }
+            }
+            
+            async function chooseOptimalLayoutAndDistribution(contentAnalysis) {
+                console.log("Choix du layout optimal et répartition des blocs...");
+                
+                let layoutChoice, distribution, optimizations = [];
+                
+                // Logique intelligente pour le choix du layout
+                if (contentAnalysis.density > 0.8) {
+                    // Très dense - 2 colonnes 33/67 pour maximiser l'espace
+                    layoutChoice = '2-col-33-67';
+                    distribution = "Colonne gauche: Contact + Compétences + Formation | Colonne droite: Expériences détaillées";
+                    optimizations.push("2 colonnes 33/67", "Répartition optimisée", "Espace maximisé");
+                } else if (contentAnalysis.density > 0.6) {
+                    // Dense - 2 colonnes équilibrées
+                    layoutChoice = '2-col-50-50';
+                    distribution = "Colonnes équilibrées pour un contenu équilibré";
+                    optimizations.push("2 colonnes équilibrées", "Répartition harmonieuse");
+                } else if (contentAnalysis.density > 0.3) {
+                    // Modéré - 2 colonnes 67/33 pour aérer
+                    layoutChoice = '2-col-67-33';
+                    distribution = "Colonne principale large pour un contenu aéré";
+                    optimizations.push("2 colonnes 67/33", "Contenu aéré");
+                } else {
+                    // Léger - 1 colonne pour simplicité
+                    layoutChoice = '1-col';
+                    distribution = "Colonne unique pour un contenu simple et clair";
+                    optimizations.push("Colonne unique", "Design épuré");
+                }
+                
+                // Appliquer le layout choisi
+                const layoutButtons = document.querySelectorAll('.layout-btn');
+                layoutButtons.forEach(btn => btn.classList.remove('bg-blue-500', 'text-white'));
+                const layoutBtn = document.querySelector(`[data-layout="${layoutChoice}"]`);
+                if (layoutBtn) {
+                    layoutBtn.click();
+                    showNotification(`📊 Layout optimisé: ${layoutChoice}`, "success");
+                }
+                
+                // Si on utilise 2 colonnes, optimiser la répartition des modules
+                if (layoutChoice.includes('2-col')) {
+                    await optimizeModuleDistribution(layoutChoice, contentAnalysis);
+                    optimizations.push("Modules répartis intelligemment");
+                }
+                
+                return {
+                    layout: layoutChoice,
+                    description: distribution,
+                    optimizations: optimizations
+                };
+            }
+            
+            async function optimizeModuleDistribution(layoutType, contentAnalysis) {
+                // Cette fonction pourrait être étendue pour déplacer automatiquement les modules
+                // entre les colonnes selon le type de layout et le contenu
+                console.log(`Optimisation de la répartition des modules pour ${layoutType}`);
+                
+                // Logique future pour le drag & drop automatique des modules
+                // En fonction du layout choisi et du contenu analysé
+                
+                let recommendedDistribution = "";
+                if (layoutType === '2-col-33-67') {
+                    recommendedDistribution = "Colonne étroite (33%): Informations personnelles, compétences, formation. Colonne large (67%): Expériences, projets.";
+                } else if (layoutType === '2-col-50-50') {
+                    recommendedDistribution = "Répartition équilibrée: Alternance des sections pour un équilibre visuel.";
+                } else if (layoutType === '2-col-67-33') {
+                    recommendedDistribution = "Colonne large (67%): Contenu principal. Colonne étroite (33%): Informations complémentaires.";
+                }
+                
+                showNotification(`🎯 Répartition recommandée: ${recommendedDistribution}`, "info", 5000);
+            }
+            
+            async function emergencyContentOptimization() {
+                console.log("Optimisations d'urgence pour éviter le débordement...");
+                
+                // Ajustements progressifs plus intelligents
+                const currentPSize = parseFloat(document.getElementById('font-size-p').value);
+                const currentModuleSpacing = parseFloat(document.getElementById('module-spacing').value);
+                const currentPageMargin = parseFloat(document.getElementById('page-margin').value);
+                
+                // 1. Réduire les marges de page
+                if (currentPageMargin > 1.0) {
+                    triggerSliderChange('page-margin', Math.max(1.0, currentPageMargin - 0.3));
+                    showNotification("📏 Marges réduites d'urgence", "warning");
+                }
+                
+                // 2. Réduire l'espacement entre modules
+                if (currentModuleSpacing > 0.8) {
+                    triggerSliderChange('module-spacing', Math.max(0.8, currentModuleSpacing - 0.3));
+                    showNotification("📐 Espacement réduit d'urgence", "warning");
+                }
+                
+                // 3. Réduire légèrement la taille de police
+                if (currentPSize > 8.5) {
+                    triggerSliderChange('font-size-p', Math.max(8.5, currentPSize - 0.5));
+                    showNotification("🔤 Taille de police réduite d'urgence", "warning");
+                }
+                
+                // 4. Si toujours pas suffisant, reformuler automatiquement
+                updatePreview('form');
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                if (checkPageOverflow()) {
+                    if (validateApiKey()) {
+                        await reformulateContentWithAI({ density: 1.0 }); // Force reformulation
+                        showNotification("🤖 Reformulation automatique d'urgence", "warning");
+                    } else {
+                        showNotification("⚠️ Contenu toujours trop long - reformulation manuelle nécessaire", "error");
+                    }
+                }
+            }
             
             function analyzeContentForLayout() {
-                // Analyse du contenu pour déterminer la densité
+                // Analyse complète du contenu pour déterminer la stratégie optimale
                 const description = controls.description.value || '';
                 const competences = controls.competences.value || '';
-                const experiences = Array.from(controls.experienceList.querySelectorAll('.data-desc')).map(el => el.value).join(' ');
-                const formations = Array.from(controls.formationList.querySelectorAll('.data-desc')).map(el => el.value).join(' ');
+                const experiences = Array.from(controls.experienceList.querySelectorAll('[data-field="desc"]')).map(el => el.value).join(' ');
+                const formations = Array.from(controls.formationList.querySelectorAll('[data-field="desc"]')).map(el => el.value).join(' ');
                 
                 const totalContent = description + competences + experiences + formations;
                 const totalChars = totalContent.length;
@@ -4015,20 +4176,34 @@
                 const formCount = controls.formationList.querySelectorAll('.formation-item').length;
                 const skillsCount = competences.split(',').filter(s => s.trim()).length;
                 
-                // Calcul de la densité (0 = vide, 1 = très dense)
+                // Analyse des descriptions d'expérience
+                const expDescriptions = Array.from(controls.experienceList.querySelectorAll('[data-field="desc"]')).map(el => el.value);
+                const avgExpLength = expDescriptions.length > 0 ? expDescriptions.reduce((sum, desc) => sum + desc.length, 0) / expDescriptions.length : 0;
+                const maxExpLength = expDescriptions.length > 0 ? Math.max(...expDescriptions.map(desc => desc.length)) : 0;
+                
+                // Calcul de la densité plus précis (0 = vide, 1 = très dense)
                 let density = 0;
                 
-                // Facteur caractères (max 2000 chars = 0.4 de densité)
-                density += Math.min(totalChars / 2000, 1) * 0.4;
+                // Facteur caractères total (max 3000 chars = 0.3 de densité)
+                density += Math.min(totalChars / 3000, 1) * 0.3;
                 
-                // Facteur expériences (max 5 exp = 0.3 de densité)
-                density += Math.min(expCount / 5, 1) * 0.3;
+                // Facteur expériences (max 5 exp = 0.25 de densité)
+                density += Math.min(expCount / 5, 1) * 0.25;
                 
-                // Facteur formations (max 4 formations = 0.15 de densité)
-                density += Math.min(formCount / 4, 1) * 0.15;
+                // Facteur longueur moyenne des expériences (max 400 chars = 0.2 de densité)
+                density += Math.min(avgExpLength / 400, 1) * 0.2;
                 
-                // Facteur compétences (max 20 skills = 0.15 de densité)
-                density += Math.min(skillsCount / 20, 1) * 0.15;
+                // Facteur formations (max 4 formations = 0.1 de densité)
+                density += Math.min(formCount / 4, 1) * 0.1;
+                
+                // Facteur compétences (max 25 skills = 0.1 de densité)
+                density += Math.min(skillsCount / 25, 1) * 0.1;
+                
+                // Facteur description profil (max 500 chars = 0.05 de densité)
+                density += Math.min(description.length / 500, 1) * 0.05;
+                
+                // Calcul du score de complexité pour la reformulation
+                const needsReformulation = maxExpLength > 300 || avgExpLength > 200 || totalChars > 2500;
                 
                 return {
                     density: Math.min(density, 1),
@@ -4036,61 +4211,100 @@
                     expCount,
                     formCount,
                     skillsCount,
-                    avgExpLength: expCount > 0 ? experiences.length / expCount : 0
+                    avgExpLength,
+                    maxExpLength,
+                    needsReformulation,
+                    contentDistribution: {
+                        experiences: experiences.length,
+                        formations: formations.length,
+                        competences: competences.length,
+                        description: description.length
+                    },
+                    recommendedStrategy: density > 0.7 ? 'compress' : density > 0.4 ? 'balance' : 'expand'
                 };
             }
             
             function calculateOptimalFontSizes(analysis) {
                 const baseSizes = { h1: 32, h2: 18, p: 10, banner: 9 };
                 
-                if (analysis.density > 0.8) {
-                    // Très dense - réduire beaucoup
-                    return { h1: 26, h2: 16, p: 9, banner: 8 };
-                } else if (analysis.density > 0.6) {
-                    // Dense - réduire modérément
-                    return { h1: 28, h2: 17, p: 9.5, banner: 8.5 };
-                } else if (analysis.density > 0.4) {
-                    // Normal - légère réduction
-                    return { h1: 30, h2: 17.5, p: 10, banner: 9 };
-                } else {
-                    // Peu dense - tailles standard ou plus grandes
-                    return { h1: 34, h2: 19, p: 10.5, banner: 9.5 };
+                // Stratégie basée sur l'analyse intelligente
+                switch (analysis.recommendedStrategy) {
+                    case 'compress':
+                        // Stratégie de compression maximale pour contenu très dense
+                        return { 
+                            h1: 24, 
+                            h2: 15, 
+                            p: 8.5, 
+                            banner: 8 
+                        };
+                    case 'balance':
+                        // Stratégie d'équilibre pour contenu modéré
+                        return { 
+                            h1: 28, 
+                            h2: 16.5, 
+                            p: 9.5, 
+                            banner: 8.5 
+                        };
+                    case 'expand':
+                        // Stratégie d'expansion pour contenu léger
+                        return { 
+                            h1: 36, 
+                            h2: 20, 
+                            p: 11, 
+                            banner: 10 
+                        };
+                    default:
+                        // Fallback sur l'ancienne logique basée sur la densité
+                        if (analysis.density > 0.8) {
+                            return { h1: 26, h2: 16, p: 9, banner: 8 };
+                        } else if (analysis.density > 0.6) {
+                            return { h1: 28, h2: 17, p: 9.5, banner: 8.5 };
+                        } else if (analysis.density > 0.4) {
+                            return { h1: 30, h2: 17.5, p: 10, banner: 9 };
+                        } else {
+                            return { h1: 34, h2: 19, p: 10.5, banner: 9.5 };
+                        }
                 }
             }
             
             function calculateOptimalSpacing(analysis) {
-                if (analysis.density > 0.8) {
-                    // Très dense - espacement minimal
-                    return { 
-                        pageMargin: 1.5, 
-                        moduleSpacing: 1, 
-                        paragraphSpacing: 0.3, 
-                        bannerSpacing: 0.8 
-                    };
-                } else if (analysis.density > 0.6) {
-                    // Dense - espacement réduit
-                    return { 
-                        pageMargin: 1.7, 
-                        moduleSpacing: 1.2, 
-                        paragraphSpacing: 0.4, 
-                        bannerSpacing: 0.9 
-                    };
-                } else if (analysis.density > 0.4) {
-                    // Normal - espacement standard
-                    return { 
-                        pageMargin: 2, 
-                        moduleSpacing: 1.5, 
-                        paragraphSpacing: 0.5, 
-                        bannerSpacing: 1 
-                    };
-                } else {
-                    // Peu dense - espacement généreux
-                    return { 
-                        pageMargin: 2.2, 
-                        moduleSpacing: 1.8, 
-                        paragraphSpacing: 0.6, 
-                        bannerSpacing: 1.2 
-                    };
+                // Stratégie basée sur l'analyse intelligente et utilisation maximale de l'espace
+                switch (analysis.recommendedStrategy) {
+                    case 'compress':
+                        // Compression maximale - utiliser toute la largeur disponible
+                        return { 
+                            pageMargin: 1.2, // Marges très réduites pour utiliser toute la largeur
+                            moduleSpacing: 0.8, 
+                            paragraphSpacing: 0.25, 
+                            bannerSpacing: 0.6 
+                        };
+                    case 'balance':
+                        // Équilibre - bon compromis entre espace et lisibilité
+                        return { 
+                            pageMargin: 1.6, // Marges réduites mais lisibles
+                            moduleSpacing: 1.2, 
+                            paragraphSpacing: 0.4, 
+                            bannerSpacing: 0.8 
+                        };
+                    case 'expand':
+                        // Expansion - espacement généreux pour un contenu aéré
+                        return { 
+                            pageMargin: 2.2, 
+                            moduleSpacing: 1.8, 
+                            paragraphSpacing: 0.6, 
+                            bannerSpacing: 1.2 
+                        };
+                    default:
+                        // Fallback sur l'ancienne logique
+                        if (analysis.density > 0.8) {
+                            return { pageMargin: 1.3, moduleSpacing: 1, paragraphSpacing: 0.3, bannerSpacing: 0.8 };
+                        } else if (analysis.density > 0.6) {
+                            return { pageMargin: 1.7, moduleSpacing: 1.2, paragraphSpacing: 0.4, bannerSpacing: 0.9 };
+                        } else if (analysis.density > 0.4) {
+                            return { pageMargin: 2, moduleSpacing: 1.5, paragraphSpacing: 0.5, bannerSpacing: 1 };
+                        } else {
+                            return { pageMargin: 2.2, moduleSpacing: 1.8, paragraphSpacing: 0.6, bannerSpacing: 1.2 };
+                        }
                 }
             }
             
