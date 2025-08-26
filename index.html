@@ -651,6 +651,185 @@
             100% { left: 100%; }
         }
 
+        /* Styles pour les barres redimensionnables */
+        .resizable-panel {
+            position: relative;
+            transition: width 0.3s ease, height 0.3s ease;
+        }
+
+        .resize-handle {
+            position: absolute;
+            background: transparent;
+            transition: all 0.2s ease;
+            z-index: 100;
+        }
+
+        .resize-handle:hover,
+        .resize-handle.dragging {
+            background: rgba(59, 130, 246, 0.3);
+        }
+
+        .resize-handle-right {
+            top: 0;
+            right: -3px;
+            width: 6px;
+            height: 100%;
+            cursor: ew-resize;
+        }
+
+        .resize-handle-bottom {
+            left: 0;
+            bottom: -3px;
+            width: 100%;
+            height: 6px;
+            cursor: ns-resize;
+        }
+
+        .resize-handle-corner {
+            bottom: -3px;
+            right: -3px;
+            width: 10px;
+            height: 10px;
+            cursor: nw-resize;
+            background: rgba(59, 130, 246, 0.5);
+            border-radius: 2px;
+        }
+
+        /* Styles pour le contrôleur de zoom */
+        .zoom-controls {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            padding: 15px;
+            z-index: 1000;
+            border: 1px solid #e5e7eb;
+            min-width: 250px;
+        }
+
+        .zoom-slider-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 8px;
+        }
+
+        .zoom-slider {
+            flex: 1;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 6px;
+            background: #e5e7eb;
+            border-radius: 3px;
+            outline: none;
+        }
+
+        .zoom-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #3b82f6;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .zoom-slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: #3b82f6;
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .zoom-btn {
+            background: #f3f4f6;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: #374151;
+            font-weight: bold;
+        }
+
+        .zoom-btn:hover {
+            background: #e5e7eb;
+            border-color: #9ca3af;
+        }
+
+        .zoom-value {
+            min-width: 45px;
+            text-align: center;
+            font-weight: 600;
+            color: #374151;
+            font-size: 14px;
+        }
+
+        /* Styles pour les boutons de toggle des panneaux */
+        .panel-toggle {
+            position: fixed;
+            z-index: 999;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            padding: 8px 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: #374151;
+            font-size: 14px;
+        }
+
+        .panel-toggle:hover {
+            background: #f3f4f6;
+            border-color: #3b82f6;
+            color: #3b82f6;
+        }
+
+        .panel-toggle-left {
+            top: 50%;
+            left: 10px;
+            transform: translateY(-50%);
+        }
+
+        .panel-toggle-top {
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        /* Styles pour l'aperçu avec zoom */
+        .cv-preview-container {
+            transform-origin: top left;
+            transition: transform 0.3s ease;
+        }
+
+        /* Styles pour les panneaux masqués */
+        .panel-hidden {
+            transform: translateX(-100%);
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .top-toolbar.panel-hidden {
+            transform: translateY(-100%);
+        }
+
+        /* Animation pour les transitions */
+        .transition-panel {
+            transition: all 0.3s ease;
+        }
+
         .ai-thinking-container {
             background: white;
             border-radius: 20px;
@@ -1238,7 +1417,10 @@
 <body class="bg-gray-200 font-sans">
 
     <!-- BARRE D'OUTILS SUPÉRIEURE -->
-    <div class="top-toolbar no-print">
+    <div class="top-toolbar no-print resizable-panel transition-panel">
+        <!-- Handle de redimensionnement pour la barre du haut -->
+        <div class="resize-handle resize-handle-bottom" data-panel="top-toolbar"></div>
+        
         <div class="toolbar-section">
             <div class="tooltip">
                 <button id="toolbar-pdf-btn" class="toolbar-btn">
@@ -1371,7 +1553,10 @@
     
     <div class="flex flex-col lg:flex-row min-h-screen">
         <!-- CONTROLS PANEL -->
-        <div id="controls" class="w-full lg:w-1/3 xl:w-1/4 p-6 bg-white shadow-2xl overflow-y-auto flex flex-col no-print">
+        <div id="controls" class="resizable-panel w-full lg:w-1/3 xl:w-1/4 p-6 bg-white shadow-2xl overflow-y-auto flex flex-col no-print transition-panel">
+            <!-- Handle de redimensionnement pour le panneau de gauche -->
+            <div class="resize-handle resize-handle-right" data-panel="controls"></div>
+            
             <div class="flex justify-between items-center mb-4 flex-shrink-0">
                 <div class="flex items-center gap-3">
                     <i class="fas fa-magic-wand-sparkles text-3xl text-blue-600"></i>
@@ -2240,7 +2425,7 @@
 
         <!-- PREVIEW PANEL -->
         <div class="w-full lg:w-2/3 xl:w-3/4 p-8 bg-gray-200 flex justify-center items-start overflow-auto" id="preview-area">
-            <div id="cv-preview-wrapper">
+            <div id="cv-preview-wrapper" class="cv-preview-container">
                 <div class="a4-page-container">
                     <div id="page-1" class="a4-page">
                         <div id="fixed-banner-top"></div>
@@ -2324,6 +2509,51 @@
                 <button id="confirm-modal-cancel-btn" class="px-4 py-2 bg-gray-200 text-sm rounded-md hover:bg-gray-300">Annuler</button>
                 <button id="confirm-modal-ok-btn" class="px-4 py-2 bg-red-600 text-white text-sm rounded-md hover:bg-red-700">Confirmer</button>
             </div>
+        </div>
+    </div>
+
+    <!-- Boutons de toggle pour masquer/afficher les panneaux -->
+    <div id="panel-toggle-left" class="panel-toggle panel-toggle-left" title="Masquer/Afficher le panneau de gauche">
+        <i class="fas fa-chevron-left"></i>
+    </div>
+    
+    <div id="panel-toggle-top" class="panel-toggle panel-toggle-top" title="Masquer/Afficher la barre d'outils">
+        <i class="fas fa-chevron-up"></i>
+    </div>
+
+    <!-- Contrôleur de zoom -->
+    <div id="zoom-controls" class="zoom-controls">
+        <div class="flex items-center justify-between">
+            <span class="text-sm font-medium text-gray-700">
+                <i class="fas fa-search-plus mr-2"></i>Zoom CV
+            </span>
+            <button id="zoom-reset" class="text-xs text-blue-600 hover:text-blue-800" title="Réinitialiser le zoom">
+                <i class="fas fa-undo"></i>
+            </button>
+        </div>
+        
+        <div class="zoom-slider-container">
+            <button class="zoom-btn" id="zoom-out" title="Dézoomer">
+                <i class="fas fa-minus"></i>
+            </button>
+            
+            <input type="range" 
+                   id="zoom-slider" 
+                   class="zoom-slider" 
+                   min="25" 
+                   max="200" 
+                   value="100" 
+                   step="5">
+            
+            <button class="zoom-btn" id="zoom-in" title="Zoomer">
+                <i class="fas fa-plus"></i>
+            </button>
+            
+            <span class="zoom-value" id="zoom-value">100%</span>
+        </div>
+        
+        <div class="text-xs text-gray-500 mt-2 text-center">
+            Ajustez la taille d'affichage du CV
         </div>
     </div>
 
@@ -2529,7 +2759,18 @@
                     text: document.getElementById('confirm-modal-text'),
                     okBtn: document.getElementById('confirm-modal-ok-btn'),
                     cancelBtn: document.getElementById('confirm-modal-cancel-btn'),
-                }
+                },
+                // Nouveaux contrôles pour le redimensionnement et le zoom
+                panelToggleLeft: document.getElementById('panel-toggle-left'),
+                panelToggleTop: document.getElementById('panel-toggle-top'),
+                zoomControls: document.getElementById('zoom-controls'),
+                zoomSlider: document.getElementById('zoom-slider'),
+                zoomValue: document.getElementById('zoom-value'),
+                zoomIn: document.getElementById('zoom-in'),
+                zoomOut: document.getElementById('zoom-out'),
+                zoomReset: document.getElementById('zoom-reset'),
+                controlsPanel: document.getElementById('controls'),
+                topToolbar: document.querySelector('.top-toolbar')
             };
 
             // --- DYNAMIC SELECTORS ---
@@ -4359,6 +4600,11 @@
                 populateIconPicker();
                 initializeAdvancedLayoutControls();
                 initializeCollapseAllButton();
+                
+                // --- NOUVELLES FONCTIONS POUR REDIMENSIONNEMENT ET ZOOM ---
+                initializeResizablePanels();
+                initializePanelToggles();
+                initializeZoomControls();
 
                 // --- EVENT LISTENERS ---
 
@@ -5781,6 +6027,237 @@
                     btnText.textContent = 'Développer toutes les sections';
                     btnIcon.className = 'fas fa-expand-alt';
                     showNotification('Toutes les sections ont été réduites', 'success', 2000);
+                }
+            }
+
+            // --- NOUVELLES FONCTIONS POUR REDIMENSIONNEMENT ET ZOOM ---
+            
+            function initializeResizablePanels() {
+                const resizeHandles = document.querySelectorAll('.resize-handle');
+                
+                resizeHandles.forEach(handle => {
+                    let isResizing = false;
+                    let startX, startY, startWidth, startHeight;
+                    let targetPanel;
+                    
+                    handle.addEventListener('mousedown', (e) => {
+                        isResizing = true;
+                        const panelId = handle.getAttribute('data-panel');
+                        
+                        if (panelId === 'controls') {
+                            targetPanel = controls.controlsPanel;
+                        } else if (panelId === 'top-toolbar') {
+                            targetPanel = controls.topToolbar;
+                        }
+                        
+                        if (!targetPanel) return;
+                        
+                        startX = e.clientX;
+                        startY = e.clientY;
+                        
+                        const rect = targetPanel.getBoundingClientRect();
+                        startWidth = rect.width;
+                        startHeight = rect.height;
+                        
+                        handle.classList.add('dragging');
+                        document.body.style.cursor = handle.classList.contains('resize-handle-right') ? 'ew-resize' : 'ns-resize';
+                        
+                        e.preventDefault();
+                    });
+                    
+                    document.addEventListener('mousemove', (e) => {
+                        if (!isResizing || !targetPanel) return;
+                        
+                        if (handle.classList.contains('resize-handle-right')) {
+                            // Redimensionnement horizontal (panneau de gauche)
+                            const newWidth = startWidth + (e.clientX - startX);
+                            const minWidth = 250;
+                            const maxWidth = window.innerWidth * 0.6;
+                            
+                            if (newWidth >= minWidth && newWidth <= maxWidth) {
+                                targetPanel.style.width = newWidth + 'px';
+                                targetPanel.style.flexBasis = newWidth + 'px';
+                            }
+                        } else if (handle.classList.contains('resize-handle-bottom')) {
+                            // Redimensionnement vertical (barre du haut)
+                            const newHeight = startHeight + (e.clientY - startY);
+                            const minHeight = 50;
+                            const maxHeight = window.innerHeight * 0.3;
+                            
+                            if (newHeight >= minHeight && newHeight <= maxHeight) {
+                                targetPanel.style.height = newHeight + 'px';
+                            }
+                        }
+                        
+                        e.preventDefault();
+                    });
+                    
+                    document.addEventListener('mouseup', () => {
+                        if (isResizing) {
+                            isResizing = false;
+                            handle.classList.remove('dragging');
+                            document.body.style.cursor = '';
+                            
+                            // Sauvegarder les tailles dans localStorage
+                            if (targetPanel === controls.controlsPanel) {
+                                localStorage.setItem('cvCreator_controlsPanelWidth', targetPanel.style.width);
+                            } else if (targetPanel === controls.topToolbar) {
+                                localStorage.setItem('cvCreator_topToolbarHeight', targetPanel.style.height);
+                            }
+                        }
+                    });
+                });
+                
+                // Restaurer les tailles sauvegardées
+                restorePanelSizes();
+            }
+            
+            function restorePanelSizes() {
+                const savedControlsWidth = localStorage.getItem('cvCreator_controlsPanelWidth');
+                const savedToolbarHeight = localStorage.getItem('cvCreator_topToolbarHeight');
+                
+                if (savedControlsWidth && controls.controlsPanel) {
+                    controls.controlsPanel.style.width = savedControlsWidth;
+                    controls.controlsPanel.style.flexBasis = savedControlsWidth;
+                }
+                
+                if (savedToolbarHeight && controls.topToolbar) {
+                    controls.topToolbar.style.height = savedToolbarHeight;
+                }
+            }
+            
+            function initializePanelToggles() {
+                let leftPanelVisible = true;
+                let topPanelVisible = true;
+                
+                // Toggle panneau de gauche
+                if (controls.panelToggleLeft) {
+                    controls.panelToggleLeft.addEventListener('click', () => {
+                        leftPanelVisible = !leftPanelVisible;
+                        
+                        if (leftPanelVisible) {
+                            controls.controlsPanel.classList.remove('panel-hidden');
+                            controls.panelToggleLeft.innerHTML = '<i class="fas fa-chevron-left"></i>';
+                            controls.panelToggleLeft.title = 'Masquer le panneau de gauche';
+                        } else {
+                            controls.controlsPanel.classList.add('panel-hidden');
+                            controls.panelToggleLeft.innerHTML = '<i class="fas fa-chevron-right"></i>';
+                            controls.panelToggleLeft.title = 'Afficher le panneau de gauche';
+                        }
+                        
+                        localStorage.setItem('cvCreator_leftPanelVisible', leftPanelVisible);
+                    });
+                }
+                
+                // Toggle barre du haut
+                if (controls.panelToggleTop) {
+                    controls.panelToggleTop.addEventListener('click', () => {
+                        topPanelVisible = !topPanelVisible;
+                        
+                        if (topPanelVisible) {
+                            controls.topToolbar.classList.remove('panel-hidden');
+                            controls.panelToggleTop.innerHTML = '<i class="fas fa-chevron-up"></i>';
+                            controls.panelToggleTop.title = 'Masquer la barre d\'outils';
+                        } else {
+                            controls.topToolbar.classList.add('panel-hidden');
+                            controls.panelToggleTop.innerHTML = '<i class="fas fa-chevron-down"></i>';
+                            controls.panelToggleTop.title = 'Afficher la barre d\'outils';
+                        }
+                        
+                        localStorage.setItem('cvCreator_topPanelVisible', topPanelVisible);
+                    });
+                }
+                
+                // Restaurer l'état des panneaux
+                const savedLeftPanelState = localStorage.getItem('cvCreator_leftPanelVisible');
+                const savedTopPanelState = localStorage.getItem('cvCreator_topPanelVisible');
+                
+                if (savedLeftPanelState === 'false') {
+                    controls.panelToggleLeft.click();
+                }
+                
+                if (savedTopPanelState === 'false') {
+                    controls.panelToggleTop.click();
+                }
+            }
+            
+            function initializeZoomControls() {
+                let currentZoom = 100;
+                
+                // Fonction pour appliquer le zoom
+                function applyZoom(zoomLevel) {
+                    currentZoom = Math.max(25, Math.min(200, zoomLevel));
+                    const scale = currentZoom / 100;
+                    
+                    if (preview.previewWrapper) {
+                        preview.previewWrapper.style.transform = `scale(${scale})`;
+                        controls.zoomValue.textContent = currentZoom + '%';
+                        controls.zoomSlider.value = currentZoom;
+                        
+                        // Sauvegarder le niveau de zoom
+                        localStorage.setItem('cvCreator_zoomLevel', currentZoom);
+                    }
+                }
+                
+                // Event listeners pour les contrôles de zoom
+                if (controls.zoomSlider) {
+                    controls.zoomSlider.addEventListener('input', (e) => {
+                        applyZoom(parseInt(e.target.value));
+                    });
+                }
+                
+                if (controls.zoomIn) {
+                    controls.zoomIn.addEventListener('click', () => {
+                        applyZoom(currentZoom + 10);
+                    });
+                }
+                
+                if (controls.zoomOut) {
+                    controls.zoomOut.addEventListener('click', () => {
+                        applyZoom(currentZoom - 10);
+                    });
+                }
+                
+                if (controls.zoomReset) {
+                    controls.zoomReset.addEventListener('click', () => {
+                        applyZoom(100);
+                        showNotification('Zoom réinitialisé à 100%', 'success', 2000);
+                    });
+                }
+                
+                // Zoom avec la molette de la souris (Ctrl + molette)
+                if (preview.previewWrapper) {
+                    document.getElementById('preview-area').addEventListener('wheel', (e) => {
+                        if (e.ctrlKey) {
+                            e.preventDefault();
+                            const delta = e.deltaY > 0 ? -5 : 5;
+                            applyZoom(currentZoom + delta);
+                        }
+                    });
+                }
+                
+                // Raccourcis clavier pour le zoom
+                document.addEventListener('keydown', (e) => {
+                    if (e.ctrlKey) {
+                        if (e.key === '+' || e.key === '=') {
+                            e.preventDefault();
+                            applyZoom(currentZoom + 10);
+                        } else if (e.key === '-') {
+                            e.preventDefault();
+                            applyZoom(currentZoom - 10);
+                        } else if (e.key === '0') {
+                            e.preventDefault();
+                            applyZoom(100);
+                        }
+                    }
+                });
+                
+                // Restaurer le niveau de zoom sauvegardé
+                const savedZoom = localStorage.getItem('cvCreator_zoomLevel');
+                if (savedZoom) {
+                    applyZoom(parseInt(savedZoom));
+                } else {
+                    applyZoom(100);
                 }
             }
 
