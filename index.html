@@ -5,15 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Créateur de CV IA - Pro Recruteur</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        // Configuration Tailwind pour éviter les warnings de production
-        tailwind.config = {
-            content: [],
-            theme: {
-                extend: {}
-            }
-        }
-    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Montserrat:wght@400;500;700;800&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Roboto+Mono:wght@400;700&family=Merriweather:wght@400;700&family=Oswald:wght@400;700&family=Cormorant+Garamond:wght@400;700&family=Open+Sans:wght@400;700&family=Source+Sans+Pro:wght@400;700&family=Nunito+Sans:wght@400;700&display=swap" rel="stylesheet">
@@ -412,11 +403,13 @@
             justify-content: center;
             z-index: 10000;
             opacity: 0;
+            pointer-events: none;
             transition: opacity 0.3s ease;
         }
 
         .ai-thinking-overlay.active {
             opacity: 1;
+            pointer-events: auto;
         }
 
         .ai-thinking-container {
@@ -1130,7 +1123,7 @@
     </div>
 
     <!-- OVERLAYS AND MODALS -->
-    <div id="loader-overlay" class="hidden fixed inset-0 bg-white bg-opacity-75 flex-col items-center justify-center z-[9999]">
+    <div id="loader-overlay" class="hidden fixed inset-0 bg-white bg-opacity-75 flex-col items-center justify-center z-[9999]" style="pointer-events: none;">
         <div class="h-16 w-16 rounded-full border-4 border-gray-200 border-t-blue-600 animate-spin"></div>
         <p id="loader-text" class="mt-4 text-gray-600 font-medium">Chargement...</p>
     </div>
@@ -2101,6 +2094,37 @@
         // This script is now self-contained and does not use Firebase for saving.
         
         document.addEventListener('DOMContentLoaded', function() {
+            // --- ENSURE ALL OVERLAYS ARE HIDDEN ON PAGE LOAD ---
+            function hideAllOverlays() {
+                // Hide loader overlay
+                const loaderOverlay = document.getElementById('loader-overlay');
+                if (loaderOverlay) {
+                    loaderOverlay.classList.add('hidden');
+                    loaderOverlay.classList.remove('flex');
+                }
+                
+                // Hide AI thinking overlay
+                const aiThinkingOverlay = document.getElementById('ai-thinking-overlay');
+                if (aiThinkingOverlay) {
+                    aiThinkingOverlay.classList.remove('active');
+                }
+                
+                // Hide confirm modal
+                const confirmModal = document.getElementById('confirm-modal-overlay');
+                if (confirmModal) {
+                    confirmModal.classList.remove('active');
+                }
+                
+                // Ensure body doesn't have presentation mode class
+                document.body.classList.remove('presentation-mode', 'overflow-check-active', 'is-resizing');
+                
+                // Enable pointer events on body
+                document.body.style.pointerEvents = 'auto';
+            }
+            
+            // Call immediately to fix any stuck overlays
+            hideAllOverlays();
+            
             // --- GLOBAL SELECTORS (STATIC) ---
             const controls = {
                 aiInput: document.getElementById('ai-input'), analyzeBtn: document.getElementById('analyze-btn'), loader: document.getElementById('loader-overlay'), loaderText: document.getElementById('loader-text'),
@@ -2275,11 +2299,13 @@
                 controls.loaderText.textContent = text;
                 controls.loader.classList.remove('hidden');
                 controls.loader.classList.add('flex');
+                controls.loader.style.pointerEvents = 'auto';
             }
 
             function hideLoader() {
                 controls.loader.classList.add('hidden');
                 controls.loader.classList.remove('flex');
+                controls.loader.style.pointerEvents = 'none';
             }
 
             function showNotification(message, type = 'success', duration = 3000) {
