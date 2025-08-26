@@ -1294,6 +1294,19 @@
             box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
         }
         
+        #toolbar-template-btn {
+            background: linear-gradient(135deg, #1d4ed8, #3b82f6);
+            color: white;
+            border-color: #1d4ed8;
+            font-weight: 600;
+        }
+        
+        #toolbar-template-btn:hover {
+            background: linear-gradient(135deg, #1e40af, #1d4ed8);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(29, 78, 216, 0.3);
+        }
+        
         #toolbar-load-btn {
             background: linear-gradient(135deg, #0891b2, #06b6d4);
             color: white;
@@ -1902,6 +1915,18 @@
             </div>
             
             <div class="tooltip">
+                <button id="toolbar-template-btn" class="toolbar-btn">
+                    <i class="fas fa-layer-group"></i>
+                    TEMPLATES
+                </button>
+                <div class="tooltip-content bottom">
+                    <strong>Gestion des Templates</strong><br>
+                    Sauvegardez et réutilisez vos mises en page<br>
+                    favorites pour créer de nouveaux CV rapidement.
+                </div>
+            </div>
+            
+            <div class="tooltip">
                 <div class="flex gap-2 items-center">
                     <input type="text" id="gemini-api-key" class="gemini-key-input" placeholder="Clé API Gemini...">
                     <button id="save-api-key-btn" class="toolbar-btn" style="padding: 6px 10px; font-size: 12px;">
@@ -2104,6 +2129,120 @@
                         Fermer
                     </button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE GESTION DES TEMPLATES -->
+    <div id="template-manager-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[10000] hidden" role="dialog" aria-labelledby="template-title" aria-modal="true">
+        <div class="bg-white rounded-lg shadow-xl max-w-5xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <header class="flex items-center justify-between p-6 border-b border-gray-200">
+                <h2 id="template-title" class="text-2xl font-bold text-gray-900 flex items-center gap-3">
+                    <i class="fas fa-layer-group text-blue-600"></i>
+                    Gestion des Templates de Mise en Page
+                </h2>
+                <button id="close-template-modal" class="text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-md p-2" aria-label="Fermer la fenêtre de gestion des templates">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </header>
+            
+            <div class="p-6">
+                <!-- Actions principales -->
+                <div class="mb-6 flex flex-wrap gap-3">
+                    <button id="save-current-template" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors">
+                        <i class="fas fa-save mr-2"></i>
+                        Sauvegarder la mise en page actuelle
+                    </button>
+                    <button id="export-templates" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors">
+                        <i class="fas fa-download mr-2"></i>
+                        Exporter tous les templates
+                    </button>
+                    <button id="import-templates" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-colors">
+                        <i class="fas fa-upload mr-2"></i>
+                        Importer des templates
+                    </button>
+                    <input type="file" id="template-file-input" accept=".json" class="hidden">
+                </div>
+                
+                <!-- Liste des templates sauvegardés -->
+                <div class="space-y-4">
+                    <h3 class="text-lg font-semibold text-gray-800 border-b border-gray-200 pb-2">
+                        <i class="fas fa-list mr-2"></i>
+                        Templates sauvegardés
+                    </h3>
+                    
+                    <div id="templates-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <!-- Les templates seront ajoutés ici dynamiquement -->
+                    </div>
+                    
+                    <div id="no-templates-message" class="text-center py-8 text-gray-500 hidden">
+                        <i class="fas fa-inbox text-4xl mb-4 text-gray-300"></i>
+                        <p class="text-lg">Aucun template sauvegardé</p>
+                        <p class="text-sm">Sauvegardez votre première mise en page pour la réutiliser</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Actions de fermeture -->
+            <div class="p-6 bg-gray-50 border-t border-gray-200 flex justify-end">
+                <button id="close-template-modal-bottom" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                    Fermer
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE SAUVEGARDE DE TEMPLATE -->
+    <div id="save-template-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[10001] hidden" role="dialog" aria-labelledby="save-template-title" aria-modal="true">
+        <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+            <header class="flex items-center justify-between p-6 border-b border-gray-200">
+                <h3 id="save-template-title" class="text-lg font-semibold text-gray-900">
+                    <i class="fas fa-save text-green-600 mr-2"></i>
+                    Sauvegarder le Template
+                </h3>
+                <button id="close-save-template-modal" class="text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 rounded-md p-1">
+                    <i class="fas fa-times"></i>
+                </button>
+            </header>
+            
+            <div class="p-6">
+                <div class="space-y-4">
+                    <div>
+                        <label for="template-name" class="block text-sm font-medium text-gray-700 mb-2">
+                            Nom du template *
+                        </label>
+                        <input type="text" id="template-name" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500" placeholder="Ex: CV Commercial, Layout Moderne..." required>
+                    </div>
+                    
+                    <div>
+                        <label for="template-description" class="block text-sm font-medium text-gray-700 mb-2">
+                            Description (optionnel)
+                        </label>
+                        <textarea id="template-description" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500" placeholder="Décrivez brièvement ce template..."></textarea>
+                    </div>
+                    
+                    <div class="bg-blue-50 border border-blue-200 rounded-md p-3">
+                        <h4 class="font-medium text-blue-900 mb-2">Ce qui sera sauvegardé :</h4>
+                        <ul class="text-sm text-blue-800 space-y-1">
+                            <li>• Layout et disposition des colonnes</li>
+                            <li>• Couleurs et styles visuels</li>
+                            <li>• Configuration de la bannière</li>
+                            <li>• Paramètres de police et espacement</li>
+                            <li>• Structure des sections</li>
+                        </ul>
+                        <p class="text-xs text-blue-700 mt-2 font-medium">Note: Le contenu personnel ne sera pas inclus</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="p-6 bg-gray-50 border-t border-gray-200 flex justify-end space-x-3">
+                <button id="cancel-save-template" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
+                    Annuler
+                </button>
+                <button id="confirm-save-template" class="px-4 py-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
+                    <i class="fas fa-save mr-2"></i>
+                    Sauvegarder
+                </button>
             </div>
         </div>
     </div>
@@ -3271,6 +3410,7 @@
                 // Nouveaux contrôles de la barre d'outils
                 toolbarSaveBtn: document.getElementById('toolbar-save-btn'),
                 toolbarLoadBtn: document.getElementById('toolbar-load-btn'),
+                toolbarTemplateBtn: document.getElementById('toolbar-template-btn'),
                 geminiApiKey: document.getElementById('gemini-api-key'),
                 saveApiKeyBtn: document.getElementById('save-api-key-btn'),
                 // Indicateurs d'état de l'API
@@ -3634,6 +3774,546 @@
                         }
                     }
                 });
+            }
+
+            // === GESTION DES TEMPLATES DE MISE EN PAGE ===
+            
+            // Fonction pour extraire la configuration de mise en page actuelle
+            function extractCurrentLayoutConfig() {
+                return {
+                    // Layout et colonnes
+                    layout: document.querySelector('.layout-btn.active')?.dataset.layout || 'layout-2-col-33-67',
+                    
+                    // Couleurs
+                    primaryColor: document.getElementById('primary-color-picker')?.value || '#3b82f6',
+                    secondaryColor: document.getElementById('secondary-color-picker')?.value || '#334155',
+                    
+                    // Configuration de la bannière
+                    banner: {
+                        enabled: document.getElementById('toggle-banner-checkbox')?.checked || false,
+                        style: document.getElementById('banner-style-select')?.value || 'style-1',
+                        alignment: getBannerAlignment(),
+                        isInverted: document.querySelector('.banner')?.classList.contains('banner-layout-inverted') || false,
+                        textStyles: {
+                            nom: {
+                                bold: document.getElementById('banner-nom-bold')?.checked || false,
+                                italic: document.getElementById('banner-nom-italic')?.checked || false
+                            },
+                            poste: {
+                                bold: document.getElementById('banner-poste-bold')?.checked || false,
+                                italic: document.getElementById('banner-poste-italic')?.checked || false
+                            },
+                            contact: {
+                                bold: document.getElementById('banner-contact-bold')?.checked || false,
+                                italic: document.getElementById('banner-contact-italic')?.checked || false
+                            }
+                        }
+                    },
+                    
+                    // Espacement et marges
+                    spacing: {
+                        pageMargin: document.getElementById('page-margin')?.value || '2',
+                        moduleSpacing: document.getElementById('module-spacing')?.value || '1.5',
+                        itemSpacing: document.getElementById('item-spacing')?.value || '0.75'
+                    },
+                    
+                    // Tailles de police
+                    fonts: {
+                        h1: document.getElementById('font-size-h1')?.value || '24',
+                        h2: document.getElementById('font-size-h2')?.value || '18',
+                        p: document.getElementById('font-size-p')?.value || '14'
+                    },
+                    
+                    // Métadonnées
+                    metadata: {
+                        createdAt: new Date().toISOString(),
+                        version: '1.0'
+                    }
+                };
+            }
+            
+            function getBannerAlignment() {
+                const banner = document.querySelector('.banner');
+                if (!banner) return 'left';
+                if (banner.classList.contains('banner-align-center')) return 'center';
+                if (banner.classList.contains('banner-align-right')) return 'right';
+                return 'left';
+            }
+            
+            // Fonction pour appliquer une configuration de template
+            function applyTemplateConfig(templateConfig) {
+                try {
+                    // Appliquer le layout
+                    if (templateConfig.layout) {
+                        const layoutBtn = document.querySelector(`[data-layout="${templateConfig.layout}"]`);
+                        if (layoutBtn) {
+                            // Retirer la classe active de tous les boutons
+                            document.querySelectorAll('.layout-btn').forEach(btn => btn.classList.remove('active'));
+                            layoutBtn.classList.add('active');
+                            layoutBtn.click(); // Déclencher le changement de layout
+                        }
+                    }
+                    
+                    // Appliquer les couleurs
+                    if (templateConfig.primaryColor) {
+                        const primaryPicker = document.getElementById('primary-color-picker');
+                        if (primaryPicker) {
+                            primaryPicker.value = templateConfig.primaryColor;
+                            primaryPicker.dispatchEvent(new Event('input', { bubbles: true }));
+                        }
+                    }
+                    
+                    if (templateConfig.secondaryColor) {
+                        const secondaryPicker = document.getElementById('secondary-color-picker');
+                        if (secondaryPicker) {
+                            secondaryPicker.value = templateConfig.secondaryColor;
+                            secondaryPicker.dispatchEvent(new Event('input', { bubbles: true }));
+                        }
+                    }
+                    
+                    // Appliquer la configuration de la bannière
+                    if (templateConfig.banner) {
+                        const bannerCheckbox = document.getElementById('toggle-banner-checkbox');
+                        if (bannerCheckbox) {
+                            bannerCheckbox.checked = templateConfig.banner.enabled;
+                            bannerCheckbox.dispatchEvent(new Event('change', { bubbles: true }));
+                        }
+                        
+                        if (templateConfig.banner.style) {
+                            const bannerStyleSelect = document.getElementById('banner-style-select');
+                            if (bannerStyleSelect) {
+                                bannerStyleSelect.value = templateConfig.banner.style;
+                                bannerStyleSelect.dispatchEvent(new Event('change', { bubbles: true }));
+                            }
+                        }
+                        
+                        // Appliquer les styles de texte de la bannière
+                        if (templateConfig.banner.textStyles) {
+                            const styles = templateConfig.banner.textStyles;
+                            
+                            ['nom', 'poste', 'contact'].forEach(element => {
+                                if (styles[element]) {
+                                    const boldCheckbox = document.getElementById(`banner-${element}-bold`);
+                                    const italicCheckbox = document.getElementById(`banner-${element}-italic`);
+                                    
+                                    if (boldCheckbox) {
+                                        boldCheckbox.checked = styles[element].bold;
+                                        boldCheckbox.dispatchEvent(new Event('change', { bubbles: true }));
+                                    }
+                                    
+                                    if (italicCheckbox) {
+                                        italicCheckbox.checked = styles[element].italic;
+                                        italicCheckbox.dispatchEvent(new Event('change', { bubbles: true }));
+                                    }
+                                }
+                            });
+                        }
+                    }
+                    
+                    // Appliquer l'espacement
+                    if (templateConfig.spacing) {
+                        const spacingControls = [
+                            { id: 'page-margin', value: templateConfig.spacing.pageMargin },
+                            { id: 'module-spacing', value: templateConfig.spacing.moduleSpacing },
+                            { id: 'item-spacing', value: templateConfig.spacing.itemSpacing }
+                        ];
+                        
+                        spacingControls.forEach(control => {
+                            const element = document.getElementById(control.id);
+                            if (element && control.value) {
+                                element.value = control.value;
+                                element.dispatchEvent(new Event('input', { bubbles: true }));
+                            }
+                        });
+                    }
+                    
+                    // Appliquer les tailles de police
+                    if (templateConfig.fonts) {
+                        const fontControls = [
+                            { id: 'font-size-h1', value: templateConfig.fonts.h1 },
+                            { id: 'font-size-h2', value: templateConfig.fonts.h2 },
+                            { id: 'font-size-p', value: templateConfig.fonts.p }
+                        ];
+                        
+                        fontControls.forEach(control => {
+                            const element = document.getElementById(control.id);
+                            if (element && control.value) {
+                                element.value = control.value;
+                                element.dispatchEvent(new Event('input', { bubbles: true }));
+                            }
+                        });
+                    }
+                    
+                    return true;
+                } catch (error) {
+                    console.error('Erreur lors de l\'application du template:', error);
+                    return false;
+                }
+            }
+            
+            // Gestion du localStorage pour les templates
+            function saveTemplate(name, description, config) {
+                try {
+                    const templates = getStoredTemplates();
+                    const templateId = Date.now().toString();
+                    
+                    const newTemplate = {
+                        id: templateId,
+                        name: name,
+                        description: description || '',
+                        config: config,
+                        createdAt: new Date().toISOString(),
+                        lastUsed: null
+                    };
+                    
+                    templates[templateId] = newTemplate;
+                    localStorage.setItem('cvLayoutTemplates', JSON.stringify(templates));
+                    
+                    return templateId;
+                } catch (error) {
+                    console.error('Erreur lors de la sauvegarde du template:', error);
+                    return null;
+                }
+            }
+            
+            function getStoredTemplates() {
+                try {
+                    const stored = localStorage.getItem('cvLayoutTemplates');
+                    return stored ? JSON.parse(stored) : {};
+                } catch (error) {
+                    console.error('Erreur lors de la récupération des templates:', error);
+                    return {};
+                }
+            }
+            
+            function deleteTemplate(templateId) {
+                try {
+                    const templates = getStoredTemplates();
+                    delete templates[templateId];
+                    localStorage.setItem('cvLayoutTemplates', JSON.stringify(templates));
+                    return true;
+                } catch (error) {
+                    console.error('Erreur lors de la suppression du template:', error);
+                    return false;
+                }
+            }
+            
+            function updateTemplateLastUsed(templateId) {
+                try {
+                    const templates = getStoredTemplates();
+                    if (templates[templateId]) {
+                        templates[templateId].lastUsed = new Date().toISOString();
+                        localStorage.setItem('cvLayoutTemplates', JSON.stringify(templates));
+                    }
+                } catch (error) {
+                    console.error('Erreur lors de la mise à jour du template:', error);
+                }
+            }
+            
+            // Interface utilisateur pour les templates
+            function refreshTemplatesList() {
+                const templatesList = document.getElementById('templates-list');
+                const noTemplatesMessage = document.getElementById('no-templates-message');
+                const templates = getStoredTemplates();
+                const templateIds = Object.keys(templates);
+                
+                templatesList.innerHTML = '';
+                
+                if (templateIds.length === 0) {
+                    noTemplatesMessage.classList.remove('hidden');
+                    return;
+                }
+                
+                noTemplatesMessage.classList.add('hidden');
+                
+                // Trier les templates par date de création (plus récent en premier)
+                templateIds.sort((a, b) => new Date(templates[b].createdAt) - new Date(templates[a].createdAt));
+                
+                templateIds.forEach(templateId => {
+                    const template = templates[templateId];
+                    const templateCard = createTemplateCard(template);
+                    templatesList.appendChild(templateCard);
+                });
+            }
+            
+            function createTemplateCard(template) {
+                const card = document.createElement('div');
+                card.className = 'bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow';
+                
+                const createdDate = new Date(template.createdAt).toLocaleDateString('fr-FR');
+                const lastUsedDate = template.lastUsed ? new Date(template.lastUsed).toLocaleDateString('fr-FR') : 'Jamais utilisé';
+                
+                card.innerHTML = `
+                    <div class="flex items-start justify-between mb-3">
+                        <h4 class="text-lg font-semibold text-gray-900 truncate pr-2">${escapeHtml(template.name)}</h4>
+                        <div class="flex space-x-1 flex-shrink-0">
+                            <button class="apply-template-btn text-blue-600 hover:text-blue-800 p-1" data-template-id="${template.id}" title="Appliquer ce template">
+                                <i class="fas fa-magic"></i>
+                            </button>
+                            <button class="duplicate-template-btn text-green-600 hover:text-green-800 p-1" data-template-id="${template.id}" title="Dupliquer ce template">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                            <button class="delete-template-btn text-red-600 hover:text-red-800 p-1" data-template-id="${template.id}" title="Supprimer ce template">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    ${template.description ? `<p class="text-sm text-gray-600 mb-3">${escapeHtml(template.description)}</p>` : ''}
+                    
+                    <div class="text-xs text-gray-500 space-y-1">
+                        <div><strong>Créé:</strong> ${createdDate}</div>
+                        <div><strong>Dernière utilisation:</strong> ${lastUsedDate}</div>
+                    </div>
+                    
+                    <div class="mt-3 flex flex-wrap gap-1">
+                        <span class="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
+                            ${template.config.layout || 'Layout par défaut'}
+                        </span>
+                        <span class="inline-block bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
+                            ${template.config.banner?.enabled ? 'Avec bannière' : 'Sans bannière'}
+                        </span>
+                    </div>
+                `;
+                
+                return card;
+            }
+            
+            function escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+            
+            // Gestionnaires d'événements pour la modal de templates
+            function setupTemplateManager() {
+                const modal = document.getElementById('template-manager-modal');
+                const saveTemplateModal = document.getElementById('save-template-modal');
+                const openBtn = controls.toolbarTemplateBtn;
+                const closeBtns = [
+                    document.getElementById('close-template-modal'),
+                    document.getElementById('close-template-modal-bottom')
+                ];
+                
+                // Ouvrir la modal
+                openBtn?.addEventListener('click', () => {
+                    modal.classList.remove('hidden');
+                    refreshTemplatesList();
+                });
+                
+                // Fermer la modal
+                closeBtns.forEach(btn => {
+                    btn?.addEventListener('click', () => {
+                        modal.classList.add('hidden');
+                    });
+                });
+                
+                // Fermer avec Échap
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape') {
+                        if (!modal.classList.contains('hidden')) {
+                            modal.classList.add('hidden');
+                        }
+                        if (!saveTemplateModal.classList.contains('hidden')) {
+                            saveTemplateModal.classList.add('hidden');
+                        }
+                    }
+                });
+                
+                // Sauvegarder template actuel
+                document.getElementById('save-current-template')?.addEventListener('click', () => {
+                    saveTemplateModal.classList.remove('hidden');
+                    document.getElementById('template-name').focus();
+                });
+                
+                // Modal de sauvegarde
+                setupSaveTemplateModal();
+                
+                // Exporter templates
+                document.getElementById('export-templates')?.addEventListener('click', exportTemplates);
+                
+                // Importer templates
+                document.getElementById('import-templates')?.addEventListener('click', () => {
+                    document.getElementById('template-file-input').click();
+                });
+                
+                document.getElementById('template-file-input')?.addEventListener('change', importTemplates);
+                
+                // Délégation d'événements pour les actions sur les templates
+                document.getElementById('templates-list')?.addEventListener('click', handleTemplateAction);
+            }
+            
+            function setupSaveTemplateModal() {
+                const modal = document.getElementById('save-template-modal');
+                const closeBtns = [
+                    document.getElementById('close-save-template-modal'),
+                    document.getElementById('cancel-save-template')
+                ];
+                
+                closeBtns.forEach(btn => {
+                    btn?.addEventListener('click', () => {
+                        modal.classList.add('hidden');
+                        clearSaveTemplateForm();
+                    });
+                });
+                
+                document.getElementById('confirm-save-template')?.addEventListener('click', () => {
+                    const name = document.getElementById('template-name').value.trim();
+                    const description = document.getElementById('template-description').value.trim();
+                    
+                    if (!name) {
+                        showNotification('Veuillez entrer un nom pour le template', 'error');
+                        return;
+                    }
+                    
+                    const config = extractCurrentLayoutConfig();
+                    const templateId = saveTemplate(name, description, config);
+                    
+                    if (templateId) {
+                        showNotification(`Template "${name}" sauvegardé avec succès !`, 'success');
+                        modal.classList.add('hidden');
+                        clearSaveTemplateForm();
+                        refreshTemplatesList();
+                    } else {
+                        showNotification('Erreur lors de la sauvegarde du template', 'error');
+                    }
+                });
+            }
+            
+            function clearSaveTemplateForm() {
+                document.getElementById('template-name').value = '';
+                document.getElementById('template-description').value = '';
+            }
+            
+            function handleTemplateAction(e) {
+                const target = e.target.closest('button');
+                if (!target) return;
+                
+                const templateId = target.dataset.templateId;
+                const templates = getStoredTemplates();
+                const template = templates[templateId];
+                
+                if (!template) return;
+                
+                if (target.classList.contains('apply-template-btn')) {
+                    applyTemplate(template);
+                } else if (target.classList.contains('duplicate-template-btn')) {
+                    duplicateTemplate(template);
+                } else if (target.classList.contains('delete-template-btn')) {
+                    deleteTemplateWithConfirmation(templateId, template.name);
+                }
+            }
+            
+            function applyTemplate(template) {
+                const success = applyTemplateConfig(template.config);
+                if (success) {
+                    updateTemplateLastUsed(template.id);
+                    showNotification(`Template "${template.name}" appliqué avec succès !`, 'success');
+                    document.getElementById('template-manager-modal').classList.add('hidden');
+                } else {
+                    showNotification('Erreur lors de l\'application du template', 'error');
+                }
+            }
+            
+            function duplicateTemplate(template) {
+                const newName = `${template.name} (Copie)`;
+                const templateId = saveTemplate(newName, template.description, template.config);
+                
+                if (templateId) {
+                    showNotification(`Template dupliqué sous le nom "${newName}"`, 'success');
+                    refreshTemplatesList();
+                } else {
+                    showNotification('Erreur lors de la duplication du template', 'error');
+                }
+            }
+            
+            function deleteTemplateWithConfirmation(templateId, templateName) {
+                if (confirm(`Êtes-vous sûr de vouloir supprimer le template "${templateName}" ?`)) {
+                    const success = deleteTemplate(templateId);
+                    if (success) {
+                        showNotification(`Template "${templateName}" supprimé`, 'success');
+                        refreshTemplatesList();
+                    } else {
+                        showNotification('Erreur lors de la suppression du template', 'error');
+                    }
+                }
+            }
+            
+            function exportTemplates() {
+                const templates = getStoredTemplates();
+                const templateIds = Object.keys(templates);
+                
+                if (templateIds.length === 0) {
+                    showNotification('Aucun template à exporter', 'error');
+                    return;
+                }
+                
+                const exportData = {
+                    templates: templates,
+                    exportDate: new Date().toISOString(),
+                    version: '1.0'
+                };
+                
+                const dataStr = JSON.stringify(exportData, null, 2);
+                const dataBlob = new Blob([dataStr], { type: 'application/json' });
+                
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(dataBlob);
+                link.download = `cv-templates-${new Date().toISOString().split('T')[0]}.json`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                showNotification(`${templateIds.length} template(s) exporté(s) avec succès !`, 'success');
+            }
+            
+            function importTemplates(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const importData = JSON.parse(e.target.result);
+                        
+                        if (!importData.templates) {
+                            showNotification('Format de fichier invalide', 'error');
+                            return;
+                        }
+                        
+                        const currentTemplates = getStoredTemplates();
+                        let importedCount = 0;
+                        
+                        Object.values(importData.templates).forEach(template => {
+                            if (template.name && template.config) {
+                                // Créer un nouvel ID pour éviter les conflits
+                                const newId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
+                                currentTemplates[newId] = {
+                                    ...template,
+                                    id: newId,
+                                    name: `${template.name} (Importé)`,
+                                    lastUsed: null
+                                };
+                                importedCount++;
+                            }
+                        });
+                        
+                        if (importedCount > 0) {
+                            localStorage.setItem('cvLayoutTemplates', JSON.stringify(currentTemplates));
+                            showNotification(`${importedCount} template(s) importé(s) avec succès !`, 'success');
+                            refreshTemplatesList();
+                        } else {
+                            showNotification('Aucun template valide trouvé dans le fichier', 'error');
+                        }
+                        
+                    } catch (error) {
+                        showNotification('Erreur lors de l\'importation du fichier', 'error');
+                        console.error('Erreur d\'importation:', error);
+                    }
+                };
+                
+                reader.readAsText(file);
+                event.target.value = ''; // Reset input
             }
 
             function showNotification(message, type = 'success', duration = 3000) {
@@ -9051,6 +9731,7 @@
             setupAccessibilityModal();
             loadAccessibilitySettings();
             setupKeyboardShortcuts();
+            setupTemplateManager();
         });
 
     </script>
