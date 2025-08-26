@@ -5011,7 +5011,12 @@
                 }
                 
                 if (!apiKey.startsWith('AIza')) {
-                    showNotification("⚠️ Clé API Gemini invalide ! Elle doit commencer par 'AIza'.", "warning", 5000);
+                    showNotification("⚠️ Clé API Gemini invalide ! Elle doit commencer par 'AIza'. Vérifiez votre clé sur https://aistudio.google.com/app/apikey", "warning", 8000);
+                    return false;
+                }
+                
+                if (apiKey.length < 30) {
+                    showNotification("⚠️ Clé API Gemini trop courte ! Vérifiez que vous avez copié la clé complète.", "warning", 6000);
                     return false;
                 }
                 
@@ -5030,7 +5035,7 @@
                     // Récupérer la clé API depuis le champ ou le localStorage
                     const apiKey = controls.geminiApiKey.value.trim() || localStorage.getItem('gemini-api-key') || "";
                     
-                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
                     
                     const payload = {
                         contents: [{ role: "user", parts: [{ text: prompt }] }],
@@ -5045,10 +5050,26 @@
 
                     if (!response.ok) {
                         const errorBody = await response.text();
-                        if (response.status === 400 && errorBody.includes('API_KEY_INVALID')) {
-                            showNotification("🔑 Clé API Gemini invalide ! Vérifiez votre clé dans la barre d'outils.", "error", 6000);
-                            // Faire clignoter le champ de la clé API
-                            controls.geminiApiKey.style.animation = 'pulse 1s ease-in-out 3';
+                        console.error("Erreur API détaillée:", errorBody);
+                        
+                        if (response.status === 400) {
+                            if (errorBody.includes('API_KEY_INVALID') || errorBody.includes('INVALID_API_KEY')) {
+                                showNotification("🔑 Clé API Gemini invalide ! Vérifiez votre clé dans la barre d'outils.", "error", 6000);
+                                controls.geminiApiKey.style.animation = 'pulse 1s ease-in-out 3';
+                                throw new Error("Clé API invalide");
+                            } else if (errorBody.includes('API_KEY_EXPIRED')) {
+                                showNotification("⏰ Clé API Gemini expirée ! Renouvelez votre clé.", "error", 6000);
+                                throw new Error("Clé API expirée");
+                            } else if (errorBody.includes('QUOTA_EXCEEDED')) {
+                                showNotification("📊 Quota API Gemini dépassé ! Attendez ou changez de clé.", "error", 6000);
+                                throw new Error("Quota dépassé");
+                            }
+                        } else if (response.status === 403) {
+                            showNotification("🚫 Accès interdit à l'API Gemini. Vérifiez vos permissions.", "error", 6000);
+                            throw new Error("Accès interdit");
+                        } else if (response.status === 429) {
+                            showNotification("⚡ Trop de requêtes à l'API Gemini. Ralentissez.", "error", 6000);
+                            throw new Error("Trop de requêtes");
                         }
                         throw new Error(`Erreur API: ${response.status} ${response.statusText}`);
                     }
@@ -7109,18 +7130,62 @@
                     }
                 });
 
-                controls.saveApiKeyBtn.addEventListener('click', () => {
+                controls.saveApiKeyBtn.addEventListener('click', async () => {
                     const apiKey = controls.geminiApiKey.value.trim();
-                    if (apiKey) {
-                        localStorage.setItem('gemini-api-key', apiKey);
-                        showNotification("Clé API Gemini sauvegardée avec succès.", "success");
-                        
-                        // Validation basique de la clé (doit commencer par AIza)
-                        if (!apiKey.startsWith('AIza')) {
-                            showNotification("Attention: La clé API ne semble pas valide (doit commencer par 'AIza').", "warning");
-                        }
-                    } else {
+                    if (!apiKey) {
                         showNotification("Veuillez entrer une clé API avant de sauvegarder.", "error");
+                        return;
+                    }
+                    
+                    // Validation basique de la clé
+                    if (!apiKey.startsWith('AIza')) {
+                        showNotification("⚠️ Clé API invalide ! Elle doit commencer par 'AIza'. Vérifiez votre clé sur https://aistudio.google.com/app/apikey", "error", 8000);
+                        return;
+                    }
+                    
+                    if (apiKey.length < 30) {
+                        showNotification("⚠️ Clé API trop courte ! Vérifiez que vous avez copié la clé complète.", "error", 6000);
+                        return;
+                    }
+                    
+                    // Tester la clé API avec un appel simple
+                    showNotification("🔍 Test de la clé API en cours...", "info", 3000);
+                    
+                    try {
+                        const testUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+                        const testPayload = {
+                            contents: [{ role: "user", parts: [{ text: "Réponds simplement: OK" }] }]
+                        };
+                        
+                        const response = await fetch(testUrl, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(testPayload)
+                        });
+                        
+                        if (response.ok) {
+                            localStorage.setItem('gemini-api-key', apiKey);
+                            showNotification("✅ Clé API Gemini validée et sauvegardée avec succès !", "success", 5000);
+                            controls.geminiApiKey.classList.add('valid');
+                            controls.geminiApiKey.classList.remove('invalid');
+                        } else {
+                            const errorBody = await response.text();
+                            console.error("Erreur test API:", errorBody);
+                            if (response.status === 400) {
+                                showNotification("❌ Clé API invalide ! Vérifiez votre clé sur https://aistudio.google.com/app/apikey", "error", 8000);
+                            } else if (response.status === 403) {
+                                showNotification("❌ Accès interdit ! Votre clé API n'a pas les permissions nécessaires.", "error", 8000);
+                            } else {
+                                showNotification(`❌ Erreur API: ${response.status}. Vérifiez votre clé.`, "error", 6000);
+                            }
+                            controls.geminiApiKey.classList.add('invalid');
+                            controls.geminiApiKey.classList.remove('valid');
+                        }
+                    } catch (error) {
+                        console.error("Erreur test connexion API:", error);
+                        showNotification("🌐 Erreur de connexion. Vérifiez votre connexion internet.", "error", 6000);
+                        controls.geminiApiKey.classList.add('invalid');
+                        controls.geminiApiKey.classList.remove('valid');
                     }
                 });
 
