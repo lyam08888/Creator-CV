@@ -791,7 +791,7 @@
             <div id="tab-content" class="py-4 flex-grow overflow-y-auto">
                 <!-- TAB: IA -->
                 <div id="panel-ia" class="tab-panel space-y-4">
-                    <details class="control-group" open>
+                    <details class="control-group">
                         <summary><span>Analyse IA</span><label class="completion-label"><input type="checkbox" id="completion-ia-analyse" class="completion-checkbox"><span>Fait ✅</span></label></summary>
                         <div class="control-group-content space-y-2">
                             <textarea id="ai-input" rows="6" class="w-full p-2 border rounded-md" placeholder="Collez ici une description de poste, un CV brut..."></textarea>
@@ -806,7 +806,7 @@
                             </div>
                         </div>
                     </details>
-                    <details class="control-group" open>
+                    <details class="control-group">
                         <summary><span>Présentation Recruteur</span><label class="completion-label"><input type="checkbox" id="completion-ia-presentation" class="completion-checkbox"><span>Fait ✅</span></label></summary>
                         <div class="control-group-content space-y-3">
                             <input type="text" id="qualification-dispo" placeholder="Disponibilité" class="cv-input w-full p-2 border rounded-md">
@@ -829,7 +829,7 @@
                 <!-- TAB: Contenu -->
                 <div id="panel-content" class="tab-panel hidden space-y-4">
                     <!-- Informations Personnelles -->
-                    <details class="control-group" open>
+                    <details class="control-group">
                         <summary><span>Informations Personnelles</span><label class="completion-label"><input type="checkbox" id="completion-content-infos" class="completion-checkbox"><span>Fait ✅</span></label></summary>
                         <div class="control-group-content space-y-3">
                             <div class="grid grid-cols-2 gap-3">
@@ -859,7 +859,7 @@
                     </details>
 
                     <!-- Expériences Professionnelles -->
-                    <details class="control-group" open>
+                    <details class="control-group">
                         <summary><span>Expériences Professionnelles</span><label class="completion-label"><input type="checkbox" id="completion-content-exp" class="completion-checkbox"><span>Fait ✅</span></label></summary>
                         <div class="control-group-content space-y-2">
                             <div class="flex justify-end mb-2">
@@ -878,7 +878,7 @@
                     </details>
 
                     <!-- Formations et Éducation -->
-                    <details class="control-group" open>
+                    <details class="control-group">
                         <summary><span>Formations et Éducation</span><label class="completion-label"><input type="checkbox" id="completion-content-form" class="completion-checkbox"><span>Fait ✅</span></label></summary>
                         <div class="control-group-content space-y-2">
                             <div class="flex justify-end mb-2">
@@ -897,7 +897,7 @@
                     </details>
 
                     <!-- Compétences -->
-                    <details class="control-group" open>
+                    <details class="control-group">
                         <summary><span>Compétences</span><label class="completion-label"><input type="checkbox" id="completion-skills" class="completion-checkbox"><span>Fait ✅</span></label></summary>
                         <div class="control-group-content space-y-3">
                             <p class="text-sm font-medium">Style de Présentation</p>
@@ -1030,13 +1030,13 @@
 
                 <!-- TAB: Mise en Page -->
                 <div id="panel-layout" class="tab-panel hidden space-y-4">
-                    <details class="control-group" open>
+                    <details class="control-group">
                         <summary><span>Mise en Colonnes</span><label class="completion-label"><input type="checkbox" id="completion-layout-cols" class="completion-checkbox"><span>Fait ✅</span></label></summary>
                         <div class="control-group-content">
                             <div class="flex gap-2"><button data-layout="layout-1-col" class="layout-btn flex-1 bg-gray-200 p-2 rounded-md text-sm">1</button><button data-layout="layout-2-col-33-67" class="layout-btn flex-1 bg-gray-200 p-2 rounded-md text-sm">33/67</button><button data-layout="layout-2-col-50-50" class="layout-btn flex-1 bg-gray-200 p-2 rounded-md text-sm">50/50</button><button data-layout="layout-2-col-67-33" class="layout-btn flex-1 bg-gray-200 p-2 rounded-md text-sm">67/33</button></div>
                         </div>
                     </details>
-                    <details class="control-group" open>
+                    <details class="control-group">
                         <summary><span>Espacements & Tailles</span><label class="completion-label"><input type="checkbox" id="completion-layout-spacing" class="completion-checkbox"><span>Fait ✅</span></label></summary>
                         <div class="control-group-content space-y-4">
                             <div><label for="page-margin" class="block text-sm font-medium text-gray-700">Marge Page: <span id="page-margin-value">2</span>cm</label><input type="range" id="page-margin" min="0.5" max="3" step="0.1" value="2" class="cv-input w-full h-2 bg-gray-200 rounded-lg cursor-pointer"></div>
@@ -1046,7 +1046,7 @@
                         </div>
                     </details>
 
-                    <details class="control-group" open>
+                    <details class="control-group">
                         <summary><span>Polices</span><label class="completion-label"><input type="checkbox" id="completion-layout-fonts" class="completion-checkbox"><span>Fait ✅</span></label></summary>
                         <div class="control-group-content space-y-3">
                             <div>
@@ -1064,7 +1064,7 @@
                         </div>
                     </details>
 
-                    <details class="control-group" open>
+                    <details class="control-group">
                         <summary><span>Styles des Titres de Section</span><label class="completion-label"><input type="checkbox" id="completion-layout-titles" class="completion-checkbox"><span>Fait ✅</span></label></summary>
                         <div class="control-group-content">
                             <div class="grid grid-cols-2 gap-2">
@@ -1076,7 +1076,7 @@
                         </div>
                     </details>
 
-                    <details class="control-group" open>
+                    <details class="control-group">
                         <summary><span>Thèmes</span><label class="completion-label"><input type="checkbox" id="completion-layout-themes" class="completion-checkbox"><span>Fait ✅</span></label></summary>
                         <div class="control-group-content">
                             <div id="theme-buttons" class="grid grid-cols-3 gap-2">
@@ -1087,7 +1087,7 @@
                         </div>
                     </details>
 
-                    <details class="control-group" open>
+                    <details class="control-group">
                         <summary><span>Couleurs</span><label class="completion-label"><input type="checkbox" id="completion-layout-colors" class="completion-checkbox"><span>Fait ✅</span></label></summary>
                         <div class="control-group-content">
                             <div class="grid grid-cols-2 gap-4">
@@ -1121,7 +1121,7 @@
 
                 <!-- TAB: Bannière -->
                 <div id="panel-banner" class="tab-panel hidden space-y-4">
-                     <details class="control-group" open>
+                     <details class="control-group">
                         <summary><span>Bannière Recruteur</span><label class="completion-label"><input type="checkbox" id="completion-banner-main" class="completion-checkbox"><span>Fait ✅</span></label></summary>
                         <div class="control-group-content space-y-3">
                             <div class="flex justify-between items-center">
@@ -1139,7 +1139,7 @@
                             <div id="banner-fix-controls"><button id="fix-banner-top-btn" class="w-full bg-teal-600 text-white py-2 px-4 rounded-md hover:bg-teal-700 flex items-center justify-center gap-2"><i class="fas fa-arrow-up"></i>Fixer en haut</button><button id="fix-banner-bottom-btn" class="w-full bg-teal-600 text-white py-2 px-4 rounded-md hover:bg-teal-700 flex items-center justify-center gap-2 mt-2"><i class="fas fa-arrow-down"></i>Fixer en bas</button></div><button id="modular-banner-btn" class="cv-input w-full bg-orange-500 text-white py-2 px-4 rounded-md hover:bg-orange-600 flex items-center justify-center gap-2 hidden"><i class="fas fa-arrows-up-down-left-right"></i>Rendre modulaire</button><label class="flex items-center gap-2 text-sm"><input type="checkbox" id="toggle-banner-checkbox" class="cv-input">Afficher la bannière</label><label for="banner-style-select" class="text-sm font-medium">Style de Bannière</label><select id="banner-style-select" class="cv-input w-full p-2 border rounded-md"><option value="banner-style-modern">Moderne</option><option value="banner-style-elegant">Élégant</option><option value="banner-style-discret">Discret</option><option value="banner-style-carte">Carte</option><option value="banner-style-degrade">Dégradé</option><option value="banner-style-premium">Premium</option><option value="banner-style-minimal">Minimal</option><option value="banner-style-encadre">Encadré</option><option value="banner-style-ligne-haute">Ligne Haute</option></select><p class="text-sm font-medium">Alignement</p><div class="flex gap-2"><button data-banner-align="left" class="banner-align-btn flex-1 bg-gray-200 p-2 rounded-md text-sm"><i class="fas fa-align-left"></i></button><button data-banner-align="center" class="banner-align-btn flex-1 bg-gray-200 p-2 rounded-md text-sm"><i class="fas fa-align-center"></i></button><button data-banner-align="right" class="banner-align-btn flex-1 bg-gray-200 p-2 rounded-md text-sm"><i class="fas fa-align-right"></i></button><button id="banner-invert-btn" class="p-2 bg-gray-200 rounded-md text-sm" title="Inverser Logo/Texte"><i class="fas fa-right-left"></i></button></div><p class="text-sm font-medium">Taille Logo</p><div class="flex gap-2"><button data-logo-size="sm" class="logo-size-btn flex-1 bg-gray-200 p-2 rounded-md text-sm">P</button><button data-logo-size="md" class="logo-size-btn flex-1 bg-gray-200 p-2 rounded-md text-sm">M</button><button data-logo-size="lg" class="logo-size-btn flex-1 bg-gray-200 p-2 rounded-md text-sm">G</button><button data-logo-size="xl" class="logo-size-btn flex-1 bg-gray-200 p-2 rounded-md text-sm">XL</button><button data-logo-size="xxl" class="logo-size-btn flex-1 bg-gray-200 p-2 rounded-md text-sm">XXL</button></div><div><label for="banner-element-spacing" class="block text-sm font-medium text-gray-700">Espace Bannière: <span id="banner-element-spacing-value">1</span>rem</label><input type="range" id="banner-element-spacing" min="0.5" max="4" step="0.1" value="1" class="cv-input w-full h-2 bg-gray-200 rounded-lg cursor-pointer"></div><input type="text" id="banner-nom" placeholder="Votre Nom & Prénom" class="banner-input w-full p-2 border rounded-md"><input type="text" id="banner-poste" placeholder="Votre Poste" class="banner-input w-full p-2 border rounded-md"><input type="email" id="banner-email" placeholder="Email" class="banner-input w-full p-2 border rounded-md"><input type="tel" id="banner-tel" placeholder="Téléphone" class="banner-input w-full p-2 border rounded-md"><div><label for="banner-image" class="block text-sm font-medium text-gray-700">Photo/Logo</label><input type="file" id="banner-image" accept="image/*" class="banner-input mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"></div>
                         </div>
                     </details>
-                     <details class="control-group" open>
+                     <details class="control-group">
                         <summary><span>Image de Fond</span><label class="completion-label"><input type="checkbox" id="completion-banner-bg" class="completion-checkbox"><span>Fait ✅</span></label></summary>
                         <div class="control-group-content space-y-4">
                             <div>
@@ -1165,7 +1165,7 @@
                             </div>
                         </div>
                     </details>
-                     <details class="control-group" open>
+                     <details class="control-group">
                         <summary><span>Style du Texte</span><label class="completion-label"><input type="checkbox" id="completion-banner-text" class="completion-checkbox"><span>Fait ✅</span></label></summary>
                         <div class="control-group-content space-y-4">
                             <button id="randomize-banner-style-btn" class="w-full bg-indigo-500 text-white py-2 px-4 rounded-md hover:bg-indigo-600 flex items-center justify-center gap-2"><i class="fas fa-dice"></i> Style Aléatoire</button><div class="border-t pt-4 mt-4"><h4 class="font-semibold text-sm mb-2">Nom & Prénom</h4><label class="text-xs">Police</label><select id="banner-nom-font" class="cv-input w-full p-1 border text-sm rounded-md"><option value="'Montserrat', sans-serif">Montserrat</option><option value="'Playfair Display', serif">Playfair Display</option><option value="'Oswald', sans-serif">Oswald</option><option value="'Cormorant Garamond', serif">Cormorant Garamond</option><option value="'Merriweather', serif">Merriweather</option><option value="'Lato', sans-serif">Lato</option></select><label class="text-xs mt-2 block">Taille: <span id="banner-nom-size-value">24</span>pt</label><input type="range" id="banner-nom-size" min="14" max="40" step="1" value="24" class="cv-input w-full h-2 bg-gray-200 rounded-lg cursor-pointer"><div class="flex items-center gap-2 mt-2"><label class="text-xs">Couleur:</label><input type="color" id="banner-nom-color" value="#334155" class="cv-input w-full h-8 p-1 border rounded-md"><button id="banner-nom-bold" class="style-toggle-btn p-1 px-2 rounded-md bg-gray-200 text-sm"><i class="fas fa-bold"></i></button><button id="banner-nom-italic" class="style-toggle-btn p-1 px-2 rounded-md bg-gray-200 text-sm"><i class="fas fa-italic"></i></button></div></div><div class="border-t pt-4 mt-4"><h4 class="font-semibold text-sm mb-2">Poste</h4><label class="text-xs mt-2 block">Taille: <span id="banner-poste-size-value">12</span>pt</label><input type="range" id="banner-poste-size" min="8" max="20" step="0.5" value="12" class="cv-input w-full h-2 bg-gray-200 rounded-lg cursor-pointer"><div class="flex items-center gap-2 mt-2"><label class="text-xs">Couleur:</label><input type="color" id="banner-poste-color" value="#334155" class="cv-input w-full h-8 p-1 border rounded-md"><button id="banner-poste-bold" class="style-toggle-btn p-1 px-2 rounded-md bg-gray-200 text-sm"><i class="fas fa-bold"></i></button><button id="banner-poste-italic" class="style-toggle-btn p-1 px-2 rounded-md bg-gray-200 text-sm"><i class="fas fa-italic"></i></button></div></div><div class="border-t pt-4 mt-4"><h4 class="font-semibold text-sm mb-2">Coordonnées</h4><label class="text-xs mt-2 block">Taille: <span id="banner-contact-size-value">9</span>pt</label><input type="range" id="banner-contact-size" min="7" max="14" step="0.5" value="9" class="cv-input w-full h-2 bg-gray-200 rounded-lg cursor-pointer"><div class="flex items-center gap-2 mt-2"><label class="text-xs">Couleur:</label><input type="color" id="banner-contact-color" value="#334155" class="cv-input w-full h-8 p-1 border rounded-md"><button id="banner-contact-bold" class="style-toggle-btn p-1 px-2 rounded-md bg-gray-200 text-sm"><i class="fas fa-bold"></i></button><button id="banner-contact-italic" class="style-toggle-btn p-1 px-2 rounded-md bg-gray-200 text-sm"><i class="fas fa-italic"></i></button></div></div>
@@ -3097,3 +3097,7 @@
     </script>
 </body>
 </html>
+
+
+
+
