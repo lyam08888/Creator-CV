@@ -2,6 +2,8 @@
         // This script is now self-contained and does not use Firebase for saving.
         
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 DEBUG: DOM Content Loaded - Script Started');
+            
             // --- ENSURE ALL OVERLAYS ARE HIDDEN ON PAGE LOAD ---
             function hideAllOverlays() {
                 // Hide loader overlay
@@ -170,6 +172,11 @@
                 controlsPanel: document.getElementById('controls'),
                 topToolbar: document.querySelector('.top-toolbar')
             };
+
+            console.log('🔧 DEBUG: Controls object defined');
+            console.log('📋 analyzeBtn:', controls.analyzeBtn);
+            console.log('📋 downloadPdfBtn:', controls.downloadPdfBtn);
+            console.log('📋 resetCvBtn:', controls.resetCvBtn);
 
             // --- DYNAMIC SELECTORS ---
             let preview = {};
@@ -4017,7 +4024,9 @@
                 }
                 
                 // Gestionnaire pour le bouton d'analyse IA
+                console.log('🎯 DEBUG: Setting up analyzeBtn event listener');
                 if (controls.analyzeBtn) {
+                    console.log('✅ analyzeBtn found, adding listener');
                     controls.analyzeBtn.addEventListener('click', async () => {
                     const text = controls.aiInput.value;
                     if (!text) { showNotification("Veuillez coller du texte à analyser.", "error"); return; }
@@ -4263,7 +4272,7 @@ JSON :`;
                     }
                 });
                 } else {
-                    console.warn('Bouton analyze-btn non trouvé');
+                    console.error('❌ Bouton analyze-btn non trouvé');
                 }
                 
                 // BOUTON DE TEST TEMPORAIRE
@@ -4377,7 +4386,9 @@ JSON :`;
                 });
 
                 // Gestionnaires de la barre d'outils avec vérifications de sécurité
+                console.log('🎯 DEBUG: Setting up toolbar event listeners');
                 if (controls.downloadPdfBtn) {
+                    console.log('✅ downloadPdfBtn found, adding listener');
                     controls.downloadPdfBtn.addEventListener('click', async () => {
                         const filename = `CV_${controls.prenom.value}_${controls.nom.value}.pdf`.replace(/ /g, '_');
                         document.body.classList.add('presentation-mode');
@@ -4456,16 +4467,18 @@ JSON :`;
                     });
                     });
                 } else {
-                    console.warn('Bouton toolbar-pdf-btn non trouvé');
+                    console.error('❌ Bouton toolbar-pdf-btn non trouvé');
                 }
 
+                console.log('🎯 DEBUG: Setting up resetCvBtn event listener');
                 if (controls.resetCvBtn) {
+                    console.log('✅ resetCvBtn found, adding listener');
                     controls.resetCvBtn.addEventListener('click', async () => {
                         const confirmed = await showConfirmModal("Nouveau CV", "Êtes-vous sûr de vouloir réinitialiser complètement le CV ?");
                         if (confirmed) resetCVToDefault();
                     });
                 } else {
-                    console.warn('Bouton toolbar-new-cv-btn non trouvé');
+                    console.error('❌ Bouton toolbar-new-cv-btn non trouvé');
                 }
                 
                 if (controls.togglePresentationModeBtn) {
@@ -7361,6 +7374,8 @@ JSON :`;
                 updatePreview('form');
                 updateAllStyles();
             }, 100);
+            
+            console.log('🎉 DEBUG: Script execution completed successfully!');
             
         }); // Fermeture de DOMContentLoaded
     
