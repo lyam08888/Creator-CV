@@ -6838,7 +6838,32 @@
                                 competences: { type: "STRING" }
                             }
                         };
-                        const prompt = `Analyse le texte suivant et extrais les informations pour un CV. Formate la sortie en JSON respectant ce schéma. Sois concis. Texte : """${text}"""`;
+                        const prompt = `Tu es un expert en analyse de CV. Analyse le texte suivant et extrais EXACTEMENT les informations personnelles et professionnelles.
+
+INSTRUCTIONS PRÉCISES :
+- nom : Le nom de famille (en MAJUSCULES si possible)
+- prenom : Le prénom (première lettre en majuscule)
+- poste : Le poste recherché ou le titre professionnel actuel
+- description : Un résumé professionnel de 2-3 lignes maximum
+- experiences : Liste des expériences avec titre, entreprise/dates, description
+- formations : Liste des formations avec diplôme, établissement/année
+- competences : Liste des compétences techniques séparées par des virgules
+
+EXEMPLE de sortie attendue :
+{
+  "nom": "MARTIN",
+  "prenom": "Jean", 
+  "poste": "Développeur Full Stack",
+  "description": "Développeur expérimenté avec 5 ans d'expérience en JavaScript et Python. Passionné par les nouvelles technologies.",
+  "experiences": [{"title": "Développeur Senior", "meta": "TechCorp • 2020-2023", "desc": "Développement d'applications web"}],
+  "formations": [{"title": "Master Informatique", "meta": "Université Tech • 2020"}],
+  "competences": "JavaScript, Python, React, Node.js"
+}
+
+TEXTE À ANALYSER :
+"""${text}"""
+
+Réponds UNIQUEMENT avec le JSON, sans commentaires.`;
                         
                         // Mettre à jour le texte du loader pendant l'appel API
                         controls.loaderText.textContent = "🧠 Traitement par l'IA...";
@@ -6847,27 +6872,38 @@
                         
                         // TEMPORAIRE : Test avec des données mockées si l'API échoue
                         const testData = extractedData || {
-                            nom: "MARTIN",
-                            prenom: "Jean",
-                            poste: "Développeur Web",
-                            description: "Développeur passionné avec 5 ans d'expérience en JavaScript et React.",
+                            nom: "DUPONT",
+                            prenom: "Marie",
+                            poste: "Chef de Projet Digital",
+                            description: "Chef de projet expérimentée avec 8 ans d'expérience en gestion de projets digitaux. Expertise en méthodologies agiles et coordination d'équipes pluridisciplinaires.",
                             experiences: [
                                 {
-                                    title: "Développeur Frontend",
-                                    meta: "TechCorp • 2020-2023",
-                                    desc: "Développement d'applications web modernes"
+                                    title: "Chef de Projet Senior",
+                                    meta: "Digital Agency • 2020-2024",
+                                    desc: "Gestion de projets web complexes pour des clients grands comptes. Management d'équipes de 5-10 personnes. Mise en place de méthodologies Scrum."
+                                },
+                                {
+                                    title: "Coordinatrice Projet",
+                                    meta: "StartupTech • 2018-2020", 
+                                    desc: "Coordination de projets mobiles. Interface client-développeur. Suivi budgétaire et planning."
                                 }
                             ],
                             formations: [
                                 {
-                                    title: "Master Informatique",
-                                    meta: "Université Tech • 2020"
+                                    title: "Master Management de Projets",
+                                    meta: "ESCP Business School • 2018"
+                                },
+                                {
+                                    title: "Licence Communication",
+                                    meta: "Université Paris Dauphine • 2016"
                                 }
                             ],
-                            competences: "JavaScript, React, Node.js, CSS, HTML"
+                            competences: "Gestion de projet, Scrum, Kanban, JIRA, Confluence, Figma, Analytics, SEO, Budget Management"
                         };
                         
                         console.log("Données finales à utiliser:", testData);
+                        console.log("Type des données:", typeof testData);
+                        console.log("Est-ce que testData existe?", !!testData);
                         
                         // Debug : Afficher les données extraites
                         console.log("Données extraites par l'IA:", extractedData);
@@ -6877,7 +6913,19 @@
                             controls.loaderText.textContent = "✨ Remplissage du CV...";
                             
                             // Debug : Vérifier que les contrôles existent
-                            console.log("Contrôles nom/prenom:", controls.nom, controls.prenom);
+                            console.log("=== VÉRIFICATION DES CONTRÔLES ===");
+                            console.log("controls.nom:", controls.nom, "existe?", !!controls.nom);
+                            console.log("controls.prenom:", controls.prenom, "existe?", !!controls.prenom);
+                            console.log("controls.poste:", controls.poste, "existe?", !!controls.poste);
+                            console.log("controls.description:", controls.description, "existe?", !!controls.description);
+                            console.log("controls.competences:", controls.competences, "existe?", !!controls.competences);
+                            
+                            // Vérifier aussi avec getElementById direct
+                            console.log("=== VÉRIFICATION DIRECTE DU DOM ===");
+                            console.log("document.getElementById('nom'):", document.getElementById('nom'));
+                            console.log("document.getElementById('prenom'):", document.getElementById('prenom'));
+                            console.log("document.getElementById('poste'):", document.getElementById('poste'));
+                            
                             console.log("Valeurs à insérer:", {
                                 nom: testData.nom,
                                 prenom: testData.prenom,
@@ -6896,6 +6944,66 @@
                                 { element: controls.description, text: testData.description || '' },
                                 { element: controls.competences, text: testData.competences || '' }
                             ];
+                            
+                            console.log("Elements à remplir:", elementsToFill);
+                            
+                            // TEST: Remplissage direct sans animation pour déboguer
+                            console.log("=== REMPLISSAGE DIRECT (TEST) ===");
+                            if (controls.nom && testData.nom) {
+                                controls.nom.value = testData.nom;
+                                console.log(`Nom rempli: ${controls.nom.value}`);
+                            }
+                            if (controls.prenom && testData.prenom) {
+                                controls.prenom.value = testData.prenom;
+                                console.log(`Prénom rempli: ${controls.prenom.value}`);
+                            }
+                            if (controls.poste && testData.poste) {
+                                controls.poste.value = testData.poste;
+                                console.log(`Poste rempli: ${controls.poste.value}`);
+                            }
+                            if (controls.description && testData.description) {
+                                controls.description.value = testData.description;
+                                console.log(`Description remplie: ${controls.description.value}`);
+                            }
+                            if (controls.competences && testData.competences) {
+                                controls.competences.value = testData.competences;
+                                console.log(`Compétences remplies: ${controls.competences.value}`);
+                            }
+                            
+                            // Remplir les expériences et formations
+                            console.log("=== REMPLISSAGE LISTES ===");
+                            controls.experienceList.innerHTML = '';
+                            (testData.experiences || []).forEach((exp, index) => {
+                                console.log(`Ajout expérience ${index}:`, exp);
+                                createDynamicItem(controls.experienceList, [
+                                    { key: 'title', placeholder: 'Titre du poste' }, 
+                                    { key: 'meta', placeholder: 'Entreprise & Dates' }, 
+                                    { key: 'desc', placeholder: 'Description', type: 'textarea' }
+                                ], exp);
+                            });
+                            
+                            controls.formationList.innerHTML = '';
+                            (testData.formations || []).forEach((form, index) => {
+                                console.log(`Ajout formation ${index}:`, form);
+                                createDynamicItem(controls.formationList, [
+                                    { key: 'title', placeholder: 'Nom du diplôme' }, 
+                                    { key: 'meta', placeholder: 'Établissement & Année' }
+                                ], form);
+                            });
+                            
+                            // Mettre à jour l'aperçu immédiatement
+                            console.log("=== MISE À JOUR APERÇU ===");
+                            updatePreview('form');
+                            
+                            // Finaliser
+                            animationPromise.then(() => {
+                                hideLoader();
+                                showNotification("✨ CV rempli avec succès !", "success");
+                                controls.analyzeBtn.disabled = false;
+                                controls.analyzeBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                            });
+                            
+                            return; // Skip Matrix animation for now
                             
                             // Écrire les champs principaux avec effet Matrix
                             let currentFieldIndex = 0;
