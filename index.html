@@ -4796,9 +4796,9 @@
                     const parts = section.split(':');
                     if (parts.length === 2 && parts[0].trim() !== '') {
                         html += `<h3 class="skill-category" contenteditable="true">${parts[0].trim()}</h3>`;
-                        html += `<ul>${parts[1].split(',').map(item => item.trim().replace(/\s*\(.*\)/, '')).filter(Boolean).map(item => `<li class="skill-item" contenteditable="false">${item}<span class="delete-skill-btn">&times;</span></li>`).join('')}</ul>`;
+                        html += `<ul>${parts[1].split(',').map(item => item.trim().replace(/\s*\(.*\)/, '')).filter(Boolean).map(item => '<li class="skill-item" contenteditable="false">' + item + '<span class="delete-skill-btn">&times;</span></li>').join('')}</ul>`;
                     } else {
-                        html += `<ul>${section.split(',').map(item => item.trim().replace(/\s*\(.*\)/, '')).filter(Boolean).map(item => `<li class="skill-item" contenteditable="false">${item}<span class="delete-skill-btn">&times;</span></li>`).join('')}</ul>`;
+                        html += `<ul>${section.split(',').map(item => item.trim().replace(/\s*\(.*\)/, '')).filter(Boolean).map(item => '<li class="skill-item" contenteditable="false">' + item + '<span class="delete-skill-btn">&times;</span></li>').join('')}</ul>`;
                     }
                 });
                 return html;
