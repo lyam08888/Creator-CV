@@ -3449,6 +3449,7 @@
         // This script is now self-contained and does not use Firebase for saving.
         
         document.addEventListener('DOMContentLoaded', function() {
+            try {
             // --- ENSURE ALL OVERLAYS ARE HIDDEN ON PAGE LOAD ---
             function hideAllOverlays() {
                 // Hide loader overlay
