@@ -3833,22 +3833,24 @@
                     updateAccessibilityUI();
                     // Focus sur le premier élément focusable
                     const firstFocusable = modal.querySelector('button, input, select, textarea, [tabindex]:not([tabindex="-1"])');
-                    firstFocusable?.focus();
+                    if (firstFocusable) firstFocusable.focus();
                 });
                 
                 // Fermer la modal
                 closeBtns.forEach(btn => {
-                    btn?.addEventListener('click', () => {
-                        modal.classList.add('hidden');
-                        openBtn?.focus(); // Retourner le focus au bouton d'ouverture
-                    });
+                    if (btn) {
+                        btn.addEventListener('click', () => {
+                            modal.classList.add('hidden');
+                            if (openBtn) openBtn.focus(); // Retourner le focus au bouton d'ouverture
+                        });
+                    }
                 });
                 
                 // Fermer avec Échap
                 document.addEventListener('keydown', (e) => {
                     if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
                         modal.classList.add('hidden');
-                        openBtn?.focus();
+                        if (openBtn) openBtn.focus();
                     }
                 });
                 
@@ -3856,7 +3858,7 @@
                 modal.addEventListener('click', (e) => {
                     if (e.target === modal) {
                         modal.classList.add('hidden');
-                        openBtn?.focus();
+                        if (openBtn) openBtn.focus();
                     }
                 });
                 
@@ -3920,11 +3922,11 @@
                         switch (e.key) {
                             case 's':
                                 e.preventDefault();
-                                controls.toolbarSaveBtn?.click();
+                                if (controls.toolbarSaveBtn) controls.toolbarSaveBtn.click();
                                 break;
                             case 'p':
                                 e.preventDefault();
-                                controls.downloadPdfBtn?.click();
+                                if (controls.downloadPdfBtn) controls.downloadPdfBtn.click();
                                 break;
                         }
                     }
@@ -3937,30 +3939,30 @@
             function extractCurrentLayoutConfig() {
                 return {
                     // Layout et colonnes
-                    layout: document.querySelector('.layout-btn.active')?.dataset.layout || 'layout-2-col-33-67',
+                    layout: (document.querySelector('.layout-btn.active') && document.querySelector('.layout-btn.active').dataset.layout) || 'layout-2-col-33-67',
                     
                     // Couleurs
-                    primaryColor: document.getElementById('primary-color-picker')?.value || '#3b82f6',
-                    secondaryColor: document.getElementById('secondary-color-picker')?.value || '#334155',
+                    primaryColor: (document.getElementById('primary-color-picker') && document.getElementById('primary-color-picker').value) || '#3b82f6',
+                    secondaryColor: (document.getElementById('secondary-color-picker') && document.getElementById('secondary-color-picker').value) || '#334155',
                     
                     // Configuration de la bannière
                     banner: {
-                        enabled: document.getElementById('toggle-banner-checkbox')?.checked || false,
-                        style: document.getElementById('banner-style-select')?.value || 'style-1',
+                        enabled: (document.getElementById('toggle-banner-checkbox') && document.getElementById('toggle-banner-checkbox').checked) || false,
+                        style: (document.getElementById('banner-style-select') && document.getElementById('banner-style-select').value) || 'style-1',
                         alignment: getBannerAlignment(),
-                        isInverted: document.querySelector('.banner')?.classList.contains('banner-layout-inverted') || false,
+                        isInverted: (document.querySelector('.banner') && document.querySelector('.banner').classList.contains('banner-layout-inverted')) || false,
                         textStyles: {
                             nom: {
-                                bold: document.getElementById('banner-nom-bold')?.checked || false,
-                                italic: document.getElementById('banner-nom-italic')?.checked || false
+                                bold: (document.getElementById('banner-nom-bold') && document.getElementById('banner-nom-bold').checked) || false,
+                                italic: (document.getElementById('banner-nom-italic') && document.getElementById('banner-nom-italic').checked) || false
                             },
                             poste: {
-                                bold: document.getElementById('banner-poste-bold')?.checked || false,
-                                italic: document.getElementById('banner-poste-italic')?.checked || false
+                                bold: (document.getElementById('banner-poste-bold') && document.getElementById('banner-poste-bold').checked) || false,
+                                italic: (document.getElementById('banner-poste-italic') && document.getElementById('banner-poste-italic').checked) || false
                             },
                             contact: {
-                                bold: document.getElementById('banner-contact-bold')?.checked || false,
-                                italic: document.getElementById('banner-contact-italic')?.checked || false
+                                bold: (document.getElementById('banner-contact-bold') && document.getElementById('banner-contact-bold').checked) || false,
+                                italic: (document.getElementById('banner-contact-italic') && document.getElementById('banner-contact-italic').checked) || false
                             }
                         }
                     },
@@ -10122,8 +10124,6 @@ JSON :`;
                     lettersContainer.appendChild(buildEl);
                 });
             }
-            } // Fermeture de la première generateAchievements()
-            } // Fermeture d'une autre fonction non fermée
 
             function startAIStepAnimation() {
                 const steps = document.querySelectorAll('.ai-step');
