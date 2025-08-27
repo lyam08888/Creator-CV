@@ -5024,6 +5024,65 @@
                 return true;
             }
 
+            // Fonction pour parser le JSON de l'IA de manière robuste
+            function parseAIJsonSafely(text) {
+                console.log("Texte brut de l'IA:", text);
+                
+                try {
+                    // Nettoyer le texte avant parsing
+                    let cleanText = text.trim();
+                    
+                    // Supprimer les balises markdown si présentes
+                    cleanText = cleanText.replace(/```json\s*/, '').replace(/```\s*$/, '');
+                    cleanText = cleanText.replace(/```\s*/, '');
+                    
+                    // Supprimer les commentaires de l'IA
+                    cleanText = cleanText.replace(/^[^{]*/, ''); // Supprimer tout avant le premier {
+                    cleanText = cleanText.replace(/[^}]*$/, ''); // Supprimer tout après le dernier }
+                    
+                    // Trouver le JSON valide dans la réponse
+                    const jsonMatch = cleanText.match(/\{[\s\S]*\}/);
+                    if (jsonMatch) {
+                        cleanText = jsonMatch[0];
+                    }
+                    
+                    console.log("Texte nettoyé:", cleanText);
+                    
+                    // Tentative de parsing
+                    const parsed = JSON.parse(cleanText);
+                    console.log("JSON parsé avec succès:", parsed);
+                    return parsed;
+                    
+                } catch (error) {
+                    console.error("Erreur lors du parsing JSON:", error);
+                    console.log("Texte qui a causé l'erreur:", text);
+                    
+                    // En cas d'échec, retourner des données par défaut basées sur le texte
+                    return extractDataFromText(text);
+                }
+            }
+            
+            // Fonction de fallback pour extraire des données du texte
+            function extractDataFromText(text) {
+                console.log("Extraction de fallback depuis le texte...");
+                
+                // Extraction basique avec regex
+                const nomMatch = text.match(/nom["\s:]*["']?([A-Z\s]+)["']?/i);
+                const prenomMatch = text.match(/prenom["\s:]*["']?([A-Za-z\s]+)["']?/i);
+                const posteMatch = text.match(/poste["\s:]*["']?([^"'\n]+)["']?/i);
+                const descMatch = text.match(/description["\s:]*["']?([^"'\n]+)["']?/i);
+                
+                return {
+                    nom: nomMatch ? nomMatch[1].trim().toUpperCase() : "",
+                    prenom: prenomMatch ? prenomMatch[1].trim() : "",
+                    poste: posteMatch ? posteMatch[1].trim() : "",
+                    description: descMatch ? descMatch[1].trim() : "",
+                    experiences: [],
+                    formations: [],
+                    competences: ""
+                };
+            }
+
             async function callGeminiAPI(prompt, schema) {
                 // Vérifier la clé API avant d'essayer l'appel
                 if (!validateApiKey()) {
@@ -5083,7 +5142,12 @@
                          }
                         if (result.candidates[0].content && result.candidates[0].content.parts && result.candidates[0].content.parts.length > 0) {
                             const text = result.candidates[0].content.parts[0].text;
-                            return schema ? JSON.parse(text) : text;
+                            if (schema) {
+                                // Nettoyer et parser le JSON de manière robuste
+                                return parseAIJsonSafely(text);
+                            } else {
+                                return text;
+                            }
                         }
                     }
                     
@@ -6840,75 +6904,37 @@
                         };
                         const prompt = `Tu es un expert en analyse de CV. Analyse le texte suivant et extrais EXACTEMENT les informations personnelles et professionnelles.
 
-INSTRUCTIONS PRÉCISES :
-- nom : Le nom de famille (en MAJUSCULES si possible)
-- prenom : Le prénom (première lettre en majuscule)
-- poste : Le poste recherché ou le titre professionnel actuel
-- description : Un résumé professionnel de 2-3 lignes maximum
-- experiences : Liste des expériences avec titre, entreprise/dates, description
-- formations : Liste des formations avec diplôme, établissement/année
-- competences : Liste des compétences techniques séparées par des virgules
+RÈGLES STRICTES :
+1. Réponds UNIQUEMENT avec un JSON valide
+2. Pas de commentaires, pas de texte avant ou après le JSON
+3. Utilise des guillemets doubles pour toutes les chaînes
+4. Échappe correctement les guillemets dans le contenu
 
-EXEMPLE de sortie attendue :
+FORMAT EXACT :
 {
-  "nom": "MARTIN",
-  "prenom": "Jean", 
-  "poste": "Développeur Full Stack",
-  "description": "Développeur expérimenté avec 5 ans d'expérience en JavaScript et Python. Passionné par les nouvelles technologies.",
-  "experiences": [{"title": "Développeur Senior", "meta": "TechCorp • 2020-2023", "desc": "Développement d'applications web"}],
-  "formations": [{"title": "Master Informatique", "meta": "Université Tech • 2020"}],
-  "competences": "JavaScript, Python, React, Node.js"
+  "nom": "NOM_DE_FAMILLE",
+  "prenom": "Prénom", 
+  "poste": "Titre du poste recherché",
+  "description": "Résumé professionnel court",
+  "experiences": [{"title": "Titre", "meta": "Entreprise • Dates", "desc": "Description"}],
+  "formations": [{"title": "Diplôme", "meta": "École • Année"}],
+  "competences": "Compétence1, Compétence2, Compétence3"
 }
 
 TEXTE À ANALYSER :
-"""${text}"""
+${text}
 
-Réponds UNIQUEMENT avec le JSON, sans commentaires.`;
+JSON :`;
                         
                         // Mettre à jour le texte du loader pendant l'appel API
                         controls.loaderText.textContent = "🧠 Traitement par l'IA...";
                         
                         const extractedData = await callGeminiAPI(prompt, schema);
                         
-                        // TEMPORAIRE : Test avec des données mockées si l'API échoue
-                        const testData = extractedData || {
-                            nom: "DUPONT",
-                            prenom: "Marie",
-                            poste: "Chef de Projet Digital",
-                            description: "Chef de projet expérimentée avec 8 ans d'expérience en gestion de projets digitaux. Expertise en méthodologies agiles et coordination d'équipes pluridisciplinaires.",
-                            experiences: [
-                                {
-                                    title: "Chef de Projet Senior",
-                                    meta: "Digital Agency • 2020-2024",
-                                    desc: "Gestion de projets web complexes pour des clients grands comptes. Management d'équipes de 5-10 personnes. Mise en place de méthodologies Scrum."
-                                },
-                                {
-                                    title: "Coordinatrice Projet",
-                                    meta: "StartupTech • 2018-2020", 
-                                    desc: "Coordination de projets mobiles. Interface client-développeur. Suivi budgétaire et planning."
-                                }
-                            ],
-                            formations: [
-                                {
-                                    title: "Master Management de Projets",
-                                    meta: "ESCP Business School • 2018"
-                                },
-                                {
-                                    title: "Licence Communication",
-                                    meta: "Université Paris Dauphine • 2016"
-                                }
-                            ],
-                            competences: "Gestion de projet, Scrum, Kanban, JIRA, Confluence, Figma, Analytics, SEO, Budget Management"
-                        };
-                        
-                        console.log("Données finales à utiliser:", testData);
-                        console.log("Type des données:", typeof testData);
-                        console.log("Est-ce que testData existe?", !!testData);
-                        
-                        // Debug : Afficher les données extraites
                         console.log("Données extraites par l'IA:", extractedData);
+                        console.log("Type des données:", typeof extractedData);
                         
-                        if (testData) {
+                        if (extractedData) {
                             // Mettre à jour le texte du loader
                             controls.loaderText.textContent = "✨ Remplissage du CV...";
                             
@@ -6927,10 +6953,10 @@ Réponds UNIQUEMENT avec le JSON, sans commentaires.`;
                             console.log("document.getElementById('poste'):", document.getElementById('poste'));
                             
                             console.log("Valeurs à insérer:", {
-                                nom: testData.nom,
-                                prenom: testData.prenom,
-                                poste: testData.poste,
-                                description: testData.description
+                                nom: extractedData.nom,
+                                prenom: extractedData.prenom,
+                                poste: extractedData.poste,
+                                description: extractedData.description
                             });
                             
                             // Attendre que l'animation soit bien avancée avant de remplir
@@ -6938,42 +6964,42 @@ Réponds UNIQUEMENT avec le JSON, sans commentaires.`;
                             
                             // Remplir avec l'effet Matrix d'écriture en temps réel
                             const elementsToFill = [
-                                { element: controls.nom, text: testData.nom || '' },
-                                { element: controls.prenom, text: testData.prenom || '' },
-                                { element: controls.poste, text: testData.poste || '' },
-                                { element: controls.description, text: testData.description || '' },
-                                { element: controls.competences, text: testData.competences || '' }
+                                { element: controls.nom, text: extractedData.nom || '' },
+                                { element: controls.prenom, text: extractedData.prenom || '' },
+                                { element: controls.poste, text: extractedData.poste || '' },
+                                { element: controls.description, text: extractedData.description || '' },
+                                { element: controls.competences, text: extractedData.competences || '' }
                             ];
                             
                             console.log("Elements à remplir:", elementsToFill);
                             
                             // TEST: Remplissage direct sans animation pour déboguer
                             console.log("=== REMPLISSAGE DIRECT (TEST) ===");
-                            if (controls.nom && testData.nom) {
-                                controls.nom.value = testData.nom;
+                            if (controls.nom && extractedData.nom) {
+                                controls.nom.value = extractedData.nom;
                                 console.log(`Nom rempli: ${controls.nom.value}`);
                             }
-                            if (controls.prenom && testData.prenom) {
-                                controls.prenom.value = testData.prenom;
+                            if (controls.prenom && extractedData.prenom) {
+                                controls.prenom.value = extractedData.prenom;
                                 console.log(`Prénom rempli: ${controls.prenom.value}`);
                             }
-                            if (controls.poste && testData.poste) {
-                                controls.poste.value = testData.poste;
+                            if (controls.poste && extractedData.poste) {
+                                controls.poste.value = extractedData.poste;
                                 console.log(`Poste rempli: ${controls.poste.value}`);
                             }
-                            if (controls.description && testData.description) {
-                                controls.description.value = testData.description;
+                            if (controls.description && extractedData.description) {
+                                controls.description.value = extractedData.description;
                                 console.log(`Description remplie: ${controls.description.value}`);
                             }
-                            if (controls.competences && testData.competences) {
-                                controls.competences.value = testData.competences;
+                            if (controls.competences && extractedData.competences) {
+                                controls.competences.value = extractedData.competences;
                                 console.log(`Compétences remplies: ${controls.competences.value}`);
                             }
                             
                             // Remplir les expériences et formations
                             console.log("=== REMPLISSAGE LISTES ===");
                             controls.experienceList.innerHTML = '';
-                            (testData.experiences || []).forEach((exp, index) => {
+                            (extractedData.experiences || []).forEach((exp, index) => {
                                 console.log(`Ajout expérience ${index}:`, exp);
                                 createDynamicItem(controls.experienceList, [
                                     { key: 'title', placeholder: 'Titre du poste' }, 
@@ -6983,7 +7009,7 @@ Réponds UNIQUEMENT avec le JSON, sans commentaires.`;
                             });
                             
                             controls.formationList.innerHTML = '';
-                            (testData.formations || []).forEach((form, index) => {
+                            (extractedData.formations || []).forEach((form, index) => {
                                 console.log(`Ajout formation ${index}:`, form);
                                 createDynamicItem(controls.formationList, [
                                     { key: 'title', placeholder: 'Nom du diplôme' }, 
