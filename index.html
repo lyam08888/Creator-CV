@@ -6451,7 +6451,7 @@
                 updatePreview('form');
                 await new Promise(resolve => setTimeout(resolve, 500));
                 
-                if (checkPageOverflow()) {
+                if (hasPageOverflow()) {
                     if (validateApiKey()) {
                         await reformulateContentWithAI({ density: 1.0 }); // Force reformulation
                         showNotification("🤖 Reformulation automatique d'urgence", "warning");
@@ -6887,7 +6887,7 @@
                 while (attempt < maxAttempts) {
                     await new Promise(resolve => setTimeout(resolve, 300)); // Laisser le DOM se mettre à jour
                     
-                    const isOverflowing = checkPageOverflow();
+                    const isOverflowing = hasPageOverflow();
                     
                     if (!isOverflowing) {
                         return {
@@ -7081,7 +7081,7 @@
                 }
             }
             
-            function checkPageOverflow() {
+            function hasPageOverflow() {
                 const pages = document.querySelectorAll('.a4-page');
                 return Array.from(pages).some(page => page.scrollHeight > page.clientHeight);
             }
