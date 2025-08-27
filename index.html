@@ -5057,6 +5057,7 @@
                     
                     if (jsonStart === -1 || jsonEnd === -1 || jsonStart >= jsonEnd) {
                         console.error("❌ ERREUR: Aucun JSON valide trouvé dans la réponse");
+                        console.log("Contenu analysé:", cleanText);
                         throw new Error("Format de réponse invalide - aucun JSON trouvé");
                     }
                     
@@ -5068,26 +5069,61 @@
                         throw new Error("JSON vide après nettoyage");
                     }
                     
+                    // Vérifier que le JSON semble complet (ouverture et fermeture d'accolades)
+                    const openBraces = (cleanText.match(/{/g) || []).length;
+                    const closeBraces = (cleanText.match(/}/g) || []).length;
+                    if (openBraces !== closeBraces) {
+                        console.warn("⚠️ Avertissement: Nombre d'accolades déséquilibré (ouverture: " + openBraces + ", fermeture: " + closeBraces + ")");
+                    }
+                    
                     // Tentative de parsing
                     const parsed = JSON.parse(cleanText);
                     console.log("✅ JSON parsé avec succès:", parsed);
                     
                     // Vérifier que les données essentielles sont présentes
-                    if (parsed && (parsed.nom || parsed.prenom || parsed.poste || parsed.description)) {
+                    // Pour les tests API, accepter si on a test et message
+                    // Pour les données CV, accepter si on a nom, prenom, poste ou description
+                    const hasTestData = parsed.test;
+                    const hasCvData = parsed.nom || parsed.prenom || parsed.poste || parsed.description;
+                    
+                    if (parsed && (hasTestData || hasCvData)) {
+                        console.log("✅ Données validées:", { hasTestData, hasCvData });
                         return parsed;
                     } else {
                         console.log("⚠️ JSON valide mais données essentielles manquantes");
-                        throw new Error("Données incomplètes reçues de l'IA");
+                        console.log("Contenu reçu:", Object.keys(parsed || {}));
+                        console.log("Valeurs reçues:", parsed);
+                        throw new Error("Données incomplètes reçues de l'IA - aucune donnée reconnaissable trouvée");
                     }
                     
                 } catch (error) {
                     console.error("❌ Erreur lors du parsing JSON:", error);
                     console.log("Texte qui a causé l'erreur:", text);
+                    console.log("Type d'erreur:", error.name);
+                    console.log("Message d'erreur:", error.message);
+                    
+                    // Si c'est une erreur de syntaxe JSON, essayer de la corriger
+                    if (error instanceof SyntaxError) {
+                        console.log("🔧 Tentative de correction automatique du JSON...");
+                        try {
+                            // Extraire un JSON plus simple
+                            let fallbackText = text.trim();
+                            // Rechercher un pattern JSON plus flexible
+                            const simpleJsonMatch = fallbackText.match(/\{[^{}]*\}/);
+                            if (simpleJsonMatch) {
+                                const simpleJson = JSON.parse(simpleJsonMatch[0]);
+                                console.log("✅ JSON simple récupéré:", simpleJson);
+                                return simpleJson;
+                            }
+                        } catch (fallbackJsonError) {
+                            console.log("❌ Correction automatique JSON échouée:", fallbackJsonError);
+                        }
+                    }
                     
                     // Essayer une extraction simple avec regex comme fallback
                     try {
                         const fallbackData = extractDataFromText(text);
-                        if (fallbackData.nom || fallbackData.prenom || fallbackData.poste) {
+                        if (fallbackData.nom || fallbackData.prenom || fallbackData.poste || fallbackData.test) {
                             console.log("✅ Fallback réussi:", fallbackData);
                             return fallbackData;
                         }
@@ -5104,7 +5140,18 @@
             function extractDataFromText(text) {
                 console.log("Extraction de fallback depuis le texte...");
                 
-                // Extraction basique avec regex
+                // D'abord essayer d'extraire des données de test API
+                const testMatch = text.match(/test["\s:]*["']?([^"'\n]+)["']?/i);
+                const messageMatch = text.match(/message["\s:]*["']?([^"'\n]+)["']?/i);
+                
+                if (testMatch) {
+                    return {
+                        test: testMatch[1].trim(),
+                        message: messageMatch ? messageMatch[1].trim() : "API fonctionne"
+                    };
+                }
+                
+                // Ensuite extraction basique pour CV avec regex
                 const nomMatch = text.match(/nom["\s:]*["']?([A-Z\s]+)["']?/i);
                 const prenomMatch = text.match(/prenom["\s:]*["']?([A-Za-z\s]+)["']?/i);
                 const posteMatch = text.match(/poste["\s:]*["']?([^"'\n]+)["']?/i);
