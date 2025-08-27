@@ -2333,4 +2333,9 @@
                 } catch (error) {
                     console.error("âŒ Erreur dÃ©taillÃ©e de l'IA:", error);
                     showNotification(`Erreur de l'IA : ${error.message}`, 'error', 5000);
-                    throw er
+                    throw error;
+                } finally {
+                    hideMatrixProcessing();
+                }
+            }
+        });
