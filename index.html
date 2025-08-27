@@ -4891,10 +4891,22 @@
             }
 
             function updatePreview(source = 'form') {
+                // Réinitialiser les sélecteurs si nécessaire
+                if (!preview.cvNomPrenom) {
+                    reinitializePreviewSelectors();
+                }
+                
                 if (source === 'form' || source === 'banner-style' || source === 'theme' || source === 'state') {
-                    preview.cvNomPrenom.textContent = `${controls.prenom.value} ${controls.nom.value}`.trim() || 'Prénom NOM';
-                    preview.cvPoste.textContent = controls.poste.value || 'Poste Recherché';
-                    preview.cvDescription.innerHTML = `<div class="editable-wrapper"><p contenteditable="true">${controls.description.value.replace(/\n/g, '<br>') || '&nbsp;'}</p><span class="delete-line-btn"><i class="fas fa-times"></i></span></div>`;
+                    // Vérifications de sécurité pour éviter les erreurs "Cannot set properties of undefined"
+                    if (preview.cvNomPrenom) {
+                        preview.cvNomPrenom.textContent = `${controls.prenom.value} ${controls.nom.value}`.trim() || 'Prénom NOM';
+                    }
+                    if (preview.cvPoste) {
+                        preview.cvPoste.textContent = controls.poste.value || 'Poste Recherché';
+                    }
+                    if (preview.cvDescription) {
+                        preview.cvDescription.innerHTML = `<div class="editable-wrapper"><p contenteditable="true">${controls.description.value.replace(/\n/g, '<br>') || '&nbsp;'}</p><span class="delete-line-btn"><i class="fas fa-times"></i></span></div>`;
+                    }
                     
                     const renderDynamicList = (previewContainer, controlContainer, type) => {
                         previewContainer.innerHTML = '';
@@ -4943,19 +4955,26 @@
                         previewContainer.appendChild(finalButtonWrapper);
                     };
 
-                    renderDynamicList(preview.cvExperience, controls.experienceList, 'experience');
-                    renderDynamicList(preview.cvFormation, controls.formationList, 'formation');
+                    // Vérifications de sécurité pour les listes dynamiques
+                    if (preview.cvExperience) {
+                        renderDynamicList(preview.cvExperience, controls.experienceList, 'experience');
+                    }
+                    if (preview.cvFormation) {
+                        renderDynamicList(preview.cvFormation, controls.formationList, 'formation');
+                    }
 
                     const skillStyle = document.querySelector('.skill-style-btn.active')?.dataset.skillStyle || 'tags';
-                    preview.cvCompetences.dataset.style = skillStyle;
-                    
-                    if (skillStyle === 'tags') {
-                        preview.cvCompetences.innerHTML = renderSkillsAsTags(controls.competences.value);
-                        initializeSkillSorting(); 
-                    } else if (skillStyle === 'levels') {
-                        preview.cvCompetences.innerHTML = renderSkillsAsLevels();
-                    } else { // simple
-                        preview.cvCompetences.innerHTML = renderSkillsAsSimple(controls.competences.value);
+                    if (preview.cvCompetences) {
+                        preview.cvCompetences.dataset.style = skillStyle;
+                        
+                        if (skillStyle === 'tags') {
+                            preview.cvCompetences.innerHTML = renderSkillsAsTags(controls.competences.value);
+                            initializeSkillSorting(); 
+                        } else if (skillStyle === 'levels') {
+                            preview.cvCompetences.innerHTML = renderSkillsAsLevels();
+                        } else { // simple
+                            preview.cvCompetences.innerHTML = renderSkillsAsSimple(controls.competences.value);
+                        }
                     }
 
                     document.querySelectorAll('.custom-module-preview').forEach(m => m.remove());
@@ -4985,27 +5004,43 @@
                         }
                     });
                     
-                    preview.bannerNom.textContent = controls.bannerNom.value || "Nom Prénom Recruteur";
-                    preview.bannerPoste.textContent = controls.bannerPoste.value || "Poste du Recruteur";
-                    preview.bannerEmail.textContent = controls.bannerEmail.value || "email@recruteur.com";
-                    preview.bannerTel.textContent = controls.bannerTel.value || "01 23 45 67 89";
+                    // Vérifications de sécurité pour les éléments de bannière
+                    if (preview.bannerNom) {
+                        preview.bannerNom.textContent = controls.bannerNom.value || "Nom Prénom Recruteur";
+                    }
+                    if (preview.bannerPoste) {
+                        preview.bannerPoste.textContent = controls.bannerPoste.value || "Poste du Recruteur";
+                    }
+                    if (preview.bannerEmail) {
+                        preview.bannerEmail.textContent = controls.bannerEmail.value || "email@recruteur.com";
+                    }
+                    if (preview.bannerTel) {
+                        preview.bannerTel.textContent = controls.bannerTel.value || "01 23 45 67 89";
+                    }
                 }
 
-                preview.bannerNom.style.fontFamily = controls.bannerNomFont.value;
-                preview.bannerNom.style.fontSize = controls.bannerNomSize.value + 'pt';
-                preview.bannerNom.style.color = controls.bannerNomColor.value;
-                preview.bannerNom.style.fontWeight = controls.bannerNomBold.classList.contains('active') ? 'bold' : 'normal';
-                preview.bannerNom.style.fontStyle = controls.bannerNomItalic.classList.contains('active') ? 'italic' : 'normal';
+                // Vérifications de sécurité pour les styles de bannière
+                if (preview.bannerNom) {
+                    preview.bannerNom.style.fontFamily = controls.bannerNomFont.value;
+                    preview.bannerNom.style.fontSize = controls.bannerNomSize.value + 'pt';
+                    preview.bannerNom.style.color = controls.bannerNomColor.value;
+                    preview.bannerNom.style.fontWeight = controls.bannerNomBold.classList.contains('active') ? 'bold' : 'normal';
+                    preview.bannerNom.style.fontStyle = controls.bannerNomItalic.classList.contains('active') ? 'italic' : 'normal';
+                }
                 
-                preview.bannerPoste.style.fontSize = controls.bannerPosteSize.value + 'pt';
-                preview.bannerPoste.style.color = controls.bannerPosteColor.value;
-                preview.bannerPoste.style.fontWeight = controls.bannerPosteBold.classList.contains('active') ? 'bold' : 'normal';
-                preview.bannerPoste.style.fontStyle = controls.bannerPosteItalic.classList.contains('active') ? 'italic' : 'normal';
+                if (preview.bannerPoste) {
+                    preview.bannerPoste.style.fontSize = controls.bannerPosteSize.value + 'pt';
+                    preview.bannerPoste.style.color = controls.bannerPosteColor.value;
+                    preview.bannerPoste.style.fontWeight = controls.bannerPosteBold.classList.contains('active') ? 'bold' : 'normal';
+                    preview.bannerPoste.style.fontStyle = controls.bannerPosteItalic.classList.contains('active') ? 'italic' : 'normal';
+                }
 
-                preview.bannerContact.style.fontSize = controls.bannerContactSize.value + 'pt';
-                preview.bannerContact.style.color = controls.bannerContactColor.value;
-                preview.bannerContact.style.fontWeight = controls.bannerContactBold.classList.contains('active') ? 'bold' : 'normal';
-                preview.bannerContact.style.fontStyle = controls.bannerContactItalic.classList.contains('active') ? 'italic' : 'normal';
+                if (preview.bannerContact) {
+                    preview.bannerContact.style.fontSize = controls.bannerContactSize.value + 'pt';
+                    preview.bannerContact.style.color = controls.bannerContactColor.value;
+                    preview.bannerContact.style.fontWeight = controls.bannerContactBold.classList.contains('active') ? 'bold' : 'normal';
+                    preview.bannerContact.style.fontStyle = controls.bannerContactItalic.classList.contains('active') ? 'italic' : 'normal';
+                }
                 
                 const dispo = controls.qualificationDispo.value;
                 const salaire = controls.qualificationSalaire.value;
