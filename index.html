@@ -2330,6 +2330,7 @@
                             <div class="tooltip">
                                 <button id="analyze-btn" class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 flex items-center justify-center gap-2"><i class="fa-solid fa-wand-magic-sparkles"></i> Analyser & Remplir</button>
                                 <button id="test-fill-btn" class="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 flex items-center justify-center gap-2 mt-2"><i class="fa-solid fa-bug"></i> Test Remplissage</button>
+                                <button id="test-api-btn" class="w-full bg-purple-600 text-white py-2 px-4 rounded-md hover:bg-purple-700 flex items-center justify-center gap-2 mt-2"><i class="fa-solid fa-flask"></i> Test API</button>
                                 <div class="tooltip-content top">
                                     <strong>Analyser & Remplir</strong><br>
                                     Utilise l'IA pour analyser le texte saisi et remplir<br>
@@ -5026,6 +5027,7 @@
 
             // Fonction pour parser le JSON de l'IA de manière robuste
             function parseAIJsonSafely(text) {
+                console.log("=== PARSING JSON ===");
                 console.log("Texte brut de l'IA:", text);
                 
                 try {
@@ -5046,19 +5048,33 @@
                         cleanText = jsonMatch[0];
                     }
                     
-                    console.log("Texte nettoyé:", cleanText);
+                    console.log("Texte nettoyé pour parsing:", cleanText);
                     
                     // Tentative de parsing
                     const parsed = JSON.parse(cleanText);
-                    console.log("JSON parsé avec succès:", parsed);
-                    return parsed;
+                    console.log("✅ JSON parsé avec succès:", parsed);
+                    
+                    // Vérifier que les données essentielles sont présentes
+                    if (parsed && (parsed.nom || parsed.prenom || parsed.poste)) {
+                        return parsed;
+                    } else {
+                        console.log("⚠️ JSON valide mais données vides");
+                        return null;
+                    }
                     
                 } catch (error) {
-                    console.error("Erreur lors du parsing JSON:", error);
+                    console.error("❌ Erreur lors du parsing JSON:", error);
                     console.log("Texte qui a causé l'erreur:", text);
                     
-                    // En cas d'échec, retourner des données par défaut basées sur le texte
-                    return extractDataFromText(text);
+                    // Essayer une extraction simple avec regex
+                    const fallbackData = extractDataFromText(text);
+                    if (fallbackData.nom || fallbackData.prenom || fallbackData.poste) {
+                        console.log("✅ Fallback réussi:", fallbackData);
+                        return fallbackData;
+                    }
+                    
+                    console.log("❌ Même le fallback a échoué");
+                    return null;
                 }
             }
             
@@ -5084,17 +5100,21 @@
             }
 
             async function callGeminiAPI(prompt, schema) {
+                console.log("=== APPEL API GEMINI ===");
+                
                 // Vérifier la clé API avant d'essayer l'appel
                 if (!validateApiKey()) {
+                    console.log("❌ Clé API invalide");
                     return null;
                 }
+                
+                const apiKey = controls.geminiApiKey.value.trim() || localStorage.getItem('gemini-api-key') || "";
+                console.log("Clé API présente:", !!apiKey);
+                console.log("Longueur clé API:", apiKey.length);
                 
                 // Lancer l'animation Matrix au lieu du loader
                 showMatrixProcessing();
                 try {
-                    // Récupérer la clé API depuis le champ ou le localStorage
-                    const apiKey = controls.geminiApiKey.value.trim() || localStorage.getItem('gemini-api-key') || "";
-                    
                     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
                     
                     const payload = {
@@ -5102,15 +5122,21 @@
                         generationConfig: schema ? { responseMimeType: "application/json", responseSchema: schema } : {}
                     };
 
+                    console.log("URL API:", apiUrl.substring(0, 100) + "...");
+                    console.log("Payload:", payload);
+
                     const response = await fetch(apiUrl, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(payload)
                     });
 
+                    console.log("Status de la réponse:", response.status);
+                    console.log("Headers de la réponse:", Object.fromEntries(response.headers.entries()));
+
                     if (!response.ok) {
                         const errorBody = await response.text();
-                        console.error("Erreur API détaillée:", errorBody);
+                        console.error("❌ Erreur API détaillée:", errorBody);
                         
                         if (response.status === 400) {
                             if (errorBody.includes('API_KEY_INVALID') || errorBody.includes('INVALID_API_KEY')) {
@@ -5135,6 +5161,7 @@
                     }
 
                     const result = await response.json();
+                    console.log("✅ Réponse API complète:", result);
                     
                     if (result.candidates && result.candidates.length > 0) {
                          if (result.candidates[0].finishReason !== "STOP" && result.candidates[0].finishReason !== "MAX_TOKENS") {
@@ -5142,6 +5169,8 @@
                          }
                         if (result.candidates[0].content && result.candidates[0].content.parts && result.candidates[0].content.parts.length > 0) {
                             const text = result.candidates[0].content.parts[0].text;
+                            console.log("Texte brut reçu de l'IA:", text);
+                            
                             if (schema) {
                                 // Nettoyer et parser le JSON de manière robuste
                                 return parseAIJsonSafely(text);
@@ -5151,10 +5180,11 @@
                         }
                     }
                     
+                    console.log("❌ Réponse vide ou invalide de l'IA");
                     throw new Error("Réponse invalide ou vide reçue de l'IA.");
 
                 } catch (error) {
-                    console.error("Erreur détaillée de l'IA:", error);
+                    console.error("❌ Erreur détaillée de l'IA:", error);
                     showNotification(`Erreur de l'IA : ${error.message}`, 'error', 5000);
                     return null;
                 } finally {
@@ -6929,10 +6959,22 @@ JSON :`;
                         // Mettre à jour le texte du loader pendant l'appel API
                         controls.loaderText.textContent = "🧠 Traitement par l'IA...";
                         
+                        console.log("=== DÉBUT ANALYSE IA ===");
+                        console.log("Texte à analyser:", text);
+                        console.log("Prompt envoyé:", prompt);
+                        
                         const extractedData = await callGeminiAPI(prompt, schema);
                         
+                        console.log("=== RÉSULTAT IA ===");
                         console.log("Données extraites par l'IA:", extractedData);
                         console.log("Type des données:", typeof extractedData);
+                        console.log("L'IA a-t-elle retourné des données?", !!extractedData);
+                        
+                        if (extractedData && extractedData.nom) {
+                            console.log("✅ IA a réussi - utilisation des vraies données");
+                        } else {
+                            console.log("❌ IA a échoué - utilisation de fallback");
+                        }
                         
                         if (extractedData) {
                             // Mettre à jour le texte du loader
@@ -7117,6 +7159,41 @@ JSON :`;
                         // Mettre à jour l'aperçu
                         updatePreview('form');
                         showNotification("✅ Test de remplissage effectué !", "success");
+                    });
+                }
+                
+                // BOUTON DE TEST API
+                const testApiBtn = document.getElementById('test-api-btn');
+                if (testApiBtn) {
+                    testApiBtn.addEventListener('click', async () => {
+                        console.log("=== TEST API GEMINI ===");
+                        
+                        const testPrompt = `Réponds par un JSON simple avec juste: {"test": "ok", "message": "API fonctionne"}`;
+                        const testSchema = {
+                            type: "OBJECT",
+                            properties: {
+                                test: { type: "STRING" },
+                                message: { type: "STRING" }
+                            }
+                        };
+                        
+                        try {
+                            showLoader("🧪 Test de l'API...");
+                            const result = await callGeminiAPI(testPrompt, testSchema);
+                            hideLoader();
+                            
+                            if (result && result.test === "ok") {
+                                showNotification("✅ API Gemini fonctionne parfaitement !", "success");
+                                console.log("✅ Test API réussi:", result);
+                            } else {
+                                showNotification("⚠️ API répond mais données incohérentes", "warning");
+                                console.log("⚠️ Résultat inattendu:", result);
+                            }
+                        } catch (error) {
+                            hideLoader();
+                            showNotification("❌ Test API échoué: " + error.message, "error");
+                            console.error("❌ Test API échoué:", error);
+                        }
                     });
                 }
                 
