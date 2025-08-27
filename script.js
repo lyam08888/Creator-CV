@@ -1,3451 +1,4 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Créateur de CV IA - Pro Recruteur</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Montserrat:wght@400;500;700;800&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Roboto+Mono:wght@400;700&family=Merriweather:wght@400;700&family=Oswald:wght@400;700&family=Cormorant+Garamond:wght@400;700&family=Open+Sans:wght@400;700&family=Source+Sans+Pro:wght@400;700&family=Nunito+Sans:wght@400;700&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
-    
-    <style>
-        :root {
-            --page-margin: 2cm;
-            --primary-color: #2563eb;
-            --secondary-color: #334155;
-            --body-text-color: #334155;
-            --font-family-h1: 'Montserrat', sans-serif;
-            --font-family-h2: 'Montserrat', sans-serif;
-            --font-family-body: 'Lato', sans-serif;
-            --font-size-h1: 40pt;
-            --font-size-h2: 21pt;
-            --font-size-p: 10pt;
-            --font-size-banner: 9pt;
-            --line-height: 1.6;
-            --paragraph-spacing: 0.5rem;
-            --module-spacing: 1.5rem;
-            --item-spacing: 0.5rem;
-            --banner-element-spacing: 1rem;
-        }
-
-        #cv-preview-wrapper { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 20px; }
-        .a4-page-container { position: relative; }
-        /* CORRECTIF : Remplacement de min-height par height pour une détection de dépassement fiable */
-        .a4-page { width: 21cm; height: 29.7cm; box-shadow: 0 10px 30px rgba(0,0,0,0.15); background-color: white; overflow: hidden; display: flex; flex-direction: column; transition: all 0.3s ease; font-family: var(--font-family-body); color: var(--body-text-color); position: relative; outline: 2px solid transparent; outline-offset: -2px; padding: var(--page-margin); box-sizing: border-box; }
-        body.overflow-check-active .is-overflowing { outline: 3px solid #ef4444 !important; box-shadow: 0 0 20px 8px rgba(239, 68, 68, 0.3) !important; }
-        
-        .remove-page-btn { position: absolute; top: -10px; right: -10px; width: 30px; height: 30px; background-color: #ef4444; color: white; border: none; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; opacity: 0.5; transition: opacity 0.2s, transform 0.2s; z-index: 10; }
-        .remove-page-btn:hover { opacity: 1; transform: scale(1.1); }
-        .a4-page-container:first-child .remove-page-btn { display: none; }
-
-        #add-page-btn-wrapper { width: 21cm; text-align: center; padding: 10px 0; }
-        #add-page-btn { width: 50px; height: 50px; background-color: #3b82f6; color: white; border-radius: 50%; border: none; cursor: pointer; font-size: 24px; transition: transform 0.2s; }
-        #add-page-btn:hover { transform: scale(1.1); }
-
-        .cv-body-container { display: grid; gap: 1rem; height: 100%; flex-grow: 1; position: relative; }
-        .layout-1-col { grid-template-columns: 1fr; }
-        .layout-2-col-33-67 { grid-template-columns: 1fr 2fr; }
-        .layout-2-col-50-50 { grid-template-columns: 1fr 1fr; }
-        .layout-2-col-67-33 { grid-template-columns: 2fr 1fr; }
-
-        .cv-column { min-height: 150px; height: 100%; border: 1px dotted #ccc; padding: 5px; }
-        .cv-module { position: relative; margin-bottom: var(--module-spacing); }
-        .cv-module .drag-handle { position: absolute; top: 10px; left: -25px; cursor: grab; color: #d1d5db; opacity: 0; transition: opacity 0.2s; font-size: 1.2rem; }
-        .cv-module:hover .drag-handle { opacity: 1; }
-        .sortable-ghost { opacity: 0.4; background: #cce7ff; border: 1px dashed var(--primary-color); }
-
-        [contenteditable="true"]:hover { outline: 1px dashed #3b82f6; background-color: #eff6ff; }
-        [contenteditable="true"]:focus { outline: 2px solid #3b82f6; background-color: #dbeafe; }
-
-        .cv-header h1 { font-family: var(--font-family-h1); font-weight: 800; font-size: var(--font-size-h1); color: var(--primary-color); margin-bottom: 0.25rem; }
-        .cv-header p { font-family: var(--font-family-body); font-size: 1.2rem; color: var(--secondary-color); }
-        .section-title { font-family: var(--font-family-h2); font-weight: 700; font-size: var(--font-size-h2); margin-bottom: 0.8rem; padding-bottom: 0.4rem; color: var(--primary-color); display: flex; align-items: center; gap: 0.5rem; transition: opacity 0.3s; }
-        .section-title.style-underline { border-bottom: 2px solid var(--primary-color); }
-        .section-title.style-side-line { border-left: 4px solid var(--primary-color); border-bottom: none; padding-left: 0.5rem; }
-        .section-title.style-background { background-color: var(--primary-color); color: white; padding: 0.3rem 0.6rem; margin-bottom: 1rem; border-radius: 0.25rem; }
-        .section-title.style-background .section-icon { color: white !important; }
-        .section-title.style-boxed { border: 2px solid var(--primary-color); padding: 0.3rem 0.6rem; }
-
-        .section-title .section-icon { cursor: pointer; transition: transform 0.2s; }
-        .section-title .section-icon:hover { transform: scale(1.1); }
-        .a4-page p, .a4-page li, #cv-description-preview, #cv-experience-preview, #cv-formation-preview { font-size: var(--font-size-p); line-height: var(--line-height); }
-        .a4-page p { margin-bottom: var(--paragraph-spacing); }
-        .a4-page ul { list-style: none; padding-left: 0;}
-        #cv-competences-preview[data-style="simple"] ul li,
-        .a4-page ul li { padding-left: 1.4em; position: relative; margin-bottom: 0.25rem; }
-        #cv-competences-preview[data-style="simple"] ul li::before,
-        .a4-page ul li::before { content: '›'; font-weight: bold; position: absolute; left: 0; color: var(--primary-color); font-size: 1.2em; top: -0.1em; }
-        
-        .item-title { font-weight: 700; color: var(--secondary-color); }
-        .item-meta { font-size: calc(var(--font-size-p) * 0.9); font-style: italic; }
-
-        #recruiter-banner { display: flex; align-items: center; padding: 0.5rem; box-sizing: border-box; width: 100%; font-size: var(--font-size-banner); position: relative; overflow: hidden; }
-        .banner-content-wrapper { position: relative; z-index: 1; display: flex; align-items: center; width: 100%; height: 100%; gap: var(--banner-element-spacing); }
-        #banner-bg-img-preview { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; transition: opacity 0.3s, filter 0.3s; }
-        #fixed-banner-top { margin-bottom: var(--module-spacing); display: none; }
-        #fixed-banner-bottom { margin-top: auto; padding-top: var(--module-spacing); display: none; }
-        #banner-img-preview { border-radius: 50%; object-fit: cover; flex-shrink: 0; transition: width 0.3s, height 0.3s; background-color: rgba(255,255,255,0.5); }
-        #banner-img-preview.logo-sm { width: 40px; height: 40px; }
-        #banner-img-preview.logo-md { width: 60px; height: 60px; }
-        #banner-img-preview.logo-lg { width: 80px; height: 80px; }
-        #banner-img-preview.logo-xl { width: 100px; height: 100px; }
-        #banner-img-preview.logo-xxl { width: 120px; height: 120px; }
-        #banner-nom-preview { font-weight: 700; }
-        .banner-align-left { justify-content: flex-start; text-align: left; }
-        .banner-align-center { justify-content: center; text-align: center; }
-        .banner-align-right { justify-content: flex-end; text-align: right; }
-        .banner-layout-inverted { flex-direction: row-reverse; }
-        .banner-style-elegant { border-top: 2px solid var(--primary-color); border-bottom: 2px solid var(--primary-color); background: transparent; }
-        .banner-style-modern { background-color: var(--primary-color); color: white; border-radius: 0.5rem; }
-        .banner-style-modern p, .banner-style-modern span { color: white !important; }
-        .banner-style-discret { border-left: 4px solid #d1d5db; background: transparent; }
-        .banner-style-carte { box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); border-radius: 0.5rem; background: #f9fafb; }
-        .banner-style-degrade { background: linear-gradient(to right, var(--primary-color), #a5b4fc); color: white; border-radius: 0.5rem; }
-        .banner-style-degrade p, .banner-style-degrade span { color: white !important; }
-        .banner-style-premium { background-color: #1e293b; color: #fde68a; border: 1px solid #fde68a; border-radius: 0.25rem; }
-        .banner-style-premium p, .banner-style-premium span { color: #f1f5f9 !important; }
-        .banner-style-minimal { border-bottom: 2px solid var(--primary-color); }
-        .banner-style-encadre { border: 2px solid var(--primary-color); border-radius: 0.5rem; }
-        .banner-style-ligne-haute { border-top: 4px solid var(--primary-color); padding-top: 0.8rem !important; }
-
-        #notification { position: fixed; top: 20px; right: 20px; z-index: 10000; }
-        .toast { background-color: white; color: #111827; padding: 1rem 1.5rem; border-radius: 0.5rem; box-shadow: 0 5px 15px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 0.75rem; transition: all 0.3s ease; transform: translateX(120%); }
-        .toast.show { transform: translateX(0); }
-
-        /* Styles for collapsible control panel sections */
-        details.control-group {
-            background-color: #f9fafb;
-            border: 1px solid #f3f4f6;
-            border-radius: 0.5rem;
-            transition: background-color 0.2s;
-        }
-        details.control-group[open] {
-            background-color: white;
-            border-color: #e5e7eb;
-        }
-        details.control-group summary {
-            list-style: none;
-            cursor: pointer;
-            padding: 1rem;
-            font-weight: 600;
-            color: #374151;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        details.control-group summary::-webkit-details-marker {
-            display: none;
-        }
-        details.control-group .control-group-content {
-            padding: 0 1rem 1rem 1rem;
-            border-top: 1px solid #f3f4f6;
-            margin-top: -0.5rem;
-            padding-top: 1rem;
-        }
-        .completion-label {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.75rem;
-            font-weight: 400;
-            color: #6b7280;
-            cursor: pointer;
-        }
-        .completion-checkbox {
-            height: 1rem;
-            width: 1rem;
-            border-radius: 0.25rem;
-            border-color: #d1d5db;
-            color: #4f46e5;
-            cursor: pointer;
-        }
-        .completion-checkbox:focus {
-            outline: 2px solid #4f46e5;
-            outline-offset: 2px;
-        }
-        
-        
-        /* --- Specific styles for skills section --- */
-        #cv-competences-preview h3.skill-category { font-family: var(--font-family-h2); font-weight: 700; color: var(--secondary-color); margin-top: 0.8rem; margin-bottom: 0.4rem; padding-bottom: 0.2rem; border-bottom: 1px solid #e5e7eb; font-size: calc(var(--font-size-p) * 1.05); text-transform: uppercase; letter-spacing: 0.5px; }
-        #cv-competences-preview .skill-category:hover { background-color: #f3f4f6; }
-        #cv-competences-preview[data-style="tags"] ul { padding-left: 0; list-style: none; margin-top: 0.25rem; margin-bottom: 0.5rem; line-height: 1.5; }
-        #cv-competences-preview[data-style="tags"] ul li.skill-item { display: inline-block; margin: 0 8px 6px 0; padding: 3px 20px 3px 10px; border-radius: 12px; background-color: #f3f4f6; font-size: calc(var(--font-size-p) * 0.95); position: relative; cursor: grab; }
-        #cv-competences-preview[data-style="tags"] ul li.skill-item:hover { background-color: #e5e7eb; }
-        #cv-competences-preview[data-style="tags"] ul li::before { content: none; }
-        .skills-ghost { opacity: 0.4; background: #cce7ff; border-radius: 12px; }
-
-        /* Styles pour les options de mise en page avancées */
-        .layout-control-row {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 1rem;
-            align-items: center;
-        }
-        .layout-control-group {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-            margin-bottom: 1rem;
-        }
-        .control-item {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-        .control-item label {
-            font-size: 0.875rem;
-            font-weight: 500;
-            color: #374151;
-        }
-        .control-item input[type="range"] {
-            width: 100%;
-            accent-color: var(--primary-color);
-        }
-        .control-item input[type="color"] {
-            width: 50px;
-            height: 32px;
-            border: none;
-            border-radius: 0.25rem;
-            cursor: pointer;
-        }
-        .range-value {
-            font-size: 0.75rem;
-            color: #6b7280;
-            text-align: center;
-        }
-        .button-group {
-            display: flex;
-            gap: 0.5rem;
-            flex-wrap: wrap;
-        }
-        .button-group button {
-            padding: 0.5rem 1rem;
-            border: 1px solid #d1d5db;
-            background: white;
-            border-radius: 0.25rem;
-            cursor: pointer;
-            font-size: 0.875rem;
-            transition: all 0.2s;
-        }
-        .button-group button:hover {
-            background: #f3f4f6;
-        }
-        .button-group button.active {
-            background: var(--primary-color);
-            color: white;
-            border-color: var(--primary-color);
-        }
-        .checkbox-group {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 0.5rem;
-        }
-        .checkbox-group label {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            cursor: pointer;
-            font-size: 0.875rem;
-        }
-        .pattern-preview {
-            width: 30px;
-            height: 30px;
-            border: 1px solid #d1d5db;
-            border-radius: 0.25rem;
-            margin-left: 0.5rem;
-        }
-        .shape-preview {
-            width: 40px;
-            height: 30px;
-            border: 1px solid #d1d5db;
-            margin-left: 0.5rem;
-            display: inline-block;
-        }
-        .animation-preview {
-            width: 20px;
-            height: 20px;
-            background: var(--primary-color);
-            margin-left: 0.5rem;
-            border-radius: 50%;
-            animation: pulse 2s infinite;
-        }
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-
-        @keyframes float {
-            0% {
-                transform: translateY(0px) rotate(0deg);
-                opacity: 0.8;
-            }
-            33% {
-                transform: translateY(-10px) rotate(120deg);
-                opacity: 1;
-            }
-            66% {
-                transform: translateY(5px) rotate(240deg);
-                opacity: 0.9;
-            }
-            100% {
-                transform: translateY(0px) rotate(360deg);
-                opacity: 0.8;
-            }
-        }
-
-        /* Classes CSS pour les effets de mise en page */
-        .bg-solid { background-color: var(--bg-color, #ffffff); }
-        .bg-gradient-linear { background: linear-gradient(var(--gradient-direction, to right), var(--gradient-color1, #ffffff), var(--gradient-color2, #f3f4f6)); }
-        .bg-gradient-radial { background: radial-gradient(circle, var(--gradient-color1, #ffffff), var(--gradient-color2, #f3f4f6)); }
-        .bg-pattern-dots { background-image: radial-gradient(circle, var(--pattern-color, #e5e7eb) 1px, transparent 1px); background-size: 20px 20px; }
-        .bg-pattern-lines { background-image: linear-gradient(90deg, var(--pattern-color, #e5e7eb) 1px, transparent 1px); background-size: 20px 20px; }
-        .bg-pattern-grid { background-image: linear-gradient(var(--pattern-color, #e5e7eb) 1px, transparent 1px), linear-gradient(90deg, var(--pattern-color, #e5e7eb) 1px, transparent 1px); background-size: 20px 20px; }
-        .bg-texture-paper { background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><defs><filter id="noise"><feTurbulence baseFrequency="0.9" numOctaves="1" seed="1"/><feComponentTransfer><feFuncA type="discrete" tableValues="0 .5 0 1 0 .5 0 1"/></feComponentTransfer></filter></defs><rect width="100%" height="100%" filter="url(%23noise)" opacity="0.03"/></svg>'); }
-        .bg-texture-fabric { background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"><rect width="40" height="40" fill="white"/><path d="M0 0h40v40H0z" fill="none" stroke="rgba(0,0,0,0.05)" stroke-width="0.5"/></svg>'); }
-        
-        .border-style-solid { border-style: solid; }
-        .border-style-dashed { border-style: dashed; }
-        .border-style-dotted { border-style: dotted; }
-        .border-style-double { border-style: double; }
-        
-        .shadow-soft { box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); }
-        .shadow-medium { box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
-        .shadow-strong { box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1); }
-        .shadow-colored { box-shadow: 0 4px 6px rgba(var(--shadow-color-rgb), 0.2); }
-        .shadow-inset { box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1); }
-        
-        .shape-rectangle { border-radius: 0; }
-        .shape-rounded { border-radius: 0.5rem; }
-        .shape-circle { border-radius: 50%; }
-        .shape-pill { border-radius: 50px; }
-        .shape-custom { border-radius: var(--custom-radius, 0.5rem); }
-        
-        .text-align-left { text-align: left; }
-        .text-align-center { text-align: center; }
-        .text-align-right { text-align: right; }
-        .text-align-justify { text-align: justify; }
-        
-        .animation-fade-in { animation: fadeIn 1s ease-in; }
-        .animation-slide-in { animation: slideIn 0.5s ease-out; }
-        .animation-zoom-in { animation: zoomIn 0.3s ease-out; }
-        .animation-bounce { animation: bounce 0.6s ease-out; }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        @keyframes slideIn {
-            from { transform: translateY(-20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-        @keyframes zoomIn {
-            from { transform: scale(0.9); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
-        }
-        @keyframes bounce {
-            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-            40% { transform: translateY(-10px); }
-            60% { transform: translateY(-5px); }
-        }
-        
-        .filter-blur { filter: blur(2px); }
-        .filter-brightness { filter: brightness(1.2); }
-        .filter-contrast { filter: contrast(1.2); }
-        .filter-grayscale { filter: grayscale(0.5); }
-        .filter-sepia { filter: sepia(0.3); }
-
-        /* Animations personnalisées */
-        @keyframes fade {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        @keyframes slide {
-            from { transform: translateY(-10px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-        @keyframes bounce {
-            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-            40% { transform: translateY(-5px); }
-            60% { transform: translateY(-2px); }
-        }
-        @keyframes scale {
-            from { transform: scale(0.95); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
-        }
-
-        /* Styles d'impression */
-        .print-optimized {
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
-        }
-        .high-contrast-print {
-            filter: contrast(1.5);
-        }
-
-        @media print {
-            .print-optimized {
-                box-shadow: none !important;
-                animation: none !important;
-            }
-            .high-contrast-print {
-                background: white !important;
-                color: black !important;
-            }
-        }
-
-        /* Style pour le bouton réduire tout */
-        #collapse-all-btn {
-            transition: all 0.2s ease;
-            border: 1px solid #e5e7eb;
-        }
-        #collapse-all-btn:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-        #collapse-all-btn:active {
-            transform: translateY(0);
-        }
-
-        /* Animations IA stylées */
-        .ai-thinking-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(255, 255, 255, 0.95);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 10000;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.2s ease;
-            backdrop-filter: blur(8px);
-        }
-
-        .ai-thinking-overlay.active {
-            opacity: 1;
-            pointer-events: auto;
-        }
-
-        /* Animation de restructuration spectaculaire */
-        .cv-restructure-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(45deg, rgba(59, 130, 246, 0.95), rgba(139, 92, 246, 0.95));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 10001;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.5s ease;
-        }
-
-        .cv-restructure-overlay.active {
-            opacity: 1;
-            pointer-events: auto;
-        }
-
-        .cv-restructure-container {
-            text-align: center;
-            color: white;
-            max-width: 800px;
-            width: 90%;
-        }
-
-        .restructure-title {
-            font-size: 3rem;
-            font-weight: 800;
-            margin-bottom: 2rem;
-            animation: titlePulse 2s ease-in-out infinite;
-        }
-
-        .letters-container {
-            position: relative;
-            height: 400px;
-            overflow: hidden;
-            margin: 2rem 0;
-        }
-
-        .flying-letter {
-            position: absolute;
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: white;
-            opacity: 0.9;
-            animation: flyAndRestructure 4s ease-in-out;
-            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
-        }
-
-        .building-element {
-            position: absolute;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 8px;
-            border: 2px solid rgba(255, 255, 255, 0.4);
-            animation: buildUp 0.8s ease-out forwards;
-            transform: scale(0) rotate(45deg);
-            opacity: 0;
-        }
-
-        .progress-text {
-            font-size: 1.2rem;
-            margin-top: 2rem;
-            animation: textFade 3s ease-in-out infinite;
-        }
-
-        .magic-particles {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-        }
-
-        .particle {
-            position: absolute;
-            width: 4px;
-            height: 4px;
-            background: white;
-            border-radius: 50%;
-            animation: magicParticle 3s ease-out infinite;
-            opacity: 0;
-        }
-
-        @keyframes titlePulse {
-            0%, 100% { transform: scale(1); text-shadow: 0 0 20px rgba(255, 255, 255, 0.5); }
-            50% { transform: scale(1.05); text-shadow: 0 0 30px rgba(255, 255, 255, 0.8); }
-        }
-
-        @keyframes flyAndRestructure {
-            0% {
-                transform: translate(0, 0) rotate(0deg) scale(1);
-                opacity: 1;
-            }
-            20% {
-                transform: translate(var(--random-x, 200px), var(--random-y, -150px)) rotate(var(--random-rotation, 180deg)) scale(1.2);
-                opacity: 0.8;
-            }
-            40% {
-                transform: translate(var(--random-x2, -150px), var(--random-y2, 100px)) rotate(var(--random-rotation2, -90deg)) scale(0.8);
-                opacity: 0.6;
-            }
-            60% {
-                transform: translate(var(--random-x3, 100px), var(--random-y3, -50px)) rotate(var(--random-rotation3, 270deg)) scale(1.5);
-                opacity: 0.9;
-            }
-            80% {
-                transform: translate(var(--final-x, 0px), var(--final-y, 50px)) rotate(720deg) scale(1);
-                opacity: 1;
-            }
-            100% {
-                transform: translate(var(--final-x, 0px), var(--final-y, 50px)) rotate(0deg) scale(1);
-                opacity: 1;
-            }
-        }
-
-        @keyframes buildUp {
-            0% {
-                transform: scale(0) rotate(45deg);
-                opacity: 0;
-            }
-            50% {
-                transform: scale(1.2) rotate(22.5deg);
-                opacity: 0.8;
-            }
-            100% {
-                transform: scale(1) rotate(0deg);
-                opacity: 1;
-            }
-        }
-
-        @keyframes textFade {
-            0%, 100% { opacity: 0.7; }
-            50% { opacity: 1; }
-        }
-
-        @keyframes magicParticle {
-            0% {
-                transform: translate(0, 0) scale(0);
-                opacity: 0;
-            }
-            20% {
-                transform: translate(var(--particle-x, 50px), var(--particle-y, -30px)) scale(1);
-                opacity: 1;
-            }
-            80% {
-                transform: translate(var(--particle-x2, -30px), var(--particle-y2, 20px)) scale(0.5);
-                opacity: 0.5;
-            }
-            100% {
-                transform: translate(var(--particle-x3, 100px), var(--particle-y3, -100px)) scale(0);
-                opacity: 0;
-            }
-        }
-
-        /* Animations supplémentaires pour un effet spectaculaire */
-        .cv-preview .a4-page {
-            transition: all 0.5s ease !important;
-        }
-
-        .cv-restructuring .a4-page {
-            transform: scale(0.9) rotate(1deg);
-            filter: blur(2px);
-            opacity: 0.8;
-        }
-
-        .cv-restructuring-complete .a4-page {
-            transform: scale(1.05) rotate(0deg);
-            filter: blur(0px) brightness(1.1);
-            opacity: 1;
-            box-shadow: 0 0 30px rgba(59, 130, 246, 0.3) !important;
-        }
-
-        /* Effet de scintillement sur l'aperçu */
-        @keyframes sparkle {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; transform: scale(1.02); }
-        }
-
-        .cv-sparkling {
-            animation: sparkle 0.5s ease-in-out 3;
-        }
-
-        /* Effet de reconstruction progressive */
-        .cv-module {
-            transition: all 0.3s ease;
-        }
-
-        .cv-rebuilding .cv-module {
-            animation: moduleReappear 0.8s ease-out forwards;
-            opacity: 0;
-            transform: translateY(20px);
-        }
-
-        .cv-rebuilding .cv-module:nth-child(1) { animation-delay: 0.1s; }
-        .cv-rebuilding .cv-module:nth-child(2) { animation-delay: 0.2s; }
-        .cv-rebuilding .cv-module:nth-child(3) { animation-delay: 0.3s; }
-        .cv-rebuilding .cv-module:nth-child(4) { animation-delay: 0.4s; }
-        .cv-rebuilding .cv-module:nth-child(5) { animation-delay: 0.5s; }
-
-        @keyframes moduleReappear {
-            0% {
-                opacity: 0;
-                transform: translateY(20px) scale(0.8);
-            }
-            50% {
-                opacity: 0.7;
-                transform: translateY(-5px) scale(1.05);
-            }
-            100% {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
-        }
-
-        /* Effet de brillance qui traverse l'écran */
-        .shine-effect {
-            position: relative;
-            overflow: hidden;
-        }
-
-        .shine-effect::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-            animation: shine 1.5s ease-in-out;
-        }
-
-        @keyframes shine {
-            0% { left: -100%; }
-            100% { left: 100%; }
-        }
-
-        /* Styles pour les barres redimensionnables */
-        .resizable-panel {
-            position: relative;
-            transition: width 0.3s ease, height 0.3s ease;
-        }
-
-        .resize-handle {
-            position: absolute;
-            background: transparent;
-            transition: all 0.2s ease;
-            z-index: 100;
-        }
-
-        .resize-handle:hover,
-        .resize-handle.dragging {
-            background: rgba(59, 130, 246, 0.3);
-        }
-
-        .resize-handle-right {
-            top: 0;
-            right: -3px;
-            width: 6px;
-            height: 100%;
-            cursor: ew-resize;
-        }
-
-        .resize-handle-bottom {
-            left: 0;
-            bottom: -3px;
-            width: 100%;
-            height: 6px;
-            cursor: ns-resize;
-        }
-
-        .resize-handle-corner {
-            bottom: -3px;
-            right: -3px;
-            width: 10px;
-            height: 10px;
-            cursor: nw-resize;
-            background: rgba(59, 130, 246, 0.5);
-            border-radius: 2px;
-        }
-
-        /* Styles pour le contrôleur de zoom */
-        .zoom-controls {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            padding: 15px;
-            z-index: 1000;
-            border: 1px solid #e5e7eb;
-            min-width: 250px;
-        }
-
-        .zoom-slider-container {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-top: 8px;
-        }
-
-        .zoom-slider {
-            flex: 1;
-            -webkit-appearance: none;
-            appearance: none;
-            height: 6px;
-            background: #e5e7eb;
-            border-radius: 3px;
-            outline: none;
-        }
-
-        .zoom-slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 20px;
-            height: 20px;
-            background: #3b82f6;
-            border-radius: 50%;
-            cursor: pointer;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .zoom-slider::-moz-range-thumb {
-            width: 20px;
-            height: 20px;
-            background: #3b82f6;
-            border-radius: 50%;
-            cursor: pointer;
-            border: none;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .zoom-btn {
-            background: #f3f4f6;
-            border: 1px solid #d1d5db;
-            border-radius: 6px;
-            width: 32px;
-            height: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            color: #374151;
-            font-weight: bold;
-        }
-
-        .zoom-btn:hover {
-            background: #e5e7eb;
-            border-color: #9ca3af;
-        }
-
-        .zoom-value {
-            min-width: 45px;
-            text-align: center;
-            font-weight: 600;
-            color: #374151;
-            font-size: 14px;
-        }
-
-        /* Styles pour les boutons de toggle des panneaux */
-        .panel-toggle {
-            position: fixed;
-            z-index: 999;
-            background: white;
-            border: 1px solid #e5e7eb;
-            border-radius: 6px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            padding: 8px 12px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            color: #374151;
-            font-size: 14px;
-        }
-
-        .panel-toggle:hover {
-            background: #f3f4f6;
-            border-color: #3b82f6;
-            color: #3b82f6;
-        }
-
-        .panel-toggle-left {
-            top: 50%;
-            left: 10px;
-            transform: translateY(-50%);
-        }
-
-        .panel-toggle-top {
-            top: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-        }
-
-        /* Styles pour l'aperçu avec zoom */
-        .cv-preview-container {
-            transform-origin: top left;
-            transition: transform 0.3s ease;
-        }
-
-        /* Styles pour les panneaux masqués */
-        .panel-hidden {
-            transform: translateX(-100%);
-            opacity: 0;
-            pointer-events: none;
-        }
-
-        .top-toolbar.panel-hidden {
-            transform: translateY(-100%);
-        }
-
-        /* Animation pour les transitions */
-        .transition-panel {
-            transition: all 0.3s ease;
-        }
-
-        .ai-thinking-container {
-            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #cbd5e1 100%);
-            border-radius: 16px;
-            padding: 2rem;
-            text-align: center;
-            max-width: 500px;
-            width: 90%;
-            position: relative;
-            overflow: hidden;
-            border: 1px solid #e2e8f0;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1), 0 4px 10px rgba(0, 0, 0, 0.05);
-        }
-
-        .ai-brain {
-            width: 100%;
-            height: 120px;
-            margin: 0 auto 1rem;
-            position: relative;
-            overflow: hidden;
-            border-radius: 8px;
-            background: linear-gradient(45deg, rgba(248, 250, 252, 0.9), rgba(241, 245, 249, 0.8));
-            border: 1px solid rgba(226, 232, 240, 0.6);
-        }
-
-        .ai-brain::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(to bottom, rgba(59, 130, 246, 0.05), transparent);
-        }
-
-        .ai-neurons {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            top: 0;
-            left: 0;
-        }
-
-        .neuron {
-            position: absolute;
-            font-family: 'Inter', 'Segoe UI', sans-serif;
-            font-size: 11px;
-            color: #9ca3af;
-            text-shadow: none;
-            animation: matrixFall 3s linear infinite;
-            font-weight: 400;
-        }
-
-        .neuron:nth-child(1) { left: 10%; animation-delay: 0s; }
-        .neuron:nth-child(2) { left: 25%; animation-delay: 0.5s; }
-        .neuron:nth-child(3) { left: 40%; animation-delay: 1s; }
-        .neuron:nth-child(4) { left: 55%; animation-delay: 1.5s; }
-        .neuron:nth-child(5) { left: 70%; animation-delay: 2s; }
-        .neuron:nth-child(6) { left: 85%; animation-delay: 2.5s; }
-
-        .ai-typing {
-            display: flex;
-            justify-content: center;
-            gap: 0.5rem;
-            margin: 1rem 0;
-        }
-
-        .typing-dot {
-            width: 8px;
-            height: 8px;
-            background: #6b7280;
-            border-radius: 50%;
-            animation: typingDots 1.4s ease-in-out infinite;
-        }
-
-        .typing-dot:nth-child(1) { animation-delay: 0s; }
-        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
-        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
-
-        .ai-progress-bar {
-            width: 100%;
-            height: 4px;
-            background: #f1f5f9;
-            border-radius: 2px;
-            margin: 1rem 0;
-            overflow: hidden;
-        }
-
-        .ai-progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #3b82f6, #1d4ed8, #2563eb);
-            border-radius: 2px;
-            animation: aiProgress 3s ease-in-out infinite;
-        }
-
-        .cv-field-highlight {
-            animation: fieldGlow 2s ease-in-out;
-            position: relative;
-        }
-
-        .cv-field-highlight::after {
-            content: '';
-            position: absolute;
-            top: -2px;
-            left: -2px;
-            right: -2px;
-            bottom: -2px;
-            background: linear-gradient(45deg, #3b82f6, #8b5cf6, #06b6d4);
-            border-radius: 6px;
-            z-index: -1;
-            animation: fieldBorder 2s ease-in-out;
-        }
-
-        @keyframes aiPulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-        }
-
-        @keyframes aiFloat {
-            0%, 100% { transform: translate(-50%, -50%) rotate(0deg); }
-            25% { transform: translate(-50%, -50%) rotate(-10deg); }
-            75% { transform: translate(-50%, -50%) rotate(10deg); }
-        }
-
-        @keyframes neuronPulse {
-            0%, 100% { opacity: 0.3; transform: scale(1); }
-            50% { opacity: 1; transform: scale(1.5); }
-        }
-
-        @keyframes typingDots {
-            0%, 20%, 80%, 100% { transform: scale(1); opacity: 0.5; }
-            50% { transform: scale(1.5); opacity: 1; }
-        }
-
-        @keyframes aiProgress {
-            0% { width: 0%; }
-            50% { width: 70%; }
-            100% { width: 100%; }
-        }
-
-        @keyframes fieldGlow {
-            0% { box-shadow: 0 0 0 rgba(59, 130, 246, 0); }
-            50% { box-shadow: 0 0 20px rgba(59, 130, 246, 0.6); }
-            100% { box-shadow: 0 0 0 rgba(59, 130, 246, 0); }
-        }
-
-        @keyframes fieldBorder {
-            0% { opacity: 0; }
-            50% { opacity: 1; }
-            100% { opacity: 0; }
-        }
-
-        .ai-step-indicator {
-            display: flex;
-            justify-content: space-between;
-            margin: 1rem 0;
-            padding: 0 1rem;
-        }
-
-        .ai-step {
-            flex: 1;
-            text-align: center;
-            padding: 0.5rem;
-            border-radius: 8px;
-            background: #f3f4f6;
-            margin: 0 0.25rem;
-            transition: all 0.3s ease;
-        }
-
-        .ai-step.active {
-            background: linear-gradient(45deg, #3b82f6, #8b5cf6);
-            color: white;
-            transform: scale(1.05);
-        }
-
-        .ai-step.completed {
-            background: #10b981;
-            color: white;
-        }
-        .skill-item .delete-skill-btn { display: none; position: absolute; top: 50%; right: 5px; transform: translateY(-50%); cursor: pointer; font-size: 14px; line-height: 1; color: #9ca3af; padding: 2px; }
-        .skill-item:hover .delete-skill-btn { display: inline-block; }
-        .skill-item .delete-skill-btn:hover { color: #ef4444; }
-        .style-toggle-btn.active, .skill-style-btn.active, .section-title-style-btn.active, .layout-btn.active, .banner-align-btn.active, .logo-size-btn.active, .theme-btn.active, #banner-invert-btn.active, .gauge-style-btn.active, #toggle-overflow-btn.active { background-color: #3b82f6; color: white; }
-        .skill-level { display: flex; align-items: center; margin-bottom: 6px; gap: 8px; }
-        .skill-level-label { width: 120px; flex-shrink: 0; font-size: var(--font-size-p); }
-        
-        /* Gauge Styles */
-        .gauge-container { flex-grow: 1; }
-        .gauge-bar-bg { background-color: #e5e7eb; border-radius: 4px; height: 8px; overflow: hidden;}
-        .gauge-bar-fill { background-color: var(--primary-color); height: 100%; border-radius: 4px; transition: width 0.3s ease; }
-        .gauge-dots, .gauge-stars, .gauge-squares { display: flex; gap: 4px; font-size: 1.2em; color: #d1d5db; }
-        .gauge-dots .filled, .gauge-stars .filled, .gauge-squares .filled { color: var(--primary-color); }
-        .gauge-number { font-weight: bold; color: var(--secondary-color); }
-
-        .editable-wrapper { position: relative; }
-        .editable-wrapper .delete-line-btn { display: none; position: absolute; top: 50%; right: 2px; transform: translateY(-50%); cursor: pointer; color: #ef4444; background-color: white; border-radius: 50%; width: 18px; height: 18px; text-align: center; line-height: 18px; font-size: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); z-index: 5; }
-        .editable-wrapper:hover .delete-line-btn { display: flex; align-items: center; justify-content: center; }
-        .history-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-        .insert-line-wrapper { position: relative; height: 0.5rem; opacity: 0; transition: opacity 0.2s; margin: 0; display: flex; justify-content: center; align-items: center; }
-        .dynamic-item-container:hover .insert-line-wrapper { opacity: 1; }
-        .add-line-preview-btn { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: #eef2ff; color: #4f46e5; border: 1px dashed #a5b4fc; width: 24px; height: 24px; border-radius: 50%; cursor: pointer; z-index: 5; display: flex; align-items: center; justify-content: center; font-size: 12px; transition: all 0.2s; }
-        .add-line-preview-btn:hover { background: #c7d2fe; border-style: solid; transform: translate(-50%, -50%) scale(1.1); }
-        
-        .add-desc-line-btn { display: none; font-size: 0.8rem; color: #4f46e5; cursor: pointer; margin-top: 0.25rem; padding: 2px 4px; border-radius: 4px; background: transparent; border: none; }
-        .add-desc-line-btn:hover { background-color: #eef2ff; }
-        .dynamic-preview-item:hover .add-desc-line-btn { display: inline-block; }
-
-        .dynamic-preview-item { position: relative; border: 1px solid transparent; border-radius: 0.375rem; padding: 0.5rem; margin-bottom: var(--item-spacing); transition: border-color 0.2s, background-color 0.2s, opacity 0.3s; }
-        .dynamic-preview-item:hover { background-color: #fafafa; border-color: #e5e7eb; }
-
-        .delete-block-btn { display: none; position: absolute; top: 4px; right: 4px; width: 24px; height: 24px; background-color: #fee2e2; color: #b91c1c; border: none; border-radius: 50%; cursor: pointer; align-items: center; justify-content: center; z-index: 6; }
-        .dynamic-preview-item:hover .delete-block-btn { display: flex; }
-        .delete-block-btn:hover { background-color: #fecaca; color: #991b1b; }
-        .new-badge { background-color: #ef4444; color: white; font-size: 0.6rem; font-weight: bold; padding: 2px 5px; border-radius: 4px; margin-left: 6px; vertical-align: middle; }
-        
-        /* Modal Styles */
-        .modal-overlay { position: fixed; inset: 0; background-color: rgba(0, 0, 0, 0.5); display: flex; align-items: center; justify-content: center; z-index: 5000; opacity: 0; transition: opacity 0.2s; pointer-events: none; }
-        .modal-overlay.active { opacity: 1; pointer-events: auto; }
-        .modal-content { background: white; padding: 2rem; border-radius: 0.5rem; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 90%; max-width: 500px; transform: scale(0.95); transition: transform 0.2s; }
-        .modal-overlay.active .modal-content { transform: scale(1); }
-        
-        /* Icon Picker Modal */
-        #icon-picker-modal .modal-content { max-width: 700px; }
-        #icon-picker-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(50px, 1fr)); gap: 0.5rem; max-height: 60vh; overflow-y: auto; }
-        #icon-picker-grid i { font-size: 1.5rem; padding: 0.75rem; border-radius: 0.25rem; cursor: pointer; text-align: center; transition: background-color 0.2s, color 0.2s; }
-        #icon-picker-grid i:hover { background-color: #eef2ff; color: #4f46e5; }
-        
-        /* In-Preview AI Buttons */
-        .section-ai-actions { margin-left: auto; display: flex; gap: 0.5rem; opacity: 0; transition: opacity 0.2s; }
-        .cv-module:hover .section-ai-actions { opacity: 1; }
-        .ai-action-btn { background: #e0e7ff; color: #4338ca; border: none; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.8rem; }
-        .ai-action-btn:hover { background: #c7d2fe; }
-
-        /* Styles for hiding sections */
-        .cv-module.section-hidden > *:not(h2) {
-            display: none;
-        }
-        .cv-module.section-hidden > h2 {
-            opacity: 0.5;
-        }
-
-        /* For column resizing */
-        .column-resizer {
-            position: absolute;
-            top: 0;
-            bottom: 0;
-            width: 10px; /* Wider grab area */
-            cursor: col-resize;
-            transform: translateX(-50%);
-            z-index: 20; /* High z-index */
-        }
-        .column-resizer::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            bottom: 0;
-            left: 4px; /* Centered 2px line in a 10px div */
-            width: 2px;
-            background-color: #d1d5db;
-            transition: background-color 0.2s ease;
-        }
-        .column-resizer:hover::after,
-        body.is-resizing .column-resizer::after {
-            background-color: #3b82f6;
-        }
-        body.is-resizing {
-            cursor: col-resize;
-            user-select: none;
-        }
-
-        /* Presentation Mode & Print Styles */
-        body.presentation-mode .cv-column {
-            border-color: transparent;
-        }
-        body.presentation-mode .column-resizer,
-        body.presentation-mode .drag-handle,
-        body.presentation-mode .remove-page-btn,
-        body.presentation-mode #add-page-btn-wrapper,
-        body.presentation-mode .section-ai-actions,
-        body.presentation-mode .delete-block-btn,
-        body.presentation-mode .delete-line-btn,
-        body.presentation-mode .insert-line-wrapper {
-            display: none !important;
-        }
-        /* NEW: Completely hide the module in presentation mode if hidden */
-        body.presentation-mode .cv-module.section-hidden {
-            display: none !important;
-        }
-
-        @media print {
-            body {
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
-            }
-            .column-resizer,
-            .drag-handle {
-                display: none !important;
-            }
-            .cv-column {
-                border-color: transparent !important;
-            }
-            .no-print {
-                display: none !important;
-            }
-            .cv-module.section-hidden {
-                display: none !important;
-            }
-            .a4-page {
-                box-shadow: none !important;
-                margin: 0;
-                overflow: visible;
-                height: auto;
-                break-inside: avoid-page;
-            }
-            #cv-preview-wrapper {
-                gap: 0;
-            }
-        }
-
-        /* Styles pour la barre d'outils supérieure */
-        .top-toolbar {
-            background: #ffffff;
-            padding: 12px 20px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            border-bottom: 1px solid #e5e7eb;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 16px;
-            z-index: 1000;
-            position: relative;
-        }
-        
-        .top-toolbar .toolbar-section {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .toolbar-btn {
-            background: #f8fafc;
-            color: #374151;
-            border: 1px solid #d1d5db;
-            padding: 8px 12px;
-            border-radius: 6px;
-            font-size: 13px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            white-space: nowrap;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-        }
-        
-        .toolbar-btn:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
-        }
-        
-        /* Couleurs spécifiques pour chaque bouton */
-        #toolbar-pdf-btn {
-            background: linear-gradient(135deg, #dc2626, #ef4444);
-            color: white;
-            border-color: #dc2626;
-        }
-        
-        #toolbar-pdf-btn:hover {
-            background: linear-gradient(135deg, #b91c1c, #dc2626);
-        }
-        
-        #toolbar-share-btn {
-            background: linear-gradient(135deg, #059669, #10b981);
-            color: white;
-            border-color: #059669;
-        }
-        
-        #toolbar-share-btn:hover {
-            background: linear-gradient(135deg, #047857, #059669);
-        }
-        
-        #toolbar-anonymize-btn {
-            background: linear-gradient(135deg, #7c3aed, #8b5cf6);
-            color: white;
-            border-color: #7c3aed;
-        }
-        
-        #toolbar-anonymize-btn:hover {
-            background: linear-gradient(135deg, #6d28d9, #7c3aed);
-        }
-        
-        #toolbar-new-cv-btn {
-            background: linear-gradient(135deg, #ea580c, #f97316);
-            color: white;
-            border-color: #ea580c;
-        }
-        
-        #toolbar-new-cv-btn:hover {
-            background: linear-gradient(135deg, #c2410c, #ea580c);
-        }
-        
-        #toolbar-overflow-btn {
-            background: linear-gradient(135deg, #eab308, #facc15);
-            color: #374151;
-            border-color: #eab308;
-        }
-        
-        #toolbar-overflow-btn:hover {
-            background: linear-gradient(135deg, #ca8a04, #eab308);
-        }
-        
-        #toolbar-presentation-btn {
-            background: linear-gradient(135deg, #3b82f6, #60a5fa);
-            color: white;
-            border-color: #3b82f6;
-        }
-        
-        #toolbar-presentation-btn:hover {
-            background: linear-gradient(135deg, #2563eb, #3b82f6);
-        }
-        
-        #toolbar-save-btn {
-            background: linear-gradient(135deg, #16a34a, #22c55e);
-            color: white;
-            border-color: #16a34a;
-        }
-        
-        #toolbar-save-btn:hover {
-            background: linear-gradient(135deg, #15803d, #16a34a);
-        }
-        
-        #toolbar-accessibility-btn {
-            background: linear-gradient(135deg, #7c3aed, #a855f7);
-            color: white;
-            border-color: #7c3aed;
-            font-weight: 600;
-        }
-        
-        #toolbar-accessibility-btn:hover {
-            background: linear-gradient(135deg, #6d28d9, #7c3aed);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
-        }
-        
-        #toolbar-template-btn {
-            background: linear-gradient(135deg, #1d4ed8, #3b82f6);
-            color: white;
-            border-color: #1d4ed8;
-            font-weight: 600;
-        }
-        
-        #toolbar-template-btn:hover {
-            background: linear-gradient(135deg, #1e40af, #1d4ed8);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(29, 78, 216, 0.3);
-        }
-        
-        #toolbar-load-btn {
-            background: linear-gradient(135deg, #0891b2, #06b6d4);
-            color: white;
-            border-color: #0891b2;
-        }
-        
-        #toolbar-load-btn:hover {
-            background: linear-gradient(135deg, #0e7490, #0891b2);
-        }
-        
-        #save-api-key-btn {
-            background: linear-gradient(135deg, #6366f1, #8b5cf6);
-            color: white;
-            border-color: #6366f1;
-        }
-        
-        #save-api-key-btn:hover {
-            background: linear-gradient(135deg, #4f46e5, #6366f1);
-        }
-        
-        /* Styles pour le sélecteur d'API */
-        .api-selector-container {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            min-width: 280px;
-        }
-        
-        .api-provider-selector {
-            display: flex;
-            background: rgba(15, 23, 42, 0.8);
-            border-radius: 8px;
-            padding: 2px;
-            border: 1px solid rgba(99, 102, 241, 0.3);
-        }
-        
-        .api-provider-btn {
-            flex: 1;
-            padding: 6px 12px;
-            background: transparent;
-            color: #cbd5e1;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 12px;
-            font-weight: 500;
-        }
-        
-        .api-provider-btn.active {
-            background: linear-gradient(135deg, #6366f1, #8b5cf6);
-            color: white;
-            box-shadow: 0 2px 4px rgba(99, 102, 241, 0.3);
-        }
-        
-        .api-provider-btn:hover:not(.active) {
-            background: rgba(99, 102, 241, 0.1);
-            color: #e2e8f0;
-        }
-        
-        .api-key-group {
-            display: flex;
-            gap: 6px;
-            align-items: center;
-        }
-        
-        .api-key-input {
-            flex: 1;
-            min-width: 200px;
-        }
-        
-        .api-switch-btn {
-            background: linear-gradient(135deg, #10b981, #059669);
-            color: white;
-            border: 1px solid #10b981;
-            padding: 6px 10px;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 12px;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-        
-        .api-switch-btn:hover {
-            background: linear-gradient(135deg, #059669, #047857);
-            transform: translateY(-1px);
-        }
-        
-        .api-status-indicator {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: #ef4444;
-            margin-left: 4px;
-            transition: all 0.3s ease;
-        }
-        
-        .api-status-indicator.connected {
-            background: #10b981;
-            box-shadow: 0 0 6px rgba(16, 185, 129, 0.4);
-        }
-        
-        .toolbar-btn.active {
-            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
-            transform: translateY(-1px);
-        }
-        
-        .toolbar-divider {
-            width: 1px;
-            height: 30px;
-            background: #d1d5db;
-        }
-        
-        .gemini-key-input {
-            background: #f9fafb;
-            border: 1px solid #d1d5db;
-            color: #374151;
-            padding: 6px 10px;
-            border-radius: 4px;
-            font-size: 12px;
-            width: 200px;
-        }
-        
-        .gemini-key-input::placeholder {
-            color: #9ca3af;
-        }
-        
-        .gemini-key-input.valid {
-            border-color: rgba(34, 197, 94, 0.6);
-            box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.3);
-        }
-        
-        .gemini-key-input.invalid {
-            border-color: rgba(239, 68, 68, 0.6);
-            box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.3);
-        }
-        
-        @keyframes pulse {
-            0% { transform: scale(1); box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.3); }
-            50% { transform: scale(1.05); box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.6); }
-            100% { transform: scale(1); box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.3); }
-        }
-        
-        /* Styles pour les tooltips */
-        .tooltip {
-            position: relative;
-            cursor: pointer;
-        }
-        
-        .tooltip-content {
-            position: absolute;
-            background: #1f2937;
-            color: white;
-            padding: 8px 12px;
-            border-radius: 6px;
-            font-size: 12px;
-            line-height: 1.4;
-            white-space: nowrap;
-            max-width: 300px;
-            white-space: normal;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.2s ease;
-            z-index: 10000;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            pointer-events: none;
-        }
-        
-        .tooltip-content::after {
-            content: '';
-            position: absolute;
-            width: 0;
-            height: 0;
-            border: 6px solid transparent;
-        }
-        
-        .tooltip:hover .tooltip-content {
-            opacity: 1;
-            visibility: visible;
-        }
-        
-        /* Positionnement intelligent des tooltips */
-        .tooltip-content.top {
-            bottom: 100%;
-            left: 50%;
-            transform: translateX(-50%);
-            margin-bottom: 8px;
-        }
-        
-        .tooltip-content.top::after {
-            top: 100%;
-            left: 50%;
-            transform: translateX(-50%);
-            border-top-color: #1f2937;
-        }
-        
-        .tooltip-content.bottom {
-            top: 100%;
-            left: 50%;
-            transform: translateX(-50%);
-            margin-top: 8px;
-        }
-        
-        .tooltip-content.bottom::after {
-            bottom: 100%;
-            left: 50%;
-            transform: translateX(-50%);
-            border-bottom-color: #1f2937;
-        }
-        
-        .tooltip-content.left {
-            right: 100%;
-            top: 50%;
-            transform: translateY(-50%);
-            margin-right: 8px;
-        }
-        
-        .tooltip-content.left::after {
-            left: 100%;
-            top: 50%;
-            transform: translateY(-50%);
-            border-left-color: #1f2937;
-        }
-        
-        .tooltip-content.right {
-            left: 100%;
-            top: 50%;
-            transform: translateY(-50%);
-            margin-left: 8px;
-        }
-        
-        .tooltip-content.right::after {
-            right: 100%;
-            top: 50%;
-            transform: translateY(-50%);
-            border-right-color: #1f2937;
-        }
-
-        /* --- ANIMATIONS MATRIX RAIN SPECTACULAIRES --- */
-        
-        @keyframes matrixFall {
-            from {
-                transform: translateY(-100%);
-                opacity: 1;
-            }
-            to {
-                transform: translateY(100vh);
-                opacity: 0;
-            }
-        }
-        
-        @keyframes matrixGlow {
-            0%, 100% {
-                text-shadow: 0 0 5px currentColor;
-                opacity: 0.8;
-            }
-            50% {
-                text-shadow: 0 0 15px currentColor, 0 0 25px currentColor;
-                opacity: 1;
-            }
-        }
-        
-        @keyframes matrixPulse {
-            0%, 100% {
-                box-shadow: 0 0 20px rgba(0, 255, 65, 0.3);
-                border-color: rgba(0, 255, 65, 0.5);
-            }
-            50% {
-                box-shadow: 0 0 40px rgba(0, 255, 65, 0.8);
-                border-color: rgba(0, 255, 65, 1);
-            }
-        }
-        
-        @keyframes matrixReconstruct {
-            0% {
-                opacity: 0.3;
-                transform: scale(0.95);
-                filter: blur(2px);
-            }
-            50% {
-                opacity: 0.8;
-                transform: scale(1.02);
-                filter: blur(1px);
-            }
-            100% {
-                opacity: 1;
-                transform: scale(1);
-                filter: blur(0);
-            }
-        }
-        
-        @keyframes scanHorizontal {
-            0% {
-                transform: translateX(-100%);
-                opacity: 0;
-            }
-            50% {
-                opacity: 1;
-            }
-            100% {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-        }
-        
-        @keyframes fadeInOut {
-            0% {
-                opacity: 0;
-            }
-            50% {
-                opacity: 1;
-            }
-            100% {
-                opacity: 0;
-            }
-        }
-        
-        @keyframes typeIn {
-            from {
-                opacity: 0;
-                transform: translateX(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-        
-        @keyframes compilationFlash {
-            0% {
-                opacity: 0;
-                background: linear-gradient(45deg, rgba(0, 255, 65, 0.1), rgba(0, 255, 65, 0.3));
-            }
-            25% {
-                opacity: 0.8;
-                background: linear-gradient(45deg, rgba(0, 255, 65, 0.3), rgba(0, 255, 65, 0.6));
-            }
-            75% {
-                opacity: 0.6;
-                background: linear-gradient(45deg, rgba(0, 255, 65, 0.2), rgba(0, 255, 65, 0.4));
-            }
-            100% {
-                opacity: 0;
-                background: linear-gradient(45deg, transparent, transparent);
-            }
-        }
-        
-        @keyframes matrixReveal {
-            0% {
-                filter: brightness(1.5) contrast(1.2);
-                transform: scale(1.02);
-            }
-            100% {
-                filter: brightness(1) contrast(1);
-                transform: scale(1);
-            }
-        }
-        
-        /* Styles pour les éléments Matrix */
-        .matrix-column {
-            will-change: transform;
-        }
-        
-        .matrix-code-overlay {
-            backdrop-filter: blur(2px);
-        }
-        
-        .matrix-rain-container {
-            background: radial-gradient(ellipse at center, rgba(0, 255, 65, 0.05) 0%, transparent 70%);
-        }
-        
-        /* Effet de typing professionnel sur le texte */
-        .matrix-typing {
-            color: #374151;
-            font-family: 'Inter', 'Segoe UI', sans-serif;
-            text-shadow: none;
-            font-weight: 500;
-        }
-
-        /* === ANIMATIONS PROFESSIONNELLES ULTRA-RAPIDES === */
-        @keyframes professionalFall {
-            0% { 
-                transform: translateY(-100vh);
-                opacity: 0;
-            }
-            10% {
-                opacity: 0.3;
-            }
-            90% {
-                opacity: 0.3;
-            }
-            100% { 
-                transform: translateY(100vh);
-                opacity: 0;
-            }
-        }
-
-        @keyframes professionalTransform {
-            0% {
-                opacity: 1;
-                transform: scale(1);
-            }
-            50% {
-                opacity: 0.7;
-                transform: scale(1.01);
-                filter: blur(0.5px);
-            }
-            100% {
-                opacity: 1;
-                transform: scale(1);
-                filter: blur(0);
-            }
-        }
-
-        @keyframes professionalScan {
-            0% {
-                transform: translateX(-100%);
-                opacity: 0;
-            }
-            50% {
-                opacity: 0.8;
-            }
-            100% {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-        }
-
-        @keyframes professionalFlash {
-            0% {
-                opacity: 0;
-            }
-            50% {
-                opacity: 0.3;
-            }
-            100% {
-                opacity: 0;
-            }
-        }
-
-        @keyframes professionalReveal {
-            0% {
-                opacity: 0.95;
-                transform: scale(0.998);
-            }
-            100% {
-                opacity: 1;
-                transform: scale(1);
-            }
-        }
-
-        /* === STYLES D'ACCESSIBILITÉ === */
-        
-        /* Classes d'accessibilité dynamiques */
-        .high-contrast {
-            filter: contrast(150%) brightness(1.1);
-        }
-        
-        .dark-mode {
-            filter: invert(1) hue-rotate(180deg);
-        }
-        
-        .enhanced-focus *:focus {
-            outline: 3px solid #7c3aed !important;
-            outline-offset: 2px !important;
-        }
-        
-        .reduced-animations * {
-            animation-duration: 0.01ms !important;
-            animation-iteration-count: 1 !important;
-            transition-duration: 0.01ms !important;
-        }
-        
-        .screen-reader-optimized .sr-only {
-            position: absolute;
-            width: 1px;
-            height: 1px;
-            padding: 0;
-            margin: -1px;
-            overflow: hidden;
-            clip: rect(0, 0, 0, 0);
-            white-space: nowrap;
-            border: 0;
-        }
-        
-        /* Styles pour la popup d'accessibilité */
-        .contrast-btn {
-            transition: all 0.2s ease;
-        }
-        
-        .contrast-btn.active {
-            background-color: #7c3aed;
-            color: white;
-            border-color: #7c3aed;
-        }
-        
-        .contrast-btn:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-        
-        /* Styles pour les sliders */
-        input[type="range"]::-webkit-slider-thumb {
-            appearance: none;
-            height: 20px;
-            width: 20px;
-            border-radius: 50%;
-            background: #7c3aed;
-            cursor: pointer;
-            border: 2px solid #ffffff;
-            box-shadow: 0 0 0 1px #d1d5db;
-        }
-        
-        input[type="range"]::-moz-range-thumb {
-            height: 20px;
-            width: 20px;
-            border-radius: 50%;
-            background: #7c3aed;
-            cursor: pointer;
-            border: 2px solid #ffffff;
-            box-shadow: 0 0 0 1px #d1d5db;
-        }
-        
-        input[type="range"]:focus {
-            outline: none;
-        }
-        
-        input[type="range"]:focus::-webkit-slider-thumb {
-            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.2);
-        }
-        
-        /* Styles pour les checkboxes accessibles */
-        input[type="checkbox"]:focus {
-            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.2);
-        }
-        
-        /* Styles pour les éléments kbd */
-        kbd {
-            background-color: #f3f4f6;
-            border: 1px solid #d1d5db;
-            border-radius: 4px;
-            font-family: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
-            font-size: 0.75rem;
-            font-weight: 600;
-            padding: 2px 6px;
-        }
-        
-        /* Animation pour la modal d'accessibilité */
-        #accessibility-modal {
-            backdrop-filter: blur(4px);
-            transition: opacity 0.3s ease;
-        }
-        
-        #accessibility-modal.hidden {
-            opacity: 0;
-            pointer-events: none;
-        }
-        
-        #accessibility-modal:not(.hidden) {
-            opacity: 1;
-            pointer-events: auto;
-        }
-
-    </style>
-</head>
-<body class="bg-gray-200 font-sans">
-
-    <!-- BARRE D'OUTILS SUPÉRIEURE -->
-    <div class="top-toolbar no-print resizable-panel transition-panel">
-        <!-- Handle de redimensionnement pour la barre du haut -->
-        <div class="resize-handle resize-handle-bottom" data-panel="top-toolbar"></div>
-        
-        <div class="toolbar-section">
-            <div class="tooltip">
-                <button id="toolbar-accessibility-btn" class="toolbar-btn" aria-label="Ouvrir les paramètres d'accessibilité">
-                    <i class="fas fa-universal-access"></i>
-                    ACCESSIBILITÉ
-                </button>
-                <div class="tooltip-content bottom">
-                    <strong>Paramètres d'accessibilité</strong><br>
-                    Personnalisez l'affichage selon vos besoins :<br>
-                    contraste, taille de texte, navigation clavier, etc.
-                </div>
-            </div>
-            
-            <div class="tooltip">
-                <button id="toolbar-pdf-btn" class="toolbar-btn">
-                    <i class="fas fa-file-pdf"></i>
-                    PDF
-                </button>
-                <div class="tooltip-content bottom">
-                    <strong>Télécharger en PDF</strong><br>
-                    Génère et télécharge votre CV au format PDF de haute qualité,<br>
-                    optimisé pour l'impression et l'envoi par email aux recruteurs.
-                </div>
-            </div>
-            
-            <div class="tooltip">
-                <button id="toolbar-share-btn" class="toolbar-btn">
-                    <i class="fas fa-share-alt"></i>
-                    PARTAGER
-                </button>
-                <div class="tooltip-content bottom">
-                    <strong>Partager le CV</strong><br>
-                    Créez un lien de partage unique pour envoyer votre CV<br>
-                    en version web consultable à vos contacts ou recruteurs.
-                </div>
-            </div>
-            
-            <div class="tooltip">
-                <button id="toolbar-anonymize-btn" class="toolbar-btn">
-                    <i class="fas fa-user-secret"></i>
-                    ANONYMISER
-                </button>
-                <div class="tooltip-content bottom">
-                    <strong>Anonymiser le CV</strong><br>
-                    Masque temporairement vos informations personnelles<br>
-                    (nom, email, téléphone) pour créer une version anonyme.
-                </div>
-            </div>
-            
-            <div class="tooltip">
-                <button id="toolbar-new-cv-btn" class="toolbar-btn">
-                    <i class="fas fa-file-plus"></i>
-                    NOUVEAU CV
-                </button>
-                <div class="tooltip-content bottom">
-                    <strong>Créer un nouveau CV</strong><br>
-                    Efface complètement le CV actuel et repart sur<br>
-                    une base vierge pour créer un nouveau document.
-                </div>
-            </div>
-        </div>
-        
-        <div class="toolbar-divider"></div>
-        
-        <div class="toolbar-section">
-            <div class="tooltip">
-                <button id="toolbar-overflow-btn" class="toolbar-btn">
-                    <i class="fas fa-ruler-combined"></i>
-                    DÉTECTION DÉPASSEMENT
-                </button>
-                <div class="tooltip-content bottom">
-                    <strong>Mode Détection de Dépassement</strong><br>
-                    Active le surlignage visuel des pages qui débordent<br>
-                    pour vous aider à optimiser la mise en page.
-                </div>
-            </div>
-            
-            <div class="tooltip">
-                <button id="toolbar-presentation-btn" class="toolbar-btn">
-                    <i class="fas fa-presentation-screen"></i>
-                    MODE PRÉSENTATION
-                </button>
-                <div class="tooltip-content bottom">
-                    <strong>Mode Présentation</strong><br>
-                    Masque tous les éléments d'édition pour une vue<br>
-                    claire et propre, idéale pour présenter votre CV.
-                </div>
-            </div>
-        </div>
-        
-        <div class="toolbar-divider"></div>
-        
-        <div class="toolbar-section">
-            <div class="tooltip">
-                <button id="toolbar-save-btn" class="toolbar-btn">
-                    <i class="fas fa-save"></i>
-                    SAUVEGARDER
-                </button>
-                <div class="tooltip-content bottom">
-                    <strong>Sauvegarder localement</strong><br>
-                    Enregistre votre CV dans le stockage local du navigateur<br>
-                    pour ne pas perdre vos modifications.
-                </div>
-            </div>
-            
-            <div class="tooltip">
-                <button id="toolbar-load-btn" class="toolbar-btn">
-                    <i class="fas fa-folder-open"></i>
-                    CHARGER
-                </button>
-                <div class="tooltip-content bottom">
-                    <strong>Charger la sauvegarde</strong><br>
-                    Charge la dernière version sauvegardée de votre CV<br>
-                    depuis le stockage local du navigateur.
-                </div>
-            </div>
-            
-            <div class="tooltip">
-                <button id="toolbar-template-btn" class="toolbar-btn">
-                    <i class="fas fa-layer-group"></i>
-                    TEMPLATES
-                </button>
-                <div class="tooltip-content bottom">
-                    <strong>Gestion des Templates</strong><br>
-                    Sauvegardez et réutilisez vos mises en page<br>
-                    favorites pour créer de nouveaux CV rapidement.
-                </div>
-            </div>
-            
-            <div class="tooltip">
-                <div class="api-selector-container">
-                    <!-- Sélecteur de fournisseur d'API -->
-                    <div class="api-provider-selector">
-                        <button id="select-gemini-btn" class="api-provider-btn active">
-                            <i class="fas fa-brain"></i> Gemini
-                        </button>
-                        <button id="select-chatgpt-btn" class="api-provider-btn">
-                            <i class="fas fa-robot"></i> ChatGPT
-                        </button>
-                    </div>
-                    
-                    <!-- Champ pour Gemini API -->
-                    <div id="gemini-api-group" class="api-key-group">
-                        <input type="text" id="gemini-api-key" class="gemini-key-input api-key-input" placeholder="Clé API Gemini (AIza...)">
-                        <button id="save-gemini-key-btn" class="toolbar-btn" style="padding: 6px 10px; font-size: 12px;">
-                            <i class="fas fa-save"></i>
-                        </button>
-                        <div id="gemini-status" class="api-status-indicator"></div>
-                    </div>
-                    
-                    <!-- Champ pour ChatGPT API -->
-                    <div id="chatgpt-api-group" class="api-key-group" style="display: none;">
-                        <input type="text" id="chatgpt-api-key" class="gemini-key-input api-key-input" placeholder="Clé API OpenAI (sk-...)">
-                        <button id="save-chatgpt-key-btn" class="toolbar-btn" style="padding: 6px 10px; font-size: 12px;">
-                            <i class="fas fa-save"></i>
-                        </button>
-                        <div id="chatgpt-status" class="api-status-indicator"></div>
-                    </div>
-                    
-                    <!-- Bouton de basculement rapide -->
-                    <button id="switch-api-btn" class="api-switch-btn">
-                        <i class="fas fa-exchange-alt"></i>
-                        <span id="switch-api-text">Utiliser ChatGPT</span>
-                    </button>
-                </div>
-                <div class="tooltip-content bottom">
-                    <strong>Configuration des API IA</strong><br>
-                    <span id="current-api-info">
-                        Gemini: Entrez votre clé API Google Gemini<br>
-                        ChatGPT: Entrez votre clé API OpenAI<br>
-                    </span>
-                    Basculez entre les fournisseurs selon vos besoins.<br>
-                    Les clés sont sauvegardées localement dans votre navigateur.
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- OVERLAYS AND MODALS -->
-    <div id="loader-overlay" class="hidden fixed inset-0 bg-white bg-opacity-75 flex-col items-center justify-center z-[9999]" style="pointer-events: none;">
-        <div class="h-16 w-16 rounded-full border-4 border-gray-200 border-t-blue-600 animate-spin"></div>
-        <p id="loader-text" class="mt-4 text-gray-600 font-medium">Chargement...</p>
-    </div>
-
-    <!-- FENÊTRE POPUP D'ACCESSIBILITÉ -->
-    <div id="accessibility-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[10000] hidden" role="dialog" aria-labelledby="accessibility-title" aria-modal="true">
-        <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-            <header class="flex items-center justify-between p-6 border-b border-gray-200">
-                <h2 id="accessibility-title" class="text-2xl font-bold text-gray-900 flex items-center gap-3">
-                    <i class="fas fa-universal-access text-purple-600"></i>
-                    Paramètres d'accessibilité
-                </h2>
-                <button id="close-accessibility-modal" class="text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 rounded-md p-2" aria-label="Fermer la fenêtre d'accessibilité">
-                    <i class="fas fa-times text-xl"></i>
-                </button>
-            </header>
-            
-            <div class="p-6 grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <!-- Section Affichage -->
-                <section class="space-y-6">
-                    <h3 class="text-xl font-semibold text-gray-800 border-b border-gray-200 pb-2">
-                        <i class="fas fa-eye text-blue-600 mr-2"></i>
-                        Affichage et visibilité
-                    </h3>
-                    
-                    <!-- Contraste -->
-                    <div class="space-y-3">
-                        <label class="block text-sm font-medium text-gray-700">Contraste élevé</label>
-                        <div class="flex items-center space-x-4">
-                            <button id="contrast-normal" class="contrast-btn active px-4 py-2 rounded-md border-2 border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500" aria-pressed="true">
-                                Normal
-                            </button>
-                            <button id="contrast-high" class="contrast-btn px-4 py-2 rounded-md border-2 border-gray-900 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500" aria-pressed="false">
-                                Contraste élevé
-                            </button>
-                            <button id="contrast-dark" class="contrast-btn px-4 py-2 rounded-md border-2 border-white bg-gray-900 text-white focus:outline-none focus:ring-2 focus:ring-purple-500" aria-pressed="false">
-                                Mode sombre
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <!-- Taille de texte -->
-                    <div class="space-y-3">
-                        <label for="font-size-slider" class="block text-sm font-medium text-gray-700">
-                            Taille du texte: <span id="font-size-value">100%</span>
-                        </label>
-                        <input type="range" id="font-size-slider" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-purple-500" min="80" max="150" value="100" step="10" aria-describedby="font-size-help">
-                        <p id="font-size-help" class="text-xs text-gray-500">Ajustez la taille du texte selon vos besoins de lecture</p>
-                    </div>
-                    
-                    <!-- Espacement des lignes -->
-                    <div class="space-y-3">
-                        <label for="line-height-slider" class="block text-sm font-medium text-gray-700">
-                            Espacement des lignes: <span id="line-height-value">Normal</span>
-                        </label>
-                        <input type="range" id="line-height-slider" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-purple-500" min="1" max="2" value="1.5" step="0.1" aria-describedby="line-height-help">
-                        <p id="line-height-help" class="text-xs text-gray-500">Augmentez l'espacement pour faciliter la lecture</p>
-                    </div>
-                    
-                    <!-- Focus visible -->
-                    <div class="space-y-3">
-                        <div class="flex items-center">
-                            <input type="checkbox" id="enhanced-focus" class="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded">
-                            <label for="enhanced-focus" class="ml-2 block text-sm text-gray-700">
-                                Améliorer la visibilité du focus clavier
-                            </label>
-                        </div>
-                        <p class="text-xs text-gray-500">Rend plus visible l'élément actuellement sélectionné lors de la navigation au clavier</p>
-                    </div>
-                </section>
-                
-                <!-- Section Navigation -->
-                <section class="space-y-6">
-                    <h3 class="text-xl font-semibold text-gray-800 border-b border-gray-200 pb-2">
-                        <i class="fas fa-keyboard text-green-600 mr-2"></i>
-                        Navigation et interactions
-                    </h3>
-                    
-                    <!-- Navigation clavier -->
-                    <div class="space-y-3">
-                        <div class="flex items-center">
-                            <input type="checkbox" id="keyboard-shortcuts" class="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded" checked>
-                            <label for="keyboard-shortcuts" class="ml-2 block text-sm text-gray-700">
-                                Activer les raccourcis clavier
-                            </label>
-                        </div>
-                        <div class="text-xs text-gray-600 ml-6 space-y-1">
-                            <p><kbd class="px-2 py-1 text-xs font-semibold text-gray-800 bg-gray-100 border border-gray-200 rounded">Ctrl+S</kbd> Sauvegarder</p>
-                            <p><kbd class="px-2 py-1 text-xs font-semibold text-gray-800 bg-gray-100 border border-gray-200 rounded">Ctrl+P</kbd> Exporter PDF</p>
-                            <p><kbd class="px-2 py-1 text-xs font-semibold text-gray-800 bg-gray-100 border border-gray-200 rounded">Échap</kbd> Fermer les modales</p>
-                        </div>
-                    </div>
-                    
-                    <!-- Animations réduites -->
-                    <div class="space-y-3">
-                        <div class="flex items-center">
-                            <input type="checkbox" id="reduce-animations" class="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded">
-                            <label for="reduce-animations" class="ml-2 block text-sm text-gray-700">
-                                Réduire les animations
-                            </label>
-                        </div>
-                        <p class="text-xs text-gray-500">Diminue ou désactive les effets visuels et animations pour réduire les distractions</p>
-                    </div>
-                    
-                    <!-- Lecture d'écran -->
-                    <div class="space-y-3">
-                        <div class="flex items-center">
-                            <input type="checkbox" id="screen-reader-mode" class="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded">
-                            <label for="screen-reader-mode" class="ml-2 block text-sm text-gray-700">
-                                Mode optimisé pour les lecteurs d'écran
-                            </label>
-                        </div>
-                        <p class="text-xs text-gray-500">Améliore la compatibilité avec les technologies d'assistance comme NVDA, JAWS, VoiceOver</p>
-                    </div>
-                    
-                    <!-- Descriptions étendues -->
-                    <div class="space-y-3">
-                        <div class="flex items-center">
-                            <input type="checkbox" id="extended-descriptions" class="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded">
-                            <label for="extended-descriptions" class="ml-2 block text-sm text-gray-700">
-                                Descriptions étendues des éléments
-                            </label>
-                        </div>
-                        <p class="text-xs text-gray-500">Ajoute des descriptions détaillées pour les éléments interactifs</p>
-                    </div>
-                </section>
-            </div>
-            
-            <!-- Section Déclaration d'accessibilité -->
-            <div class="p-6 bg-gray-50 border-t border-gray-200">
-                <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                    <i class="fas fa-certificate text-green-600"></i>
-                    Déclaration d'accessibilité
-                </h3>
-                <div class="prose prose-sm max-w-none text-gray-700">
-                    <p class="mb-3">
-                        <strong>Créateur de CV</strong> s'engage à rendre cette application accessible conformément aux bonnes pratiques et aux standards d'accessibilité web.
-                    </p>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
-                        <div>
-                            <h4 class="font-semibold text-gray-800 mb-2">Fonctionnalités accessibles :</h4>
-                            <ul class="list-disc list-inside space-y-1 text-sm">
-                                <li>Navigation complète au clavier</li>
-                                <li>Compatibilité avec les lecteurs d'écran</li>
-                                <li>Contrastes respectant les normes WCAG</li>
-                                <li>Textes alternatifs pour les éléments visuels</li>
-                                <li>Structure sémantique appropriée</li>
-                                <li>Focus visible et ordonné</li>
-                            </ul>
-                        </div>
-                        <div>
-                            <h4 class="font-semibold text-gray-800 mb-2">Technologies supportées :</h4>
-                            <ul class="list-disc list-inside space-y-1 text-sm">
-                                <li>NVDA (Windows)</li>
-                                <li>JAWS (Windows)</li>
-                                <li>VoiceOver (macOS/iOS)</li>
-                                <li>TalkBack (Android)</li>
-                                <li>Navigation clavier</li>
-                                <li>Commandes vocales</li>
-                            </ul>
-                        </div>
-                    </div>
-                    <p class="text-sm text-gray-600">
-                        Pour toute difficulté d'accessibilité ou suggestion d'amélioration, vous pouvez nous contacter.
-                        Nous nous engageons à fournir une version accessible de tout contenu sur demande.
-                    </p>
-                </div>
-            </div>
-            
-            <!-- Actions -->
-            <div class="p-6 bg-white border-t border-gray-200 flex justify-between items-center">
-                <button id="reset-accessibility" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2">
-                    <i class="fas fa-undo mr-2"></i>
-                    Réinitialiser
-                </button>
-                <div class="flex space-x-3">
-                    <button id="save-accessibility" class="px-4 py-2 text-sm font-medium text-white bg-purple-600 border border-transparent rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2">
-                        <i class="fas fa-save mr-2"></i>
-                        Sauvegarder les préférences
-                    </button>
-                    <button id="close-accessibility-modal-bottom" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2">
-                        Fermer
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL DE GESTION DES TEMPLATES -->
-    <div id="template-manager-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[10000] hidden" role="dialog" aria-labelledby="template-title" aria-modal="true">
-        <div class="bg-white rounded-lg shadow-xl max-w-5xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-            <header class="flex items-center justify-between p-6 border-b border-gray-200">
-                <h2 id="template-title" class="text-2xl font-bold text-gray-900 flex items-center gap-3">
-                    <i class="fas fa-layer-group text-blue-600"></i>
-                    Gestion des Templates de Mise en Page
-                </h2>
-                <button id="close-template-modal" class="text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-md p-2" aria-label="Fermer la fenêtre de gestion des templates">
-                    <i class="fas fa-times text-xl"></i>
-                </button>
-            </header>
-            
-            <div class="p-6">
-                <!-- Actions principales -->
-                <div class="mb-6 flex flex-wrap gap-3">
-                    <button id="save-current-template" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors">
-                        <i class="fas fa-save mr-2"></i>
-                        Sauvegarder la mise en page actuelle
-                    </button>
-                    <button id="export-templates" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors">
-                        <i class="fas fa-download mr-2"></i>
-                        Exporter tous les templates
-                    </button>
-                    <button id="import-templates" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-colors">
-                        <i class="fas fa-upload mr-2"></i>
-                        Importer des templates
-                    </button>
-                    <input type="file" id="template-file-input" accept=".json" class="hidden">
-                </div>
-                
-                <!-- Liste des templates sauvegardés -->
-                <div class="space-y-4">
-                    <h3 class="text-lg font-semibold text-gray-800 border-b border-gray-200 pb-2">
-                        <i class="fas fa-list mr-2"></i>
-                        Templates sauvegardés
-                    </h3>
-                    
-                    <div id="templates-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        <!-- Les templates seront ajoutés ici dynamiquement -->
-                    </div>
-                    
-                    <div id="no-templates-message" class="text-center py-8 text-gray-500 hidden">
-                        <i class="fas fa-inbox text-4xl mb-4 text-gray-300"></i>
-                        <p class="text-lg">Aucun template sauvegardé</p>
-                        <p class="text-sm">Sauvegardez votre première mise en page pour la réutiliser</p>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Actions de fermeture -->
-            <div class="p-6 bg-gray-50 border-t border-gray-200 flex justify-end">
-                <button id="close-template-modal-bottom" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                    Fermer
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL DE SAUVEGARDE DE TEMPLATE -->
-    <div id="save-template-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[10001] hidden" role="dialog" aria-labelledby="save-template-title" aria-modal="true">
-        <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
-            <header class="flex items-center justify-between p-6 border-b border-gray-200">
-                <h3 id="save-template-title" class="text-lg font-semibold text-gray-900">
-                    <i class="fas fa-save text-green-600 mr-2"></i>
-                    Sauvegarder le Template
-                </h3>
-                <button id="close-save-template-modal" class="text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 rounded-md p-1">
-                    <i class="fas fa-times"></i>
-                </button>
-            </header>
-            
-            <div class="p-6">
-                <div class="space-y-4">
-                    <div>
-                        <label for="template-name" class="block text-sm font-medium text-gray-700 mb-2">
-                            Nom du template *
-                        </label>
-                        <input type="text" id="template-name" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500" placeholder="Ex: CV Commercial, Layout Moderne..." required>
-                    </div>
-                    
-                    <div>
-                        <label for="template-description" class="block text-sm font-medium text-gray-700 mb-2">
-                            Description (optionnel)
-                        </label>
-                        <textarea id="template-description" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500" placeholder="Décrivez brièvement ce template..."></textarea>
-                    </div>
-                    
-                    <div class="bg-blue-50 border border-blue-200 rounded-md p-3">
-                        <h4 class="font-medium text-blue-900 mb-2">Ce qui sera sauvegardé :</h4>
-                        <ul class="text-sm text-blue-800 space-y-1">
-                            <li>• Layout et disposition des colonnes</li>
-                            <li>• Couleurs et styles visuels</li>
-                            <li>• Configuration de la bannière</li>
-                            <li>• Paramètres de police et espacement</li>
-                            <li>• Structure des sections</li>
-                        </ul>
-                        <p class="text-xs text-blue-700 mt-2 font-medium">Note: Le contenu personnel ne sera pas inclus</p>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="p-6 bg-gray-50 border-t border-gray-200 flex justify-end space-x-3">
-                <button id="cancel-save-template" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
-                    Annuler
-                </button>
-                <button id="confirm-save-template" class="px-4 py-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
-                    <i class="fas fa-save mr-2"></i>
-                    Sauvegarder
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <div id="notification"></div>
-    
-    <div class="flex flex-col lg:flex-row min-h-screen">
-        <!-- CONTROLS PANEL -->
-        <div id="controls" class="resizable-panel w-full lg:w-1/3 xl:w-1/4 p-6 bg-white shadow-2xl overflow-y-auto flex flex-col no-print transition-panel">
-            <!-- Handle de redimensionnement pour le panneau de gauche -->
-            <div class="resize-handle resize-handle-right" data-panel="controls"></div>
-            
-            <div class="flex justify-between items-center mb-4 flex-shrink-0">
-                <div class="flex items-center gap-3">
-                    <i class="fas fa-magic-wand-sparkles text-3xl text-blue-600"></i>
-                    <h1 class="text-2xl font-bold text-gray-800">Créateur de CV</h1>
-                    <div id="api-status-indicator" class="flex items-center gap-1">
-                        <i id="api-status-icon" class="fas fa-circle text-red-500 text-xs" title="Clé API non configurée"></i>
-                        <span id="api-status-text" class="text-xs text-gray-500">IA: OFF</span>
-                    </div>
-                </div>
-                <div class="flex items-center gap-2">
-                    <!-- Save status removed -->
-                    <div class="tooltip">
-                        <button id="undo-btn" class="history-btn text-xl text-gray-600 hover:text-gray-900 disabled:text-gray-300" title="Annuler (Ctrl+Z)"><i class="fas fa-undo"></i></button>
-                        <div class="tooltip-content top">
-                            <strong>Annuler (Ctrl+Z)</strong><br>
-                            Annule la dernière modification apportée au CV.<br>
-                            Permet de revenir en arrière dans l'historique des changements.
-                        </div>
-                    </div>
-                    <div class="tooltip">
-                        <button id="redo-btn" class="history-btn text-xl text-gray-600 hover:text-gray-900 disabled:text-gray-300" title="Rétablir (Ctrl+Y)"><i class="fas fa-redo"></i></button>
-                        <div class="tooltip-content top">
-                            <strong>Rétablir (Ctrl+Y)</strong><br>
-                            Rétablit la dernière action annulée.<br>
-                            Permet de refaire une modification précédemment annulée.
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- NEW: Progress Bar -->
-            <div class="mb-4 flex-shrink-0">
-                <label class="text-sm font-medium text-gray-600">Progression</label>
-                <div id="progress-bar-container" class="w-full bg-gray-200 rounded-full h-2.5 mt-1">
-                    <div id="progress-bar" class="bg-green-500 h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
-                </div>
-                <p id="progress-text" class="text-xs text-right text-gray-500 mt-1">0/X sections complétées</p>
-            </div>
-
-            <!-- NEW: Collapse All Button -->
-            <div class="mb-4 flex-shrink-0">
-                <div class="tooltip">
-                    <button id="collapse-all-btn" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-4 rounded-md flex items-center justify-center gap-2 text-sm font-medium transition-colors duration-200">
-                        <i class="fas fa-compress-alt"></i>
-                        <span id="collapse-btn-text">Réduire toutes les sections</span>
-                    </button>
-                    <div class="tooltip-content top">
-                        <strong>Réduire/Développer toutes les sections</strong><br>
-                        Ferme ou ouvre toutes les sections d'un coup<br>
-                        pour une navigation plus facile dans l'interface.
-                    </div>
-                </div>
-            </div>
-
-
-
-
-            <!-- TABS -->
-            <div id="tab-navigation" class="flex flex-wrap -mb-px border-b border-gray-200">
-                <button class="tab-btn -mb-px py-3 px-4 text-sm font-medium border-b-2 whitespace-nowrap" data-target="#panel-ia"><i class="fa-solid fa-robot mr-1"></i> IA</button>
-                <button class="tab-btn -mb-px py-3 px-4 text-sm font-medium border-b-2 whitespace-nowrap" data-target="#panel-content"><i class="fa-solid fa-file-lines mr-1"></i> Contenu</button>
-                <button class="tab-btn -mb-px py-3 px-4 text-sm font-medium border-b-2 whitespace-nowrap" data-target="#panel-layout"><i class="fa-solid fa-columns mr-1"></i> Mise en Page</button>
-                <button class="tab-btn -mb-px py-3 px-4 text-sm font-medium border-b-2 whitespace-nowrap" data-target="#panel-banner"><i class="fa-solid fa-user-tie mr-1"></i> Bannière</button>
-            </div>
-
-            <div id="tab-content" class="py-4 flex-grow overflow-y-auto">
-                <!-- TAB: IA -->
-                <div id="panel-ia" class="tab-panel space-y-4">
-                    <details class="control-group">
-                        <summary><span>Analyse IA</span><label class="completion-label"><input type="checkbox" id="completion-ia-analyse" class="completion-checkbox"><span>Fait ✅</span></label></summary>
-                        <div class="control-group-content space-y-2">
-                            <textarea id="ai-input" rows="6" class="w-full p-2 border rounded-md" placeholder="Collez ici une description de poste, un CV brut..."></textarea>
-                            <div class="tooltip">
-                                <button id="analyze-btn" class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 flex items-center justify-center gap-2"><i class="fa-solid fa-wand-magic-sparkles"></i> Analyser & Remplir</button>
-                                <button id="test-fill-btn" class="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 flex items-center justify-center gap-2 mt-2"><i class="fa-solid fa-bug"></i> Test Remplissage</button>
-                                <button id="test-api-btn" class="w-full bg-purple-600 text-white py-2 px-4 rounded-md hover:bg-purple-700 flex items-center justify-center gap-2 mt-2"><i class="fa-solid fa-flask"></i> Test API</button>
-                                <div class="tooltip-content top">
-                                    <strong>Analyser & Remplir</strong><br>
-                                    Utilise l'IA pour analyser le texte saisi et remplir<br>
-                                    automatiquement les sections du CV avec les informations<br>
-                                    extraites (expériences, formations, compétences...).
-                                </div>
-                            </div>
-                        </div>
-                    </details>
-                    <details class="control-group">
-                        <summary><span>Présentation Recruteur</span><label class="completion-label"><input type="checkbox" id="completion-ia-presentation" class="completion-checkbox"><span>Fait ✅</span></label></summary>
-                        <div class="control-group-content space-y-3">
-                            <input type="text" id="qualification-dispo" placeholder="Disponibilité" class="cv-input w-full p-2 border rounded-md">
-                            <input type="text" id="qualification-salaire" placeholder="Prétentions salariales" class="cv-input w-full p-2 border rounded-md">
-                            <input type="text" id="qualification-loc" placeholder="Localisation" class="cv-input w-full p-2 border rounded-md">
-                            <div class="tooltip">
-                                <button id="generate-mail-btn" class="mt-2 w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 flex items-center justify-center gap-2"><i class="fas fa-wand-magic-sparkles"></i> Générer le mail</button>
-                                <div class="tooltip-content top">
-                                    <strong>Générer le mail</strong><br>
-                                    Crée automatiquement un email de présentation<br>
-                                    personnalisé en utilisant les informations du CV<br>
-                                    et les critères spécifiés (disponibilité, salaire, localisation).
-                                </div>
-                            </div>
-                            <textarea id="recruiter-mail-content" rows="8" class="cv-input w-full p-2 border rounded-md mt-2" placeholder="Le mail de présentation apparaîtra ici..."></textarea>
-                        </div>
-                    </details>
-
-                    <!-- Nouvelle section: Optimisation IA -->
-                    <details class="control-group">
-                        <summary><span>Optimisation IA</span><label class="completion-label"><input type="checkbox" id="completion-ia-optimization" class="completion-checkbox"><span>Fait ✅</span></label></summary>
-                        <div class="control-group-content space-y-3">
-                            <div class="tooltip">
-                                <button id="ai-layout-optimize-btn" class="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 px-4 rounded-md hover:from-purple-700 hover:to-pink-700 flex items-center justify-center gap-2 font-semibold">
-                                    <i class="fas fa-magic-wand-sparkles"></i> IA Layout Optimisation
-                                </button>
-                                <div class="tooltip-content top">
-                                    <strong>Optimisation Layout IA - NOUVEAU !</strong><br>
-                                    L'IA analyse votre contenu et optimise automatiquement :<br>
-                                    • Layout (1 ou 2 colonnes)<br>
-                                    • Tailles de polices<br>
-                                    • Marges et espacements<br>
-                                    • Bannière recruteur<br>
-                                    • Tout pour tenir sur 1 page parfaite !
-                                </div>
-                            </div>
-                            <div class="tooltip">
-                                <button id="ai-optimize-all-btn" class="w-full bg-purple-600 text-white py-2 px-4 rounded-md hover:bg-purple-700 flex items-center justify-center gap-2">
-                                    <i class="fas fa-rocket"></i> Optimiser tout le CV
-                                </button>
-                                <div class="tooltip-content top">
-                                    <strong>Optimisation complète IA</strong><br>
-                                    L'IA analyse et améliore l'ensemble du CV :<br>
-                                    descriptions, orthographe, structure, pertinence.
-                                </div>
-                            </div>
-                            <div class="tooltip">
-                                <button id="ai-rewrite-descriptions-btn" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 flex items-center justify-center gap-2">
-                                    <i class="fas fa-pen-fancy"></i> Réécrire les descriptions
-                                </button>
-                                <div class="tooltip-content top">
-                                    <strong>Réécriture IA des descriptions</strong><br>
-                                    Reformule toutes les descriptions d'expériences<br>
-                                    pour les rendre plus impactantes et professionnelles.
-                                </div>
-                            </div>
-                            <div class="tooltip">
-                                <button id="ai-synthesize-experiences-btn" class="w-full bg-teal-600 text-white py-2 px-4 rounded-md hover:bg-teal-700 flex items-center justify-center gap-2">
-                                    <i class="fas fa-compress-arrows-alt"></i> Synthétiser les expériences
-                                </button>
-                                <div class="tooltip-content top">
-                                    <strong>Synthèse IA des expériences</strong><br>
-                                    Condense automatiquement vos expériences<br>
-                                    en gardant l'essentiel (max 5 lignes chacune).
-                                </div>
-                            </div>
-                        </div>
-                    </details>
-
-                    <!-- Nouvelle section: IA Créative -->
-                    <details class="control-group">
-                        <summary><span>IA Créative</span><label class="completion-label"><input type="checkbox" id="completion-ia-creative" class="completion-checkbox"><span>Fait ✅</span></label></summary>
-                        <div class="control-group-content space-y-3">
-                            <div class="tooltip">
-                                <button id="ai-generate-achievements-btn" class="w-full bg-amber-600 text-white py-2 px-4 rounded-md hover:bg-amber-700 flex items-center justify-center gap-2">
-                                    <i class="fas fa-trophy"></i> Générer des réalisations
-                                </button>
-                                <div class="tooltip-content top">
-                                    <strong>Générateur de réalisations</strong><br>
-                                    L'IA crée des points de réalisation percutants<br>
-                                    basés sur vos expériences existantes.
-                                </div>
-                            </div>
-                            <div class="tooltip">
-                                <button id="ai-suggest-skills-btn" class="w-full bg-emerald-600 text-white py-2 px-4 rounded-md hover:bg-emerald-700 flex items-center justify-center gap-2">
-                                    <i class="fas fa-lightbulb"></i> Suggérer des compétences
-                                </button>
-                                <div class="tooltip-content top">
-                                    <strong>Suggestions de compétences IA</strong><br>
-                                    Propose des compétences pertinentes selon votre<br>
-                                    profil et les tendances du marché.
-                                </div>
-                            </div>
-                            <div class="tooltip">
-                                <button id="ai-improve-profile-btn" class="w-full bg-rose-600 text-white py-2 px-4 rounded-md hover:bg-rose-700 flex items-center justify-center gap-2">
-                                    <i class="fas fa-user-graduate"></i> Améliorer le profil
-                                </button>
-                                <div class="tooltip-content top">
-                                    <strong>Amélioration du profil IA</strong><br>
-                                    Rédige une description de profil accrocheur<br>
-                                    et adapté au poste visé.
-                                </div>
-                            </div>
-                        </div>
-                    </details>
-
-                    <!-- Nouvelle section: IA Avancée -->
-                    <details class="control-group">
-                        <summary><span>IA Avancée</span><label class="completion-label"><input type="checkbox" id="completion-ia-advanced" class="completion-checkbox"><span>Fait ✅</span></label></summary>
-                        <div class="control-group-content space-y-3">
-                            <div class="grid grid-cols-2 gap-2">
-                                <select id="target-sector" class="cv-input p-2 border rounded-md text-sm">
-                                    <option value="">Secteur cible</option>
-                                    <option value="tech">Tech/IT</option>
-                                    <option value="finance">Finance</option>
-                                    <option value="marketing">Marketing</option>
-                                    <option value="rh">Ressources Humaines</option>
-                                    <option value="sante">Santé</option>
-                                    <option value="education">Éducation</option>
-                                    <option value="commerce">Commerce</option>
-                                    <option value="industrie">Industrie</option>
-                                </select>
-                                <select id="experience-level" class="cv-input p-2 border rounded-md text-sm">
-                                    <option value="">Niveau d'expérience</option>
-                                    <option value="junior">Junior (0-2 ans)</option>
-                                    <option value="intermediate">Intermédiaire (3-5 ans)</option>
-                                    <option value="senior">Senior (6-10 ans)</option>
-                                    <option value="expert">Expert (10+ ans)</option>
-                                </select>
-                            </div>
-                            <div class="tooltip">
-                                <button id="ai-adapt-sector-btn" class="w-full bg-violet-600 text-white py-2 px-4 rounded-md hover:bg-violet-700 flex items-center justify-center gap-2">
-                                    <i class="fas fa-target"></i> Adapter au secteur
-                                </button>
-                                <div class="tooltip-content top">
-                                    <strong>Adaptation sectorielle IA</strong><br>
-                                    Adapte le vocabulaire et les compétences<br>
-                                    au secteur et niveau d'expérience choisis.
-                                </div>
-                            </div>
-                            <div class="tooltip">
-                                <button id="ai-keywords-boost-btn" class="w-full bg-cyan-600 text-white py-2 px-4 rounded-md hover:bg-cyan-700 flex items-center justify-center gap-2">
-                                    <i class="fas fa-search"></i> Booster les mots-clés
-                                </button>
-                                <div class="tooltip-content top">
-                                    <strong>Optimisation mots-clés IA</strong><br>
-                                    Intègre automatiquement les mots-clés<br>
-                                    recherchés par les recruteurs de votre secteur.
-                                </div>
-                            </div>
-                        </div>
-                    </details>
-                </div>
-
-                <!-- TAB: Contenu -->
-                <div id="panel-content" class="tab-panel hidden space-y-4">
-                    <!-- Informations Personnelles -->
-                    <details class="control-group">
-                        <summary><span>Informations Personnelles</span><label class="completion-label"><input type="checkbox" id="completion-content-infos" class="completion-checkbox"><span>Fait ✅</span></label></summary>
-                        <div class="control-group-content space-y-3">
-                            <div class="grid grid-cols-2 gap-3">
-                                <input type="text" id="nom" placeholder="Nom" class="cv-input w-full p-2 border rounded-md">
-                                <input type="text" id="prenom" placeholder="Prénom" class="cv-input w-full p-2 border rounded-md">
-                            </div>
-                            <input type="text" id="poste" placeholder="Poste recherché" class="cv-input w-full p-2 border rounded-md">
-                            <div class="grid grid-cols-2 gap-3">
-                                <input type="email" id="email" placeholder="Email" class="cv-input w-full p-2 border rounded-md">
-                                <input type="tel" id="telephone" placeholder="Téléphone" class="cv-input w-full p-2 border rounded-md">
-                            </div>
-                            <div class="grid grid-cols-3 gap-3">
-                                <input type="text" id="adresse" placeholder="Adresse" class="cv-input w-full p-2 border rounded-md">
-                                <input type="text" id="ville" placeholder="Ville" class="cv-input w-full p-2 border rounded-md">
-                                <input type="text" id="code_postal" placeholder="Code postal" class="cv-input w-full p-2 border rounded-md">
-                            </div>
-                            <div class="grid grid-cols-2 gap-3">
-                                <input type="date" id="date_naissance" placeholder="Date de naissance" class="cv-input w-full p-2 border rounded-md">
-                                <input type="text" id="nationalite" placeholder="Nationalité" class="cv-input w-full p-2 border rounded-md">
-                            </div>
-                            <div class="grid grid-cols-2 gap-3">
-                                <input type="text" id="linkedin" placeholder="LinkedIn" class="cv-input w-full p-2 border rounded-md">
-                                <input type="text" id="site_web" placeholder="Site web" class="cv-input w-full p-2 border rounded-md">
-                            </div>
-                            <textarea id="description" placeholder="Description du profil / Objectif professionnel" rows="4" class="cv-input w-full p-2 border rounded-md"></textarea>
-                        </div>
-                    </details>
-
-                    <!-- Expériences Professionnelles -->
-                    <details class="control-group">
-                        <summary><span>Expériences Professionnelles</span><label class="completion-label"><input type="checkbox" id="completion-content-exp" class="completion-checkbox"><span>Fait ✅</span></label></summary>
-                        <div class="control-group-content space-y-2">
-                            <div class="flex justify-end mb-2">
-                                <div class="tooltip">
-                                    <button id="add-experience" class="text-sm text-blue-600 hover:text-blue-800 font-medium"><i class="fas fa-circle-plus"></i> Ajouter une expérience</button>
-                                    <div class="tooltip-content top">
-                                        <strong>Ajouter une expérience</strong><br>
-                                        Ajoute un nouveau bloc d'expérience professionnelle<br>
-                                        avec des champs pour le poste, l'entreprise, les dates<br>
-                                        et la description des missions accomplies.
-                                    </div>
-                                </div>
-                            </div>
-                            <div id="experience-list" class="space-y-2"></div>
-                        </div>
-                    </details>
-
-                    <!-- Formations et Éducation -->
-                    <details class="control-group">
-                        <summary><span>Formations et Éducation</span><label class="completion-label"><input type="checkbox" id="completion-content-form" class="completion-checkbox"><span>Fait ✅</span></label></summary>
-                        <div class="control-group-content space-y-2">
-                            <div class="flex justify-end mb-2">
-                                <div class="tooltip">
-                                    <button id="add-formation" class="text-sm text-blue-600 hover:text-blue-800 font-medium"><i class="fas fa-circle-plus"></i> Ajouter une formation</button>
-                                    <div class="tooltip-content top">
-                                        <strong>Ajouter une formation</strong><br>
-                                        Ajoute un nouveau bloc de formation/éducation<br>
-                                        avec des champs pour le diplôme, l'établissement,<br>
-                                        les dates et les détails de la formation.
-                                    </div>
-                                </div>
-                            </div>
-                            <div id="formation-list" class="space-y-2"></div>
-                        </div>
-                    </details>
-
-                    <!-- Compétences -->
-                    <details class="control-group">
-                        <summary><span>Compétences</span><label class="completion-label"><input type="checkbox" id="completion-skills" class="completion-checkbox"><span>Fait ✅</span></label></summary>
-                        <div class="control-group-content space-y-3">
-                            <p class="text-sm font-medium">Style de Présentation</p>
-                            <div class="flex gap-2">
-                                <button data-skill-style="tags" class="skill-style-btn flex-1 bg-gray-200 p-2 rounded-md text-sm active">Tags</button>
-                                <button data-skill-style="levels" class="skill-style-btn flex-1 bg-gray-200 p-2 rounded-md text-sm">Niveaux</button>
-                                <button data-skill-style="simple" class="skill-style-btn flex-1 bg-gray-200 p-2 rounded-md text-sm">Simple</button>
-                            </div>
-                            
-                            <div id="skills-text-controls">
-                                <div class="flex justify-between items-center"><label for="competences" class="font-medium">Liste des compétences</label><div class="flex gap-2">
-                                    <div class="tooltip">
-                                        <button id="ai-limit-skills-btn" class="text-blue-600 hover:text-blue-800" title="Limiter à 10 compétences par l'IA"><i class="fas fa-filter"></i> 10</button>
-                                        <div class="tooltip-content top">
-                                            <strong>Limiter à 10 compétences (IA)</strong><br>
-                                            Utilise l'IA pour sélectionner automatiquement<br>
-                                            les 10 compétences les plus pertinentes et<br>
-                                            supprimer les autres pour un CV plus focalisé.
-                                        </div>
-                                    </div>
-                                    <div class="tooltip">
-                                        <button id="ai-synthesize-skills-btn" class="text-blue-600 hover:text-blue-800" title="Synthétiser et ranger les compétences par l'IA"><i class="fas fa-brain"></i></button>
-                                        <div class="tooltip-content top">
-                                            <strong>Synthétiser et organiser (IA)</strong><br>
-                                            L'IA analyse vos compétences, supprime les doublons,<br>
-                                            les regroupe par catégories et les réorganise<br>
-                                            de manière logique et professionnelle.
-                                        </div>
-                                    </div>
-                                </div></div>
-                                <textarea id="competences" placeholder="Compétences (séparées par des virgules)..." rows="4" class="cv-input w-full p-2 border rounded-md"></textarea>
-                            </div>
-
-                            <div id="skills-level-controls" class="hidden space-y-3">
-                                <p class="text-sm font-medium">Style de Jauge</p>
-                                <div class="grid grid-cols-5 gap-2 text-center">
-                                    <button data-gauge-style="bar" class="gauge-style-btn bg-gray-200 p-2 rounded-md text-sm active" title="Barre"><i class="fas fa-bars"></i></button>
-                                    <button data-gauge-style="dots" class="gauge-style-btn bg-gray-200 p-2 rounded-md text-sm" title="Points"><i class="fas fa-circle"></i></button>
-                                    <button data-gauge-style="stars" class="gauge-style-btn bg-gray-200 p-2 rounded-md text-sm" title="Étoiles"><i class="fas fa-star"></i></button>
-                                    <button data-gauge-style="squares" class="gauge-style-btn bg-gray-200 p-2 rounded-md text-sm" title="Carrés"><i class="fas fa-square"></i></button>
-                                    <button data-gauge-style="number" class="gauge-style-btn bg-gray-200 p-2 rounded-md text-sm font-bold" title="Chiffres">⅗</button>
-                                </div>
-                                <div id="skills-level-list" class="space-y-2 border-t pt-3"></div>
-                                <div class="tooltip">
-                                    <button id="add-skill-level-btn" class="w-full bg-blue-100 text-blue-800 py-2 px-4 rounded-md hover:bg-blue-200 flex items-center justify-center gap-2 text-sm"><i class="fas fa-plus-circle"></i> Ajouter une compétence</button>
-                                    <div class="tooltip-content top">
-                                        <strong>Ajouter une compétence avec niveau</strong><br>
-                                        Ajoute une nouvelle compétence avec un niveau<br>
-                                        de maîtrise affiché sous forme de jauge<br>
-                                        (barres, étoiles, points ou chiffres).
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </details>
-
-                    <!-- Langues -->
-                    <details class="control-group">
-                        <summary><span>Langues</span><label class="completion-label"><input type="checkbox" id="completion-content-langues" class="completion-checkbox"><span>Fait ✅</span></label></summary>
-                        <div class="control-group-content space-y-3">
-                            <div class="flex justify-end mb-2">
-                                <button id="add-language" class="text-sm text-blue-600 hover:text-blue-800 font-medium"><i class="fas fa-circle-plus"></i> Ajouter une langue</button>
-                            </div>
-                            <div id="language-list" class="space-y-2"></div>
-                        </div>
-                    </details>
-
-                    <!-- Certifications -->
-                    <details class="control-group">
-                        <summary><span>Certifications</span><label class="completion-label"><input type="checkbox" id="completion-content-certifs" class="completion-checkbox"><span>Fait ✅</span></label></summary>
-                        <div class="control-group-content space-y-3">
-                            <div class="flex justify-end mb-2">
-                                <button id="add-certification" class="text-sm text-blue-600 hover:text-blue-800 font-medium"><i class="fas fa-circle-plus"></i> Ajouter une certification</button>
-                            </div>
-                            <div id="certification-list" class="space-y-2"></div>
-                        </div>
-                    </details>
-
-                    <!-- Projets -->
-                    <details class="control-group">
-                        <summary><span>Projets</span><label class="completion-label"><input type="checkbox" id="completion-content-projets" class="completion-checkbox"><span>Fait ✅</span></label></summary>
-                        <div class="control-group-content space-y-3">
-                            <div class="flex justify-end mb-2">
-                                <button id="add-project" class="text-sm text-blue-600 hover:text-blue-800 font-medium"><i class="fas fa-circle-plus"></i> Ajouter un projet</button>
-                            </div>
-                            <div id="project-list" class="space-y-2"></div>
-                        </div>
-                    </details>
-
-                    <!-- Centres d'intérêt -->
-                    <details class="control-group">
-                        <summary><span>Centres d'intérêt</span><label class="completion-label"><input type="checkbox" id="completion-content-interets" class="completion-checkbox"><span>Fait ✅</span></label></summary>
-                        <div class="control-group-content space-y-3">
-                            <textarea id="interets" placeholder="Centres d'intérêt, hobbies, activités..." rows="3" class="cv-input w-full p-2 border rounded-md"></textarea>
-                        </div>
-                    </details>
-
-                    <!-- Sections Personnalisées -->
-                    <details class="control-group">
-                        <summary><span>Sections Personnalisées</span><label class="completion-label"><input type="checkbox" id="completion-custom" class="completion-checkbox"><span>Fait ✅</span></label></summary>
-                        <div class="control-group-content space-y-3">
-                            <div class="space-y-2">
-                                <label class="text-sm font-medium">Ajouter une nouvelle section</label>
-                                <select id="section-suggestion-select" class="w-full p-2 border rounded-md text-sm">
-                                    <option value="">-- Choisir une suggestion --</option>
-                                    <option value="Références 👥">Références 👥</option>
-                                    <option value="Publications 📚">Publications 📚</option>
-                                    <option value="Bénévolat ❤️">Bénévolat ❤️</option>
-                                    <option value="Récompenses 🏆">Récompenses 🏆</option>
-                                    <option value="Conférences 🎤">Conférences 🎤</option>
-                                    <option value="Formations complémentaires 📖">Formations complémentaires 📖</option>
-                                </select>
-                                <div class="flex gap-2">
-                                    <input type="text" id="new-section-title-input" class="flex-grow p-2 border rounded-md text-sm" placeholder="Ou tapez un titre personnalisé...">
-                                    <div class="tooltip">
-                                        <button id="add-section-btn" class="bg-indigo-500 text-white py-2 px-4 rounded-md hover:bg-indigo-600"><i class="fas fa-plus"></i></button>
-                                        <div class="tooltip-content top">
-                                            <strong>Ajouter une section personnalisée</strong><br>
-                                            Crée une nouvelle section avec le titre spécifié<br>
-                                            ou sélectionné dans la liste de suggestions.<br>
-                                            Vous pourrez ensuite y ajouter du contenu.
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div id="custom-sections-list" class="space-y-2 mt-2 border-t pt-2"></div>
-                        </div>
-                    </details>
-                </div>
-
-                <!-- TAB: Mise en Page -->
-                <div id="panel-layout" class="tab-panel hidden space-y-4">
-                    <details class="control-group">
-                        <summary><span>Mise en Colonnes</span><label class="completion-label"><input type="checkbox" id="completion-layout-cols" class="completion-checkbox"><span>Fait ✅</span></label></summary>
-                        <div class="control-group-content">
-                            <div class="flex gap-2"><button data-layout="layout-1-col" class="layout-btn flex-1 bg-gray-200 p-2 rounded-md text-sm">1</button><button data-layout="layout-2-col-33-67" class="layout-btn flex-1 bg-gray-200 p-2 rounded-md text-sm">33/67</button><button data-layout="layout-2-col-50-50" class="layout-btn flex-1 bg-gray-200 p-2 rounded-md text-sm">50/50</button><button data-layout="layout-2-col-67-33" class="layout-btn flex-1 bg-gray-200 p-2 rounded-md text-sm">67/33</button></div>
-                        </div>
-                    </details>
-                    <details class="control-group">
-                        <summary><span>Espacements & Tailles</span><label class="completion-label"><input type="checkbox" id="completion-layout-spacing" class="completion-checkbox"><span>Fait ✅</span></label></summary>
-                        <div class="control-group-content space-y-4">
-                            <div><label for="page-margin" class="block text-sm font-medium text-gray-700">Marge Page: <span id="page-margin-value">2</span>cm</label><input type="range" id="page-margin" min="0.5" max="3" step="0.1" value="2" class="cv-input w-full h-2 bg-gray-200 rounded-lg cursor-pointer"></div>
-                            <div><label for="module-spacing" class="block text-sm font-medium text-gray-700">Espace Blocs: <span id="module-spacing-value">1.5</span>rem</label><input type="range" id="module-spacing" min="0" max="4" step="0.1" value="1.5" class="cv-input w-full h-2 bg-gray-200 rounded-lg cursor-pointer"></div>
-                            <div><label for="item-spacing" class="block text-sm font-medium text-gray-700">Espace Éléments: <span id="item-spacing-value">0.5</span>rem</label><input type="range" id="item-spacing" min="0" max="2" step="0.1" value="0.5" class="cv-input w-full h-2 bg-gray-200 rounded-lg cursor-pointer"></div>
-                            <div><label for="font-size-h1" class="block text-sm font-medium text-gray-700">Taille Titre Principal: <span id="font-size-h1-value">40</span>pt</label><input type="range" id="font-size-h1" min="20" max="50" step="1" value="40" class="cv-input w-full h-2 bg-gray-200 rounded-lg cursor-pointer"></div><div><label for="font-size-h2" class="block text-sm font-medium text-gray-700">Taille Titres Section: <span id="font-size-h2-value">21</span>pt</label><input type="range" id="font-size-h2" min="14" max="30" step="1" value="21" class="cv-input w-full h-2 bg-gray-200 rounded-lg cursor-pointer"></div><div><label for="font-size-p" class="block text-sm font-medium text-gray-700">Taille Paragraphe: <span id="font-size-p-value">10</span>pt</label><input type="range" id="font-size-p" min="8" max="14" step="0.5" value="10" class="cv-input w-full h-2 bg-gray-200 rounded-lg cursor-pointer"></div><div><label for="font-size-banner" class="block text-sm font-medium text-gray-700">Taille Bannière: <span id="font-size-banner-value">9</span>pt</label><input type="range" id="font-size-banner" min="7" max="12" step="0.5" value="9" class="cv-input w-full h-2 bg-gray-200 rounded-lg cursor-pointer"></div><div><label for="line-height" class="block text-sm font-medium text-gray-700">Interligne: <span id="line-height-value">1.6</span></label><input type="range" id="line-height" min="0.8" max="2.5" step="0.1" value="1.6" class="cv-input w-full h-2 bg-gray-200 rounded-lg cursor-pointer"></div><div><label for="paragraph-spacing" class="block text-sm font-medium text-gray-700">Espace Paragraphe: <span id="paragraph-spacing-value">0.5</span>rem</label><input type="range" id="paragraph-spacing" min="0" max="2" step="0.1" value="0.5" class="cv-input w-full h-2 bg-gray-200 rounded-lg cursor-pointer"></div>
-                        </div>
-                    </details>
-
-                    <details class="control-group">
-                        <summary><span>Polices</span><label class="completion-label"><input type="checkbox" id="completion-layout-fonts" class="completion-checkbox"><span>Fait ✅</span></label></summary>
-                        <div class="control-group-content space-y-3">
-                            <div>
-                                <label for="font-family-h1-select" class="block text-sm font-medium text-gray-700">Titre Principal (H1)</label>
-                                <select id="font-family-h1-select" class="cv-input w-full p-2 border rounded-md"></select>
-                            </div>
-                            <div>
-                                <label for="font-family-h2-select" class="block text-sm font-medium text-gray-700">Titres de Section (H2)</label>
-                                <select id="font-family-h2-select" class="cv-input w-full p-2 border rounded-md"></select>
-                            </div>
-                            <div>
-                                <label for="font-family-body-select" class="block text-sm font-medium text-gray-700">Corps de Texte</label>
-                                <select id="font-family-body-select" class="cv-input w-full p-2 border rounded-md"></select>
-                            </div>
-                        </div>
-                    </details>
-
-                    <details class="control-group">
-                        <summary><span>Styles des Titres de Section</span><label class="completion-label"><input type="checkbox" id="completion-layout-titles" class="completion-checkbox"><span>Fait ✅</span></label></summary>
-                        <div class="control-group-content">
-                            <div class="grid grid-cols-2 gap-2">
-                                <button data-title-style="style-underline" class="section-title-style-btn bg-gray-200 p-2 rounded-md text-sm active">Souligné</button>
-                                <button data-title-style="style-side-line" class="section-title-style-btn bg-gray-200 p-2 rounded-md text-sm">Ligne Côté</button>
-                                <button data-title-style="style-background" class="section-title-style-btn bg-gray-200 p-2 rounded-md text-sm">Fond</button>
-                                <button data-title-style="style-boxed" class="section-title-style-btn bg-gray-200 p-2 rounded-md text-sm">Encadré</button>
-                            </div>
-                        </div>
-                    </details>
-
-                    <details class="control-group">
-                        <summary><span>Thèmes</span><label class="completion-label"><input type="checkbox" id="completion-layout-themes" class="completion-checkbox"><span>Fait ✅</span></label></summary>
-                        <div class="control-group-content">
-                            <div id="theme-buttons" class="grid grid-cols-3 gap-2">
-                                <button data-theme="professional" class="theme-btn bg-gray-200 p-2 rounded-md text-sm">Pro</button>
-                                <button data-theme="creative" class="theme-btn bg-gray-200 p-2 rounded-md text-sm">Créatif</button>
-                                <button data-theme="modern" class="theme-btn bg-gray-200 p-2 rounded-md text-sm">Moderne</button>
-                            </div>
-                        </div>
-                    </details>
-
-                    <details class="control-group">
-                        <summary><span>Couleurs</span><label class="completion-label"><input type="checkbox" id="completion-layout-colors" class="completion-checkbox"><span>Fait ✅</span></label></summary>
-                        <div class="control-group-content">
-                            <div class="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label for="primary-color-picker" class="block text-sm font-medium text-gray-700">Principale</label>
-                                    <input type="color" id="primary-color-picker" value="#2563eb" class="cv-input w-full h-10 p-1 border rounded-md">
-                                </div>
-                                <div>
-                                    <label for="secondary-color-picker" class="block text-sm font-medium text-gray-700">Secondaire</label>
-                                    <div class="flex items-center">
-                                        <input type="color" id="secondary-color-picker" value="#334155" class="cv-input w-full h-10 p-1 border rounded-md">
-                                        <div class="tooltip">
-                                            <button id="ai-color-btn" title="Suggestion IA" class="ml-2 text-blue-600 hover:text-blue-800"><i class="fas fa-wand-magic-sparkles"></i></button>
-                                            <div class="tooltip-content top">
-                                                <strong>Suggestion couleurs IA</strong><br>
-                                                L'IA suggère automatiquement une palette<br>
-                                                de couleurs harmonieuses et professionnelles<br>
-                                                adaptées à votre secteur d'activité.
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-span-2">
-                                    <label for="body-text-color-picker" class="block text-sm font-medium text-gray-700">Texte du corps</label>
-                                    <input type="color" id="body-text-color-picker" value="#334155" class="cv-input w-full h-10 p-1 border rounded-md">
-                                </div>
-                            </div>
-                        </div>
-                    </details>
-
-                    <details class="control-group">
-                        <summary><span>Arrière-plans & Textures</span><label class="completion-label"><input type="checkbox" id="completion-layout-backgrounds" class="completion-checkbox"><span>Fait ✅</span></label></summary>
-                        <div class="control-group-content space-y-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Style d'arrière-plan</label>
-                                <div class="grid grid-cols-2 gap-2">
-                                    <button data-bg-style="solid" class="bg-style-btn bg-gray-200 p-2 rounded-md text-sm active">Uni</button>
-                                    <button data-bg-style="gradient" class="bg-style-btn bg-gray-200 p-2 rounded-md text-sm">Dégradé</button>
-                                    <button data-bg-style="pattern" class="bg-style-btn bg-gray-200 p-2 rounded-md text-sm">Motif</button>
-                                    <button data-bg-style="texture" class="bg-style-btn bg-gray-200 p-2 rounded-md text-sm">Texture</button>
-                                </div>
-                            </div>
-                            <div id="gradient-controls" class="hidden space-y-2">
-                                <label class="block text-sm font-medium text-gray-700">Direction du dégradé</label>
-                                <div class="grid grid-cols-4 gap-2">
-                                    <button data-gradient-dir="to-r" class="gradient-dir-btn bg-gray-200 p-2 rounded-md text-sm">→</button>
-                                    <button data-gradient-dir="to-br" class="gradient-dir-btn bg-gray-200 p-2 rounded-md text-sm">↘</button>
-                                    <button data-gradient-dir="to-b" class="gradient-dir-btn bg-gray-200 p-2 rounded-md text-sm">↓</button>
-                                    <button data-gradient-dir="to-bl" class="gradient-dir-btn bg-gray-200 p-2 rounded-md text-sm">↙</button>
-                                </div>
-                                <div class="grid grid-cols-2 gap-2">
-                                    <div>
-                                        <label class="text-xs">Couleur 1</label>
-                                        <input type="color" id="gradient-color-1" value="#f3f4f6" class="cv-input w-full h-8 p-1 border rounded-md">
-                                    </div>
-                                    <div>
-                                        <label class="text-xs">Couleur 2</label>
-                                        <input type="color" id="gradient-color-2" value="#e5e7eb" class="cv-input w-full h-8 p-1 border rounded-md">
-                                    </div>
-                                </div>
-                            </div>
-                            <div id="pattern-controls" class="hidden space-y-2">
-                                <label class="block text-sm font-medium text-gray-700">Motifs prédéfinis</label>
-                                <div class="grid grid-cols-3 gap-2">
-                                    <button data-pattern="dots" class="pattern-btn bg-gray-200 p-2 rounded-md text-sm">Points</button>
-                                    <button data-pattern="lines" class="pattern-btn bg-gray-200 p-2 rounded-md text-sm">Lignes</button>
-                                    <button data-pattern="grid" class="pattern-btn bg-gray-200 p-2 rounded-md text-sm">Grille</button>
-                                </div>
-                                <div>
-                                    <label for="pattern-opacity" class="block text-sm font-medium text-gray-700">Opacité motif: <span id="pattern-opacity-value">0.1</span></label>
-                                    <input type="range" id="pattern-opacity" min="0" max="1" step="0.05" value="0.1" class="cv-input w-full h-2 bg-gray-200 rounded-lg cursor-pointer">
-                                </div>
-                            </div>
-                        </div>
-                    </details>
-
-                    <details class="control-group">
-                        <summary><span>Bordures & Ombres</span><label class="completion-label"><input type="checkbox" id="completion-layout-borders" class="completion-checkbox"><span>Fait ✅</span></label></summary>
-                        <div class="control-group-content space-y-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Bordures des sections</label>
-                                <div class="grid grid-cols-2 gap-2">
-                                    <button data-border-style="none" class="border-style-btn bg-gray-200 p-2 rounded-md text-sm active">Aucune</button>
-                                    <button data-border-style="solid" class="border-style-btn bg-gray-200 p-2 rounded-md text-sm">Solide</button>
-                                    <button data-border-style="dashed" class="border-style-btn bg-gray-200 p-2 rounded-md text-sm">Pointillés</button>
-                                    <button data-border-style="dotted" class="border-style-btn bg-gray-200 p-2 rounded-md text-sm">Points</button>
-                                </div>
-                            </div>
-                            <div id="border-controls" class="hidden space-y-2">
-                                <div class="grid grid-cols-2 gap-2">
-                                    <div>
-                                        <label for="border-width" class="block text-xs text-gray-700">Épaisseur: <span id="border-width-value">1</span>px</label>
-                                        <input type="range" id="border-width" min="1" max="5" step="1" value="1" class="cv-input w-full h-2 bg-gray-200 rounded-lg cursor-pointer">
-                                    </div>
-                                    <div>
-                                        <label class="text-xs">Couleur</label>
-                                        <input type="color" id="border-color" value="#d1d5db" class="cv-input w-full h-8 p-1 border rounded-md">
-                                    </div>
-                                </div>
-                                <div>
-                                    <label for="border-radius" class="block text-xs text-gray-700">Arrondis: <span id="border-radius-value">0</span>px</label>
-                                    <input type="range" id="border-radius" min="0" max="20" step="1" value="0" class="cv-input w-full h-2 bg-gray-200 rounded-lg cursor-pointer">
-                                </div>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Ombres</label>
-                                <div class="space-y-2">
-                                    <label class="flex items-center gap-2 text-sm">
-                                        <input type="checkbox" id="enable-shadows" class="cv-input">
-                                        Activer les ombres
-                                    </label>
-                                    <div id="shadow-controls" class="hidden space-y-2">
-                                        <div class="grid grid-cols-3 gap-2">
-                                            <div>
-                                                <label class="text-xs">X: <span id="shadow-x-value">0</span>px</label>
-                                                <input type="range" id="shadow-x" min="-10" max="10" step="1" value="0" class="cv-input w-full h-2 bg-gray-200 rounded-lg cursor-pointer">
-                                            </div>
-                                            <div>
-                                                <label class="text-xs">Y: <span id="shadow-y-value">2</span>px</label>
-                                                <input type="range" id="shadow-y" min="-10" max="10" step="1" value="2" class="cv-input w-full h-2 bg-gray-200 rounded-lg cursor-pointer">
-                                            </div>
-                                            <div>
-                                                <label class="text-xs">Flou: <span id="shadow-blur-value">4</span>px</label>
-                                                <input type="range" id="shadow-blur" min="0" max="20" step="1" value="4" class="cv-input w-full h-2 bg-gray-200 rounded-lg cursor-pointer">
-                                            </div>
-                                        </div>
-                                        <div class="grid grid-cols-2 gap-2">
-                                            <div>
-                                                <label class="text-xs">Couleur ombre</label>
-                                                <input type="color" id="shadow-color" value="#000000" class="cv-input w-full h-8 p-1 border rounded-md">
-                                            </div>
-                                            <div>
-                                                <label for="shadow-opacity" class="text-xs">Opacité: <span id="shadow-opacity-value">0.1</span></label>
-                                                <input type="range" id="shadow-opacity" min="0" max="1" step="0.05" value="0.1" class="cv-input w-full h-2 bg-gray-200 rounded-lg cursor-pointer">
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </details>
-
-                    <details class="control-group">
-                        <summary><span>Géométrie & Formes</span><label class="completion-label"><input type="checkbox" id="completion-layout-geometry" class="completion-checkbox"><span>Fait ✅</span></label></summary>
-                        <div class="control-group-content space-y-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Forme des sections</label>
-                                <div class="grid grid-cols-2 gap-2">
-                                    <button data-section-shape="rectangle" class="shape-btn bg-gray-200 p-2 rounded-md text-sm active">Rectangle</button>
-                                    <button data-section-shape="rounded" class="shape-btn bg-gray-200 p-2 rounded-md text-sm">Arrondi</button>
-                                    <button data-section-shape="circle" class="shape-btn bg-gray-200 p-2 rounded-md text-sm">Cercle</button>
-                                    <button data-section-shape="hexagon" class="shape-btn bg-gray-200 p-2 rounded-md text-sm">Hexagone</button>
-                                </div>
-                            </div>
-                            <div>
-                                <label for="section-padding" class="block text-sm font-medium text-gray-700">Padding sections: <span id="section-padding-value">1</span>rem</label>
-                                <input type="range" id="section-padding" min="0" max="3" step="0.1" value="1" class="cv-input w-full h-2 bg-gray-200 rounded-lg cursor-pointer">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Orientation page</label>
-                                <div class="grid grid-cols-2 gap-2">
-                                    <button data-orientation="portrait" class="orientation-btn bg-gray-200 p-2 rounded-md text-sm active">Portrait</button>
-                                    <button data-orientation="landscape" class="orientation-btn bg-gray-200 p-2 rounded-md text-sm">Paysage</button>
-                                </div>
-                            </div>
-                            <div>
-                                <label for="page-scale" class="block text-sm font-medium text-gray-700">Échelle d'affichage: <span id="page-scale-value">1</span></label>
-                                <input type="range" id="page-scale" min="0.5" max="2" step="0.1" value="1" class="cv-input w-full h-2 bg-gray-200 rounded-lg cursor-pointer">
-                            </div>
-                        </div>
-                    </details>
-
-                    <details class="control-group">
-                        <summary><span>Mise en Page Avancée</span><label class="completion-label"><input type="checkbox" id="completion-layout-advanced" class="completion-checkbox"><span>Fait ✅</span></label></summary>
-                        <div class="control-group-content space-y-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Alignement du contenu</label>
-                                <div class="grid grid-cols-3 gap-2">
-                                    <button data-align="left" class="align-btn bg-gray-200 p-2 rounded-md text-sm active"><i class="fas fa-align-left"></i></button>
-                                    <button data-align="center" class="align-btn bg-gray-200 p-2 rounded-md text-sm"><i class="fas fa-align-center"></i></button>
-                                    <button data-align="right" class="align-btn bg-gray-200 p-2 rounded-md text-sm"><i class="fas fa-align-right"></i></button>
-                                </div>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Espacement entre colonnes</label>
-                                <div>
-                                    <label for="column-gap" class="text-xs">Gap: <span id="column-gap-value">2</span>rem</label>
-                                    <input type="range" id="column-gap" min="0" max="5" step="0.2" value="2" class="cv-input w-full h-2 bg-gray-200 rounded-lg cursor-pointer">
-                                </div>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Justification du texte</label>
-                                <div class="grid grid-cols-2 gap-2">
-                                    <button data-text-justify="left" class="justify-btn bg-gray-200 p-2 rounded-md text-sm active">Gauche</button>
-                                    <button data-text-justify="justify" class="justify-btn bg-gray-200 p-2 rounded-md text-sm">Justifié</button>
-                                </div>
-                            </div>
-                            <div>
-                                <label class="flex items-center gap-2 text-sm">
-                                    <input type="checkbox" id="hyphenation" class="cv-input">
-                                    Césure automatique
-                                </label>
-                            </div>
-                            <div>
-                                <label class="flex items-center gap-2 text-sm">
-                                    <input type="checkbox" id="widow-orphan" class="cv-input">
-                                    Contrôle veuves et orphelines
-                                </label>
-                            </div>
-                        </div>
-                    </details>
-
-                    <details class="control-group">
-                        <summary><span>Effets Visuels</span><label class="completion-label"><input type="checkbox" id="completion-layout-effects" class="completion-checkbox"><span>Fait ✅</span></label></summary>
-                        <div class="control-group-content space-y-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Animations</label>
-                                <div class="space-y-2">
-                                    <label class="flex items-center gap-2 text-sm">
-                                        <input type="checkbox" id="enable-animations" class="cv-input">
-                                        Activer les animations
-                                    </label>
-                                    <div id="animation-controls" class="hidden space-y-2">
-                                        <select id="animation-type" class="cv-input w-full p-2 border rounded-md text-sm">
-                                            <option value="fade">Fondu</option>
-                                            <option value="slide">Glissement</option>
-                                            <option value="bounce">Rebond</option>
-                                            <option value="scale">Mise à l'échelle</option>
-                                        </select>
-                                        <div>
-                                            <label for="animation-duration" class="text-xs">Durée: <span id="animation-duration-value">0.3</span>s</label>
-                                            <input type="range" id="animation-duration" min="0.1" max="2" step="0.1" value="0.3" class="cv-input w-full h-2 bg-gray-200 rounded-lg cursor-pointer">
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Filtres</label>
-                                <div class="space-y-2">
-                                    <div>
-                                        <label for="blur-filter" class="text-xs">Flou: <span id="blur-filter-value">0</span>px</label>
-                                        <input type="range" id="blur-filter" min="0" max="5" step="0.1" value="0" class="cv-input w-full h-2 bg-gray-200 rounded-lg cursor-pointer">
-                                    </div>
-                                    <div>
-                                        <label for="brightness-filter" class="text-xs">Luminosité: <span id="brightness-filter-value">100</span>%</label>
-                                        <input type="range" id="brightness-filter" min="50" max="150" step="5" value="100" class="cv-input w-full h-2 bg-gray-200 rounded-lg cursor-pointer">
-                                    </div>
-                                    <div>
-                                        <label for="contrast-filter" class="text-xs">Contraste: <span id="contrast-filter-value">100</span>%</label>
-                                        <input type="range" id="contrast-filter" min="50" max="200" step="5" value="100" class="cv-input w-full h-2 bg-gray-200 rounded-lg cursor-pointer">
-                                    </div>
-                                    <div>
-                                        <label for="saturate-filter" class="text-xs">Saturation: <span id="saturate-filter-value">100</span>%</label>
-                                        <input type="range" id="saturate-filter" min="0" max="200" step="5" value="100" class="cv-input w-full h-2 bg-gray-200 rounded-lg cursor-pointer">
-                                    </div>
-                                </div>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Mode d'impression</label>
-                                <div class="space-y-2">
-                                    <label class="flex items-center gap-2 text-sm">
-                                        <input type="checkbox" id="print-optimized" class="cv-input">
-                                        Optimiser pour l'impression
-                                    </label>
-                                    <label class="flex items-center gap-2 text-sm">
-                                        <input type="checkbox" id="high-contrast-print" class="cv-input">
-                                        Contraste élevé pour impression
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-                    </details>
-                </div>
-
-                <!-- TAB: Bannière -->
-                <div id="panel-banner" class="tab-panel hidden space-y-4">
-                     <details class="control-group">
-                        <summary><span>Bannière Recruteur</span><label class="completion-label"><input type="checkbox" id="completion-banner-main" class="completion-checkbox"><span>Fait ✅</span></label></summary>
-                        <div class="control-group-content space-y-3">
-                            <div class="flex justify-between items-center">
-                                <h3 class="font-semibold text-gray-700">Bannière Recruteur</h3>
-                                <div class="flex gap-2">
-                                    <div class="tooltip">
-                                        <button id="save-banner-preset-btn" class="text-sm text-gray-500 hover:text-blue-600" title="Sauvegarder la bannière actuelle"><i class="fas fa-save"></i></button>
-                                        <div class="tooltip-content left">
-                                            <strong>Sauvegarder bannière</strong><br>
-                                            Sauvegarde la configuration actuelle<br>
-                                            de la bannière (style, couleurs, etc.)
-                                        </div>
-                                    </div>
-                                    <div class="tooltip">
-                                        <button id="load-banner-preset-btn" class="text-sm text-gray-500 hover:text-green-600" title="Charger bannière sauvegardée"><i class="fas fa-folder-open"></i></button>
-                                        <div class="tooltip-content left">
-                                            <strong>Charger bannière</strong><br>
-                                            Charge la configuration<br>
-                                            de bannière sauvegardée
-                                        </div>
-                                    </div>
-                                    <div class="tooltip">
-                                        <button id="save-recruiter-info-btn" class="text-sm text-gray-500 hover:text-indigo-600" title="Sauvegarder les infos recruteur"><i class="fas fa-user-plus"></i></button>
-                                        <div class="tooltip-content left">
-                                            <strong>Sauvegarder infos recruteur</strong><br>
-                                            Sauvegarde vos informations<br>
-                                            personnelles pour éviter de les<br>
-                                            retaper à chaque fois
-                                        </div>
-                                    </div>
-                                    <div class="tooltip">
-                                        <button id="load-recruiter-info-btn" class="text-sm text-gray-500 hover:text-purple-600" title="Charger les infos recruteur"><i class="fas fa-user-check"></i></button>
-                                        <div class="tooltip-content left">
-                                            <strong>Charger infos recruteur</strong><br>
-                                            Charge vos informations<br>
-                                            personnelles sauvegardées
-                                        </div>
-                                    </div>
-                                    <div class="tooltip">
-                                        <button id="reset-recruiter-btn" class="text-sm text-gray-500 hover:text-red-600" title="Réinitialiser les informations recruteur"><i class="fas fa-undo"></i></button>
-                                        <div class="tooltip-content left">
-                                            <strong>Réinitialiser la bannière</strong><br>
-                                            Efface toutes les informations personnalisées<br>
-                                            de la bannière recruteur et restaure<br>
-                                            les valeurs par défaut.
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div id="banner-fix-controls"><button id="fix-banner-top-btn" class="w-full bg-teal-600 text-white py-2 px-4 rounded-md hover:bg-teal-700 flex items-center justify-center gap-2"><i class="fas fa-arrow-up"></i>Fixer en haut</button><button id="fix-banner-bottom-btn" class="w-full bg-teal-600 text-white py-2 px-4 rounded-md hover:bg-teal-700 flex items-center justify-center gap-2 mt-2"><i class="fas fa-arrow-down"></i>Fixer en bas</button></div><button id="modular-banner-btn" class="cv-input w-full bg-orange-500 text-white py-2 px-4 rounded-md hover:bg-orange-600 flex items-center justify-center gap-2 hidden"><i class="fas fa-arrows-up-down-left-right"></i>Rendre modulaire</button><label class="flex items-center gap-2 text-sm"><input type="checkbox" id="toggle-banner-checkbox" class="cv-input">Afficher la bannière</label><label for="banner-style-select" class="text-sm font-medium">Style de Bannière</label><select id="banner-style-select" class="cv-input w-full p-2 border rounded-md"><option value="banner-style-modern">Moderne</option><option value="banner-style-elegant">Élégant</option><option value="banner-style-discret">Discret</option><option value="banner-style-carte">Carte</option><option value="banner-style-degrade">Dégradé</option><option value="banner-style-premium">Premium</option><option value="banner-style-minimal">Minimal</option><option value="banner-style-encadre">Encadré</option><option value="banner-style-ligne-haute">Ligne Haute</option></select><p class="text-sm font-medium">Alignement</p><div class="flex gap-2"><button data-banner-align="left" class="banner-align-btn flex-1 bg-gray-200 p-2 rounded-md text-sm"><i class="fas fa-align-left"></i></button><button data-banner-align="center" class="banner-align-btn flex-1 bg-gray-200 p-2 rounded-md text-sm"><i class="fas fa-align-center"></i></button><button data-banner-align="right" class="banner-align-btn flex-1 bg-gray-200 p-2 rounded-md text-sm"><i class="fas fa-align-right"></i></button><button id="banner-invert-btn" class="p-2 bg-gray-200 rounded-md text-sm" title="Inverser Logo/Texte"><i class="fas fa-right-left"></i></button></div><p class="text-sm font-medium">Taille Logo</p><div class="flex gap-2"><button data-logo-size="sm" class="logo-size-btn flex-1 bg-gray-200 p-2 rounded-md text-sm">P</button><button data-logo-size="md" class="logo-size-btn flex-1 bg-gray-200 p-2 rounded-md text-sm">M</button><button data-logo-size="lg" class="logo-size-btn flex-1 bg-gray-200 p-2 rounded-md text-sm">G</button><button data-logo-size="xl" class="logo-size-btn flex-1 bg-gray-200 p-2 rounded-md text-sm">XL</button><button data-logo-size="xxl" class="logo-size-btn flex-1 bg-gray-200 p-2 rounded-md text-sm">XXL</button></div><div><label for="banner-element-spacing" class="block text-sm font-medium text-gray-700">Espace Bannière: <span id="banner-element-spacing-value">1</span>rem</label><input type="range" id="banner-element-spacing" min="0.5" max="4" step="0.1" value="1" class="cv-input w-full h-2 bg-gray-200 rounded-lg cursor-pointer"></div><input type="text" id="banner-nom" placeholder="Votre Nom & Prénom" class="banner-input w-full p-2 border rounded-md"><input type="text" id="banner-poste" placeholder="Votre Poste" class="banner-input w-full p-2 border rounded-md"><input type="email" id="banner-email" placeholder="Email" class="banner-input w-full p-2 border rounded-md"><input type="tel" id="banner-tel" placeholder="Téléphone" class="banner-input w-full p-2 border rounded-md"><div><label for="banner-image" class="block text-sm font-medium text-gray-700">Photo/Logo</label><input type="file" id="banner-image" accept="image/*" class="banner-input mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"></div>
-                        </div>
-                    </details>
-                     <details class="control-group">
-                        <summary><span>Image de Fond</span><label class="completion-label"><input type="checkbox" id="completion-banner-bg" class="completion-checkbox"><span>Fait ✅</span></label></summary>
-                        <div class="control-group-content space-y-4">
-                            <div>
-                                <label for="banner-bg-image" class="block text-sm font-medium text-gray-700">Télécharger une image</label>
-                                <input type="file" id="banner-bg-image" accept="image/*" class="banner-input mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
-                            </div>
-                            <div>
-                                <label for="banner-bg-opacity" class="block text-sm font-medium text-gray-700">Opacité: <span id="banner-bg-opacity-value">1</span></label>
-                                <input type="range" id="banner-bg-opacity" min="0" max="1" step="0.05" value="1" class="cv-input w-full h-2 bg-gray-200 rounded-lg cursor-pointer">
-                            </div>
-                            <div>
-                                <label for="banner-bg-blur" class="block text-sm font-medium text-gray-700">Flou: <span id="banner-bg-blur-value">0</span>px</label>
-                                <input type="range" id="banner-bg-blur" min="0" max="20" step="1" value="0" class="cv-input w-full h-2 bg-gray-200 rounded-lg cursor-pointer">
-                            </div>
-                            <label class="flex items-center gap-2 text-sm"><input type="checkbox" id="banner-bg-grayscale" class="cv-input">Image en noir et blanc</label>
-                            <div class="tooltip">
-                                <button id="remove-banner-bg-btn" class="w-full bg-red-500 text-white py-2 px-4 rounded-md hover:bg-red-600 flex items-center justify-center gap-2"><i class="fas fa-trash"></i> Supprimer l'image de fond</button>
-                                <div class="tooltip-content top">
-                                    <strong>Supprimer l'image de fond</strong><br>
-                                    Supprime l'image de fond actuellement appliquée<br>
-                                    à la bannière et restaure l'arrière-plan par défaut.
-                                </div>
-                            </div>
-                        </div>
-                    </details>
-                     <details class="control-group">
-                        <summary><span>Style du Texte</span><label class="completion-label"><input type="checkbox" id="completion-banner-text" class="completion-checkbox"><span>Fait ✅</span></label></summary>
-                        <div class="control-group-content space-y-4">
-                            <button id="randomize-banner-style-btn" class="w-full bg-indigo-500 text-white py-2 px-4 rounded-md hover:bg-indigo-600 flex items-center justify-center gap-2"><i class="fas fa-dice"></i> Style Aléatoire</button><div class="border-t pt-4 mt-4"><h4 class="font-semibold text-sm mb-2">Nom & Prénom</h4><label class="text-xs">Police</label><select id="banner-nom-font" class="cv-input w-full p-1 border text-sm rounded-md"><option value="'Montserrat', sans-serif">Montserrat</option><option value="'Playfair Display', serif">Playfair Display</option><option value="'Oswald', sans-serif">Oswald</option><option value="'Cormorant Garamond', serif">Cormorant Garamond</option><option value="'Merriweather', serif">Merriweather</option><option value="'Lato', sans-serif">Lato</option></select><label class="text-xs mt-2 block">Taille: <span id="banner-nom-size-value">24</span>pt</label><input type="range" id="banner-nom-size" min="14" max="40" step="1" value="24" class="cv-input w-full h-2 bg-gray-200 rounded-lg cursor-pointer"><div class="flex items-center gap-2 mt-2"><label class="text-xs">Couleur:</label><input type="color" id="banner-nom-color" value="#334155" class="cv-input w-full h-8 p-1 border rounded-md"><button id="banner-nom-bold" class="style-toggle-btn p-1 px-2 rounded-md bg-gray-200 text-sm"><i class="fas fa-bold"></i></button><button id="banner-nom-italic" class="style-toggle-btn p-1 px-2 rounded-md bg-gray-200 text-sm"><i class="fas fa-italic"></i></button></div></div><div class="border-t pt-4 mt-4"><h4 class="font-semibold text-sm mb-2">Poste</h4><label class="text-xs mt-2 block">Taille: <span id="banner-poste-size-value">12</span>pt</label><input type="range" id="banner-poste-size" min="8" max="20" step="0.5" value="12" class="cv-input w-full h-2 bg-gray-200 rounded-lg cursor-pointer"><div class="flex items-center gap-2 mt-2"><label class="text-xs">Couleur:</label><input type="color" id="banner-poste-color" value="#334155" class="cv-input w-full h-8 p-1 border rounded-md"><button id="banner-poste-bold" class="style-toggle-btn p-1 px-2 rounded-md bg-gray-200 text-sm"><i class="fas fa-bold"></i></button><button id="banner-poste-italic" class="style-toggle-btn p-1 px-2 rounded-md bg-gray-200 text-sm"><i class="fas fa-italic"></i></button></div></div><div class="border-t pt-4 mt-4"><h4 class="font-semibold text-sm mb-2">Coordonnées</h4><label class="text-xs mt-2 block">Taille: <span id="banner-contact-size-value">9</span>pt</label><input type="range" id="banner-contact-size" min="7" max="14" step="0.5" value="9" class="cv-input w-full h-2 bg-gray-200 rounded-lg cursor-pointer"><div class="flex items-center gap-2 mt-2"><label class="text-xs">Couleur:</label><input type="color" id="banner-contact-color" value="#334155" class="cv-input w-full h-8 p-1 border rounded-md"><button id="banner-contact-bold" class="style-toggle-btn p-1 px-2 rounded-md bg-gray-200 text-sm"><i class="fas fa-bold"></i></button><button id="banner-contact-italic" class="style-toggle-btn p-1 px-2 rounded-md bg-gray-200 text-sm"><i class="fas fa-italic"></i></button></div></div>
-                        </div>
-                    </details>
-                </div>
-            </div>
-
-        </div>
-
-        <!-- PREVIEW PANEL -->
-        <div class="w-full lg:w-2/3 xl:w-3/4 p-8 bg-gray-200 flex justify-center items-start overflow-auto" id="preview-area">
-            <div id="cv-preview-wrapper" class="cv-preview-container">
-                <div class="a4-page-container">
-                    <div id="page-1" class="a4-page">
-                        <div id="fixed-banner-top"></div>
-                        <div class="cv-body-container layout-1-col">
-                            <div id="cv-col-1-1" class="cv-column">
-                                <div id="banner-module" class="cv-module">
-                                    <div class="drag-handle"><i class="fas fa-grip-vertical"></i></div>
-                                    <div id="recruiter-banner" class="banner-align-left">
-                                        <img id="banner-bg-img-preview" src="" alt="Banner background" class="absolute top-0 left-0 w-full h-full object-cover z-0 transition-all duration-300">
-                                        <div class="banner-content-wrapper">
-                                            <img id="banner-img-preview" class="logo-md" src="https://placehold.co/100x100/EFEFEF/AAAAAA&text=Photo" alt="Photo recruteur" onerror="this.onerror=null; this.src='https://placehold.co/100x100/EFEFEF/AAAAAA&text=Photo';">
-                                            <div class="banner-content">
-                                                <p id="banner-nom-preview" class="item-title" contenteditable="true"></p>
-                                                <p id="banner-poste-preview" contenteditable="true"></p>
-                                                <p id="banner-contact-preview"><span id="banner-email-preview" contenteditable="true"></span> | <span id="banner-tel-preview" contenteditable="true"></span></p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div id="header-module" class="cv-module"><div class="drag-handle"><i class="fas fa-grip-vertical"></i></div><div class="cv-header text-center"><div class="editable-wrapper"><h1 id="cv-nom-prenom-preview" contenteditable="true">Prénom NOM</h1><span class="delete-line-btn"><i class="fas fa-times"></i></span></div><div class="editable-wrapper"><p id="cv-poste-preview" contenteditable="true">Poste Recherché</p><span class="delete-line-btn"><i class="fas fa-times"></i></span></div></div></div>
-                                <div id="qualification-module" class="cv-module"><div class="drag-handle"><i class="fas fa-grip-vertical"></i></div><div id="qualification-preview" class="flex justify-center gap-4 text-center text-sm p-2 bg-slate-50 rounded-md"></div></div>
-                                <div id="description-module" class="cv-module"><div class="drag-handle"><i class="fas fa-grip-vertical"></i></div><h2 class="section-title style-underline" data-section-id="description"><i class="fas fa-user-circle section-icon"></i><span contenteditable="true">Profil</span><div class="section-ai-actions"><button class="ai-action-btn toggle-visibility-btn" title="Masquer/Afficher la section"><i class="fas fa-eye"></i></button><button class="ai-action-btn" data-action="rewrite-profile" title="Réécrire le profil avec l'IA"><i class="fas fa-magic-wand-sparkles"></i></button></div></h2><div id="cv-description-preview"></div></div>
-                                <div id="experience-module" class="cv-module"><div class="drag-handle"><i class="fas fa-grip-vertical"></i></div><h2 class="section-title style-underline" data-section-id="experience"><i class="fas fa-briefcase section-icon"></i><span contenteditable="true">Expérience</span><div class="section-ai-actions"><button class="ai-action-btn toggle-visibility-btn" title="Masquer/Afficher la section"><i class="fas fa-eye"></i></button><button class="ai-action-btn" data-action="summarize-experience" title="Synthétiser les expériences avec l'IA (5 lignes max)"><i class="fas fa-magic-wand-sparkles"></i></button></div></h2><div id="cv-experience-preview"></div></div>
-                                <div id="formation-module" class="cv-module"><div class="drag-handle"><i class="fas fa-grip-vertical"></i></div><h2 class="section-title style-underline" data-section-id="formation"><i class="fas fa-graduation-cap section-icon"></i><span contenteditable="true">Formation</span><div class="section-ai-actions"><button class="ai-action-btn toggle-visibility-btn" title="Masquer/Afficher la section"><i class="fas fa-eye"></i></button><button class="ai-action-btn" data-action="rewrite-formation" title="Améliorer les formations avec l'IA"><i class="fas fa-magic-wand-sparkles"></i></button></div></h2><div id="cv-formation-preview"></div></div>
-                                <div id="competences-module" class="cv-module"><div class="drag-handle"><i class="fas fa-grip-vertical"></i></div><h2 class="section-title style-underline" data-section-id="competences"><i class="fas fa-star section-icon"></i><span contenteditable="true">Compétences</span><div class="section-ai-actions"><button class="ai-action-btn toggle-visibility-btn" title="Masquer/Afficher la section"><i class="fas fa-eye"></i></button><button class="ai-action-btn" data-action="rewrite-skills" title="Améliorer les compétences avec l'IA"><i class="fas fa-magic-wand-sparkles"></i></button></div></h2><div id="cv-competences-preview" data-style="tags"></div></div>
-                            </div>
-                            <div id="cv-col-1-2" class="cv-column"></div>
-                        </div>
-                        <div id="fixed-banner-bottom"></div>
-                    </div>
-                     <button class="remove-page-btn no-print"><i class="fas fa-trash-can"></i></button>
-                </div>
-                 <div id="add-page-btn-wrapper" class="no-print">
-                     <div class="tooltip">
-                         <button id="add-page-btn" title="Ajouter une page"><i class="fas fa-plus"></i></button>
-                         <div class="tooltip-content top">
-                             <strong>Ajouter une nouvelle page</strong><br>
-                             Crée une nouvelle page A4 à votre CV pour<br>
-                             y ajouter plus de contenu si nécessaire.<br>
-                             Idéal pour les CV détaillés sur plusieurs pages.
-                         </div>
-                     </div>
-                 </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- MODALS -->
-    <div id="share-modal" class="modal-overlay">
-        <div class="modal-content">
-            <h2 class="text-xl font-bold mb-4">Partager le CV</h2>
-            <p class="text-sm text-gray-600 mb-2">Copiez ce lien unique pour partager une version en lecture seule de ce CV.</p>
-            <div class="flex items-center border rounded-md p-2 bg-gray-50">
-                <input type="text" id="share-link-input" readonly class="flex-grow bg-transparent outline-none text-sm">
-                <button id="copy-share-link-btn" class="ml-2 px-3 py-1 bg-blue-500 text-white text-sm rounded-md hover:bg-blue-600">Copier</button>
-            </div>
-            <div class="text-right mt-4">
-                 <button id="close-share-modal" class="px-4 py-2 bg-gray-200 text-sm rounded-md hover:bg-gray-300">Fermer</button>
-            </div>
-        </div>
-    </div>
-    
-    <div id="icon-picker-modal" class="modal-overlay">
-        <div class="modal-content">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-bold">Choisir une icône</h2>
-                <button id="close-icon-picker-modal" class="text-gray-500 hover:text-gray-800 text-2xl">&times;</button>
-            </div>
-            <div class="mb-4">
-                <input type="text" id="icon-search-input" placeholder="Rechercher une icône..." class="w-full p-2 border rounded-md">
-            </div>
-            <div id="icon-picker-grid"></div>
-        </div>
-    </div>
-
-    <div id="confirm-modal" class="modal-overlay">
-        <div class="modal-content">
-            <h2 id="confirm-modal-title" class="text-xl font-bold mb-4">Confirmation</h2>
-            <p id="confirm-modal-text" class="text-gray-600 mb-6">Êtes-vous sûr ?</p>
-            <div class="flex justify-end gap-4">
-                <button id="confirm-modal-cancel-btn" class="px-4 py-2 bg-gray-200 text-sm rounded-md hover:bg-gray-300">Annuler</button>
-                <button id="confirm-modal-ok-btn" class="px-4 py-2 bg-red-600 text-white text-sm rounded-md hover:bg-red-700">Confirmer</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Boutons de toggle pour masquer/afficher les panneaux -->
-    <div id="panel-toggle-left" class="panel-toggle panel-toggle-left" title="Masquer/Afficher le panneau de gauche">
-        <i class="fas fa-chevron-left"></i>
-    </div>
-    
-    <div id="panel-toggle-top" class="panel-toggle panel-toggle-top" title="Masquer/Afficher la barre d'outils">
-        <i class="fas fa-chevron-up"></i>
-    </div>
-
-    <!-- Contrôleur de zoom -->
-    <div id="zoom-controls" class="zoom-controls">
-        <div class="flex items-center justify-between">
-            <span class="text-sm font-medium text-gray-700">
-                <i class="fas fa-search-plus mr-2"></i>Zoom CV
-            </span>
-            <button id="zoom-reset" class="text-xs text-blue-600 hover:text-blue-800" title="Réinitialiser le zoom">
-                <i class="fas fa-undo"></i>
-            </button>
-        </div>
-        
-        <div class="zoom-slider-container">
-            <button class="zoom-btn" id="zoom-out" title="Dézoomer">
-                <i class="fas fa-minus"></i>
-            </button>
-            
-            <input type="range" 
-                   id="zoom-slider" 
-                   class="zoom-slider" 
-                   min="25" 
-                   max="200" 
-                   value="100" 
-                   step="5">
-            
-            <button class="zoom-btn" id="zoom-in" title="Zoomer">
-                <i class="fas fa-plus"></i>
-            </button>
-            
-            <span class="zoom-value" id="zoom-value">100%</span>
-        </div>
-        
-        <div class="text-xs text-gray-500 mt-2 text-center">
-            Ajustez la taille d'affichage du CV
-        </div>
-    </div>
-
-    <!-- Overlay d'animation IA -->
-    <div id="ai-thinking-overlay" class="ai-thinking-overlay">
-        <div class="ai-thinking-container">
-            <div class="ai-brain">
-                <div class="ai-neurons">
-                    <div class="neuron">1</div>
-                    <div class="neuron">0</div>
-                    <div class="neuron">1</div>
-                    <div class="neuron">0</div>
-                    <div class="neuron">1</div>
-                    <div class="neuron">0</div>
-                </div>
-            </div>
-            
-            <h3 id="ai-thinking-title" class="text-xl font-bold mb-2" style="color: #4a9eff; text-shadow: 0 0 10px rgba(74, 158, 255, 0.5);">IA Professionnelle en cours d'analyse...</h3>
-            <p id="ai-thinking-subtitle" class="mb-4" style="color: #82b1ff;">Traitement intelligent des données</p>
-            
-            <div class="ai-step-indicator">
-                <div class="ai-step active" id="step-1">
-                    <div class="text-xs">📖</div>
-                    <div class="text-xs">Lecture</div>
-                </div>
-                <div class="ai-step" id="step-2">
-                    <div class="text-xs">🧠</div>
-                    <div class="text-xs">Analyse</div>
-                </div>
-                <div class="ai-step" id="step-3">
-                    <div class="text-xs">✍️</div>
-                    <div class="text-xs">Rédaction</div>
-                </div>
-                <div class="ai-step" id="step-4">
-                    <div class="text-xs">✨</div>
-                    <div class="text-xs">Finalisation</div>
-                </div>
-            </div>
-            
-            <div class="ai-progress-bar">
-                <div class="ai-progress-fill"></div>
-            </div>
-            
-            <div class="ai-typing">
-                <div class="typing-dot"></div>
-                <div class="typing-dot"></div>
-                <div class="typing-dot"></div>
-            </div>
-            
-            <div id="ai-current-action" class="text-sm text-gray-500 italic">
-                Initialisation de l'IA...
-            </div>
-        </div>
-    </div>
-
-    <!-- Overlay d'animation de restructuration CV -->
-    <div id="cv-restructure-overlay" class="cv-restructure-overlay">
-        <div class="cv-restructure-container">
-            <h2 class="restructure-title">🚀 Restructuration IA</h2>
-            
-            <div class="letters-container" id="letters-container">
-                <!-- Les lettres volantes seront générées dynamiquement -->
-            </div>
-            
-            <div class="magic-particles" id="magic-particles">
-                <!-- Les particules magiques seront générées dynamiquement -->
-            </div>
-            
-            <div class="progress-text" id="restructure-progress">
-                Analyse et restructuration de votre CV en cours...
-            </div>
-        </div>
-    </div>
-
-    <script type="module">
+﻿
         // This script is now self-contained and does not use Firebase for saving.
         
         document.addEventListener('DOMContentLoaded', function() {
@@ -3500,7 +53,7 @@
                 formationList: document.getElementById('formation-list'), addFormationBtn: document.getElementById('add-formation'),
                 toggleBanner: document.getElementById('toggle-banner-checkbox'), bannerNom: document.getElementById('banner-nom'), bannerPoste: document.getElementById('banner-poste'), bannerEmail: document.getElementById('banner-email'), bannerTel: document.getElementById('banner-tel'), bannerImage: document.getElementById('banner-image'),
                 bannerStyleSelect: document.getElementById('banner-style-select'), bannerInvertBtn: document.getElementById('banner-invert-btn'),
-                // Contrôles de style de texte bannière
+                // ContrÃ´les de style de texte banniÃ¨re
                 bannerNomBold: document.getElementById('banner-nom-bold'), bannerNomItalic: document.getElementById('banner-nom-italic'),
                 bannerPosteBold: document.getElementById('banner-poste-bold'), bannerPosteItalic: document.getElementById('banner-poste-italic'),
                 bannerContactBold: document.getElementById('banner-contact-bold'), bannerContactItalic: document.getElementById('banner-contact-italic'),
@@ -3531,20 +84,20 @@
                 aiThinkingSubtitle: document.getElementById('ai-thinking-subtitle'),
                 aiCurrentAction: document.getElementById('ai-current-action'),
                 resetRecruiterBtn: document.getElementById('reset-recruiter-btn'),
-                // Nouveaux boutons pour sauvegarder/charger bannière et info recruteur
+                // Nouveaux boutons pour sauvegarder/charger banniÃ¨re et info recruteur
                 saveBannerPresetBtn: document.getElementById('save-banner-preset-btn'),
                 loadBannerPresetBtn: document.getElementById('load-banner-preset-btn'),
                 saveRecruiterInfoBtn: document.getElementById('save-recruiter-info-btn'),
                 loadRecruiterInfoBtn: document.getElementById('load-recruiter-info-btn'),
                 aiLimitSkillsBtn: document.getElementById('ai-limit-skills-btn'),
-                // Nouveaux contrôles de la barre d'outils
+                // Nouveaux contrÃ´les de la barre d'outils
                 toolbarSaveBtn: document.getElementById('toolbar-save-btn'),
                 toolbarLoadBtn: document.getElementById('toolbar-load-btn'),
                 toolbarTemplateBtn: document.getElementById('toolbar-template-btn'),
                 geminiApiKey: document.getElementById('gemini-api-key'),
                 saveApiKeyBtn: document.getElementById('save-api-key-btn'),
                 
-                // Nouveaux contrôles d'API
+                // Nouveaux contrÃ´les d'API
                 chatgptApiKey: document.getElementById('chatgpt-api-key'),
                 saveGeminiKeyBtn: document.getElementById('save-gemini-key-btn'),
                 saveChatgptKeyBtn: document.getElementById('save-chatgpt-key-btn'),
@@ -3557,7 +110,7 @@
                 geminiStatus: document.getElementById('gemini-status'),
                 chatgptStatus: document.getElementById('chatgpt-status'),
                 currentApiInfo: document.getElementById('current-api-info'),
-                // Indicateurs d'état de l'API
+                // Indicateurs d'Ã©tat de l'API
                 apiStatusIcon: document.getElementById('api-status-icon'),
                 apiStatusText: document.getElementById('api-status-text'),
                 pageMargin: document.getElementById('page-margin'), pageMarginValue: document.getElementById('page-margin-value'),
@@ -3605,7 +158,7 @@
                     okBtn: document.getElementById('confirm-modal-ok-btn'),
                     cancelBtn: document.getElementById('confirm-modal-cancel-btn'),
                 },
-                // Nouveaux contrôles pour le redimensionnement et le zoom
+                // Nouveaux contrÃ´les pour le redimensionnement et le zoom
                 panelToggleLeft: document.getElementById('panel-toggle-left'),
                 panelToggleTop: document.getElementById('panel-toggle-top'),
                 zoomControls: document.getElementById('zoom-controls'),
@@ -3722,9 +275,9 @@
                 controls.loader.style.pointerEvents = 'none';
             }
 
-            // === GESTION DE L'ACCESSIBILITÉ ===
+            // === GESTION DE L'ACCESSIBILITÃ‰ ===
             
-            // État des préférences d'accessibilité
+            // Ã‰tat des prÃ©fÃ©rences d'accessibilitÃ©
             let accessibilitySettings = {
                 contrast: 'normal',
                 fontSize: 100,
@@ -3736,7 +289,7 @@
                 extendedDescriptions: false
             };
             
-            // Charger les préférences sauvegardées
+            // Charger les prÃ©fÃ©rences sauvegardÃ©es
             function loadAccessibilitySettings() {
                 const saved = localStorage.getItem('accessibilitySettings');
                 if (saved) {
@@ -3745,7 +298,7 @@
                 }
             }
             
-            // Appliquer les paramètres d'accessibilité
+            // Appliquer les paramÃ¨tres d'accessibilitÃ©
             function applyAccessibilitySettings() {
                 const body = document.body;
                 
@@ -3763,20 +316,20 @@
                 // Hauteur de ligne
                 body.style.lineHeight = accessibilitySettings.lineHeight;
                 
-                // Focus amélioré
+                // Focus amÃ©liorÃ©
                 body.classList.toggle('enhanced-focus', accessibilitySettings.enhancedFocus);
                 
-                // Animations réduites
+                // Animations rÃ©duites
                 body.classList.toggle('reduced-animations', accessibilitySettings.reduceAnimations);
                 
-                // Mode lecteur d'écran
+                // Mode lecteur d'Ã©cran
                 body.classList.toggle('screen-reader-optimized', accessibilitySettings.screenReaderMode);
                 
-                // Mise à jour de l'interface
+                // Mise Ã  jour de l'interface
                 updateAccessibilityUI();
             }
             
-            // Mettre à jour l'interface de la popup
+            // Mettre Ã  jour l'interface de la popup
             function updateAccessibilityUI() {
                 // Boutons de contraste
                 document.querySelectorAll('.contrast-btn').forEach(btn => {
@@ -3795,8 +348,8 @@
                 }
                 if (lineHeightSlider) {
                     lineHeightSlider.value = accessibilitySettings.lineHeight;
-                    const lineHeightLabels = { 1: 'Serré', 1.5: 'Normal', 2: 'Large' };
-                    document.getElementById('line-height-value').textContent = lineHeightLabels[accessibilitySettings.lineHeight] || 'Personnalisé';
+                    const lineHeightLabels = { 1: 'SerrÃ©', 1.5: 'Normal', 2: 'Large' };
+                    document.getElementById('line-height-value').textContent = lineHeightLabels[accessibilitySettings.lineHeight] || 'PersonnalisÃ©';
                 }
                 
                 // Checkboxes
@@ -3807,13 +360,13 @@
                 document.getElementById('extended-descriptions').checked = accessibilitySettings.extendedDescriptions;
             }
             
-            // Sauvegarder les préférences
+            // Sauvegarder les prÃ©fÃ©rences
             function saveAccessibilitySettings() {
                 localStorage.setItem('accessibilitySettings', JSON.stringify(accessibilitySettings));
-                showNotification('Préférences d\'accessibilité sauvegardées', 'success');
+                showNotification('PrÃ©fÃ©rences d\'accessibilitÃ© sauvegardÃ©es', 'success');
             }
             
-            // Réinitialiser les préférences
+            // RÃ©initialiser les prÃ©fÃ©rences
             function resetAccessibilitySettings() {
                 accessibilitySettings = {
                     contrast: 'normal',
@@ -3827,10 +380,10 @@
                 };
                 applyAccessibilitySettings();
                 localStorage.removeItem('accessibilitySettings');
-                showNotification('Préférences d\'accessibilité réinitialisées', 'success');
+                showNotification('PrÃ©fÃ©rences d\'accessibilitÃ© rÃ©initialisÃ©es', 'success');
             }
             
-            // Gestionnaires d'événements pour la popup d'accessibilité
+            // Gestionnaires d'Ã©vÃ©nements pour la popup d'accessibilitÃ©
             function setupAccessibilityModal() {
                 const modal = document.getElementById('accessibility-modal');
                 const openBtn = controls.accessibilityBtn;
@@ -3843,7 +396,7 @@
                 openBtn?.addEventListener('click', () => {
                     modal.classList.remove('hidden');
                     updateAccessibilityUI();
-                    // Focus sur le premier élément focusable
+                    // Focus sur le premier Ã©lÃ©ment focusable
                     const firstFocusable = modal.querySelector('button, input, select, textarea, [tabindex]:not([tabindex="-1"])');
                     firstFocusable?.focus();
                 });
@@ -3856,7 +409,7 @@
                     });
                 });
                 
-                // Fermer avec Échap
+                // Fermer avec Ã‰chap
                 document.addEventListener('keydown', (e) => {
                     if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
                         modal.classList.add('hidden');
@@ -3864,7 +417,7 @@
                     }
                 });
                 
-                // Fermer en cliquant sur l'arrière-plan
+                // Fermer en cliquant sur l'arriÃ¨re-plan
                 modal.addEventListener('click', (e) => {
                     if (e.target === modal) {
                         modal.classList.add('hidden');
@@ -3943,7 +496,7 @@
                     primaryColor: document.getElementById('primary-color-picker')?.value || '#3b82f6',
                     secondaryColor: document.getElementById('secondary-color-picker')?.value || '#334155',
                     
-                    // Configuration de la bannière
+                    // Configuration de la banniÃ¨re
                     banner: {
                         enabled: document.getElementById('toggle-banner-checkbox')?.checked || false,
                         style: document.getElementById('banner-style-select')?.value || 'style-1',
@@ -3979,7 +532,7 @@
                         p: document.getElementById('font-size-p')?.value || '14'
                     },
                     
-                    // Métadonnées
+                    // MÃ©tadonnÃ©es
                     metadata: {
                         createdAt: new Date().toISOString(),
                         version: '1.0'
@@ -4005,7 +558,7 @@
                             // Retirer la classe active de tous les boutons
                             document.querySelectorAll('.layout-btn').forEach(btn => btn.classList.remove('active'));
                             layoutBtn.classList.add('active');
-                            layoutBtn.click(); // Déclencher le changement de layout
+                            layoutBtn.click(); // DÃ©clencher le changement de layout
                         }
                     }
                     
@@ -4026,7 +579,7 @@
                         }
                     }
                     
-                    // Appliquer la configuration de la bannière
+                    // Appliquer la configuration de la banniÃ¨re
                     if (templateConfig.banner) {
                         const bannerCheckbox = document.getElementById('toggle-banner-checkbox');
                         if (bannerCheckbox) {
@@ -4042,7 +595,7 @@
                             }
                         }
                         
-                        // Appliquer les styles de texte de la bannière
+                        // Appliquer les styles de texte de la banniÃ¨re
                         if (templateConfig.banner.textStyles) {
                             const styles = templateConfig.banner.textStyles;
                             
@@ -4136,7 +689,7 @@
                     const stored = localStorage.getItem('cvLayoutTemplates');
                     return stored ? JSON.parse(stored) : {};
                 } catch (error) {
-                    console.error('Erreur lors de la récupération des templates:', error);
+                    console.error('Erreur lors de la rÃ©cupÃ©ration des templates:', error);
                     return {};
                 }
             }
@@ -4161,7 +714,7 @@
                         localStorage.setItem('cvLayoutTemplates', JSON.stringify(templates));
                     }
                 } catch (error) {
-                    console.error('Erreur lors de la mise à jour du template:', error);
+                    console.error('Erreur lors de la mise Ã  jour du template:', error);
                 }
             }
             
@@ -4181,7 +734,7 @@
                 
                 noTemplatesMessage.classList.add('hidden');
                 
-                // Trier les templates par date de création (plus récent en premier)
+                // Trier les templates par date de crÃ©ation (plus rÃ©cent en premier)
                 templateIds.sort((a, b) => new Date(templates[b].createdAt) - new Date(templates[a].createdAt));
                 
                 templateIds.forEach(templateId => {
@@ -4196,7 +749,7 @@
                 card.className = 'bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow';
                 
                 const createdDate = new Date(template.createdAt).toLocaleDateString('fr-FR');
-                const lastUsedDate = template.lastUsed ? new Date(template.lastUsed).toLocaleDateString('fr-FR') : 'Jamais utilisé';
+                const lastUsedDate = template.lastUsed ? new Date(template.lastUsed).toLocaleDateString('fr-FR') : 'Jamais utilisÃ©';
                 
                 card.innerHTML = `
                     <div class="flex items-start justify-between mb-3">
@@ -4217,16 +770,16 @@
                     ${template.description ? `<p class="text-sm text-gray-600 mb-3">${escapeHtml(template.description)}</p>` : ''}
                     
                     <div class="text-xs text-gray-500 space-y-1">
-                        <div><strong>Créé:</strong> ${createdDate}</div>
-                        <div><strong>Dernière utilisation:</strong> ${lastUsedDate}</div>
+                        <div><strong>CrÃ©Ã©:</strong> ${createdDate}</div>
+                        <div><strong>DerniÃ¨re utilisation:</strong> ${lastUsedDate}</div>
                     </div>
                     
                     <div class="mt-3 flex flex-wrap gap-1">
                         <span class="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
-                            ${template.config.layout || 'Layout par défaut'}
+                            ${template.config.layout || 'Layout par dÃ©faut'}
                         </span>
                         <span class="inline-block bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
-                            ${template.config.banner?.enabled ? 'Avec bannière' : 'Sans bannière'}
+                            ${template.config.banner?.enabled ? 'Avec banniÃ¨re' : 'Sans banniÃ¨re'}
                         </span>
                     </div>
                 `;
@@ -4240,7 +793,7 @@
                 return div.innerHTML;
             }
             
-            // Gestionnaires d'événements pour la modal de templates
+            // Gestionnaires d'Ã©vÃ©nements pour la modal de templates
             function setupTemplateManager() {
                 const modal = document.getElementById('template-manager-modal');
                 const saveTemplateModal = document.getElementById('save-template-modal');
@@ -4263,7 +816,7 @@
                     });
                 });
                 
-                // Fermer avec Échap
+                // Fermer avec Ã‰chap
                 document.addEventListener('keydown', (e) => {
                     if (e.key === 'Escape') {
                         if (!modal.classList.contains('hidden')) {
@@ -4294,7 +847,7 @@
                 
                 document.getElementById('template-file-input')?.addEventListener('change', importTemplates);
                 
-                // Délégation d'événements pour les actions sur les templates
+                // DÃ©lÃ©gation d'Ã©vÃ©nements pour les actions sur les templates
                 document.getElementById('templates-list')?.addEventListener('click', handleTemplateAction);
             }
             
@@ -4325,7 +878,7 @@
                     const templateId = saveTemplate(name, description, config);
                     
                     if (templateId) {
-                        showNotification(`Template "${name}" sauvegardé avec succès !`, 'success');
+                        showNotification(`Template "${name}" sauvegardÃ© avec succÃ¨s !`, 'success');
                         modal.classList.add('hidden');
                         clearSaveTemplateForm();
                         refreshTemplatesList();
@@ -4363,7 +916,7 @@
                 const success = applyTemplateConfig(template.config);
                 if (success) {
                     updateTemplateLastUsed(template.id);
-                    showNotification(`Template "${template.name}" appliqué avec succès !`, 'success');
+                    showNotification(`Template "${template.name}" appliquÃ© avec succÃ¨s !`, 'success');
                     document.getElementById('template-manager-modal').classList.add('hidden');
                 } else {
                     showNotification('Erreur lors de l\'application du template', 'error');
@@ -4375,7 +928,7 @@
                 const templateId = saveTemplate(newName, template.description, template.config);
                 
                 if (templateId) {
-                    showNotification(`Template dupliqué sous le nom "${newName}"`, 'success');
+                    showNotification(`Template dupliquÃ© sous le nom "${newName}"`, 'success');
                     refreshTemplatesList();
                 } else {
                     showNotification('Erreur lors de la duplication du template', 'error');
@@ -4383,10 +936,10 @@
             }
             
             function deleteTemplateWithConfirmation(templateId, templateName) {
-                if (confirm(`Êtes-vous sûr de vouloir supprimer le template "${templateName}" ?`)) {
+                if (confirm(`ÃŠtes-vous sÃ»r de vouloir supprimer le template "${templateName}" ?`)) {
                     const success = deleteTemplate(templateId);
                     if (success) {
-                        showNotification(`Template "${templateName}" supprimé`, 'success');
+                        showNotification(`Template "${templateName}" supprimÃ©`, 'success');
                         refreshTemplatesList();
                     } else {
                         showNotification('Erreur lors de la suppression du template', 'error');
@@ -4399,7 +952,7 @@
                 const templateIds = Object.keys(templates);
                 
                 if (templateIds.length === 0) {
-                    showNotification('Aucun template à exporter', 'error');
+                    showNotification('Aucun template Ã  exporter', 'error');
                     return;
                 }
                 
@@ -4419,7 +972,7 @@
                 link.click();
                 document.body.removeChild(link);
                 
-                showNotification(`${templateIds.length} template(s) exporté(s) avec succès !`, 'success');
+                showNotification(`${templateIds.length} template(s) exportÃ©(s) avec succÃ¨s !`, 'success');
             }
             
             function importTemplates(event) {
@@ -4441,12 +994,12 @@
                         
                         Object.values(importData.templates).forEach(template => {
                             if (template.name && template.config) {
-                                // Créer un nouvel ID pour éviter les conflits
+                                // CrÃ©er un nouvel ID pour Ã©viter les conflits
                                 const newId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
                                 currentTemplates[newId] = {
                                     ...template,
                                     id: newId,
-                                    name: `${template.name} (Importé)`,
+                                    name: `${template.name} (ImportÃ©)`,
                                     lastUsed: null
                                 };
                                 importedCount++;
@@ -4455,10 +1008,10 @@
                         
                         if (importedCount > 0) {
                             localStorage.setItem('cvLayoutTemplates', JSON.stringify(currentTemplates));
-                            showNotification(`${importedCount} template(s) importé(s) avec succès !`, 'success');
+                            showNotification(`${importedCount} template(s) importÃ©(s) avec succÃ¨s !`, 'success');
                             refreshTemplatesList();
                         } else {
-                            showNotification('Aucun template valide trouvé dans le fichier', 'error');
+                            showNotification('Aucun template valide trouvÃ© dans le fichier', 'error');
                         }
                         
                     } catch (error) {
@@ -4505,8 +1058,8 @@
 
             // --- HISTORY (UNDO/REDO) SYSTEM ---
             // History is not saved, so this is a simple implementation
-            function undo() { showNotification("Fonctionnalité non disponible en mode hors ligne.", "error"); }
-            function redo() { showNotification("Fonctionnalité non disponible en mode hors ligne.", "error"); }
+            function undo() { showNotification("FonctionnalitÃ© non disponible en mode hors ligne.", "error"); }
+            function redo() { showNotification("FonctionnalitÃ© non disponible en mode hors ligne.", "error"); }
             
             // --- SAVE/LOAD SYSTEM ---
             function saveCV() {
@@ -4519,7 +1072,7 @@
                         description: controls.description.value,
                         competences: controls.competences.value,
                         
-                        // Bannière
+                        // BanniÃ¨re
                         bannerNom: controls.bannerNom.value,
                         bannerPoste: controls.bannerPoste.value,
                         bannerEmail: controls.bannerEmail.value,
@@ -4829,7 +1382,7 @@
                 switch (style) {
                     case 'dots':
                         gaugeHtml = `<div class="gauge-dots">`;
-                        for (let i = 1; i <= max; i++) gaugeHtml += `<span class="${i <= level ? 'filled' : ''}">●</span>`;
+                        for (let i = 1; i <= max; i++) gaugeHtml += `<span class="${i <= level ? 'filled' : ''}">â—</span>`;
                         gaugeHtml += `</div>`;
                         break;
                     case 'stars':
@@ -4839,7 +1392,7 @@
                         break;
                     case 'squares':
                          gaugeHtml = `<div class="gauge-squares">`;
-                        for (let i = 1; i <= max; i++) gaugeHtml += `<span class="${i <= level ? 'filled' : ''}">■</span>`;
+                        for (let i = 1; i <= max; i++) gaugeHtml += `<span class="${i <= level ? 'filled' : ''}">â– </span>`;
                         gaugeHtml += `</div>`;
                         break;
                     case 'number':
@@ -4868,7 +1421,7 @@
                 const itemDiv = document.createElement('div');
                 itemDiv.className = 'skill-level-item flex items-center gap-2';
                 itemDiv.innerHTML = `
-                    <input type="text" placeholder="Compétence" value="${name}" class="skill-name-input cv-input flex-grow p-1 border rounded-sm">
+                    <input type="text" placeholder="CompÃ©tence" value="${name}" class="skill-name-input cv-input flex-grow p-1 border rounded-sm">
                     <input type="range" value="${level}" min="1" max="5" class="skill-level-input w-24">
                     <span class="skill-level-value text-sm font-mono">${level}/5</span>
                     <button class="remove-skill-level-btn text-red-400 hover:text-red-600"><i class="fas fa-times-circle"></i></button>
@@ -4892,8 +1445,8 @@
 
             function updatePreview(source = 'form') {
                 if (source === 'form' || source === 'banner-style' || source === 'theme' || source === 'state') {
-                    preview.cvNomPrenom.textContent = `${controls.prenom.value} ${controls.nom.value}`.trim() || 'Prénom NOM';
-                    preview.cvPoste.textContent = controls.poste.value || 'Poste Recherché';
+                    preview.cvNomPrenom.textContent = `${controls.prenom.value} ${controls.nom.value}`.trim() || 'PrÃ©nom NOM';
+                    preview.cvPoste.textContent = controls.poste.value || 'Poste RecherchÃ©';
                     preview.cvDescription.innerHTML = `<div class="editable-wrapper"><p contenteditable="true">${controls.description.value.replace(/\n/g, '<br>') || '&nbsp;'}</p><span class="delete-line-btn"><i class="fas fa-times"></i></span></div>`;
                     
                     const renderDynamicList = (previewContainer, controlContainer, type) => {
@@ -4903,7 +1456,7 @@
                         const createInsertButton = (type, index) => {
                             const wrapper = document.createElement('div');
                             wrapper.className = 'insert-line-wrapper';
-                            wrapper.innerHTML = `<button class="add-line-preview-btn" data-type="${type}" data-index="${index}" title="Insérer un nouveau bloc ici"><i class="fas fa-plus"></i></button>`;
+                            wrapper.innerHTML = `<button class="add-line-preview-btn" data-type="${type}" data-index="${index}" title="InsÃ©rer un nouveau bloc ici"><i class="fas fa-plus"></i></button>`;
                             return wrapper;
                         };
 
@@ -4985,7 +1538,7 @@
                         }
                     });
                     
-                    preview.bannerNom.textContent = controls.bannerNom.value || "Nom Prénom Recruteur";
+                    preview.bannerNom.textContent = controls.bannerNom.value || "Nom PrÃ©nom Recruteur";
                     preview.bannerPoste.textContent = controls.bannerPoste.value || "Poste du Recruteur";
                     preview.bannerEmail.textContent = controls.bannerEmail.value || "email@recruteur.com";
                     preview.bannerTel.textContent = controls.bannerTel.value || "01 23 45 67 89";
@@ -5052,14 +1605,14 @@
                                 const categoryName = node.textContent.trim();
                                 const nextNode = nodes[i + 1];
                                 if (nextNode && nextNode.nodeName === 'UL') {
-                                    const skills = Array.from(nextNode.querySelectorAll('li.skill-item')).map(li => li.textContent.replace('×', '').trim()).filter(Boolean).join(', ');
+                                    const skills = Array.from(nextNode.querySelectorAll('li.skill-item')).map(li => li.textContent.replace('Ã—', '').trim()).filter(Boolean).join(', ');
                                     if (categoryName && skills) {
                                         result.push(`${categoryName}: ${skills}`);
                                     }
                                     i++; 
                                 }
                             } else if (node.nodeName === 'UL') {
-                                const skills = Array.from(node.querySelectorAll('li')).map(li => li.textContent.replace('×', '').trim()).filter(Boolean).join(', ');
+                                const skills = Array.from(node.querySelectorAll('li')).map(li => li.textContent.replace('Ã—', '').trim()).filter(Boolean).join(', ');
                                 if (skills) {
                                     result.push(skills);
                                 }
@@ -5157,16 +1710,16 @@
             
             // --- FONCTIONS DE GESTION DES API MULTIPLES ---
             function initializeApiSettings() {
-                // Charger les clés API sauvegardées
+                // Charger les clÃ©s API sauvegardÃ©es
                 apiKeys.gemini = localStorage.getItem('gemini-api-key') || '';
                 apiKeys.chatgpt = localStorage.getItem('chatgpt-api-key') || '';
                 currentApiProvider = localStorage.getItem('current-api-provider') || 'gemini';
                 
-                // Mettre à jour les champs
+                // Mettre Ã  jour les champs
                 if (controls.geminiApiKey) controls.geminiApiKey.value = apiKeys.gemini;
                 if (controls.chatgptApiKey) controls.chatgptApiKey.value = apiKeys.chatgpt;
                 
-                // Mettre à jour l'interface
+                // Mettre Ã  jour l'interface
                 updateApiInterface();
                 updateApiStatus();
             }
@@ -5174,7 +1727,7 @@
             function updateApiInterface() {
                 const isGemini = currentApiProvider === 'gemini';
                 
-                // Mise à jour des boutons de sélection
+                // Mise Ã  jour des boutons de sÃ©lection
                 if (controls.selectGeminiBtn) {
                     controls.selectGeminiBtn.classList.toggle('active', isGemini);
                 }
@@ -5190,28 +1743,28 @@
                     controls.chatgptApiGroup.style.display = !isGemini ? 'flex' : 'none';
                 }
                 
-                // Mise à jour du bouton de basculement
+                // Mise Ã  jour du bouton de basculement
                 if (controls.switchApiText) {
                     controls.switchApiText.textContent = isGemini ? 'Utiliser ChatGPT' : 'Utiliser Gemini';
                 }
                 
-                // Mise à jour des informations de tooltip
+                // Mise Ã  jour des informations de tooltip
                 if (controls.currentApiInfo) {
                     controls.currentApiInfo.innerHTML = isGemini 
-                        ? 'Gemini: Entrez votre clé API Google Gemini (AIza...)<br>Obtenir une clé: https://aistudio.google.com/app/apikey'
-                        : 'ChatGPT: Entrez votre clé API OpenAI (sk-...)<br>Obtenir une clé: https://platform.openai.com/api-keys';
+                        ? 'Gemini: Entrez votre clÃ© API Google Gemini (AIza...)<br>Obtenir une clÃ©: https://aistudio.google.com/app/apikey'
+                        : 'ChatGPT: Entrez votre clÃ© API OpenAI (sk-...)<br>Obtenir une clÃ©: https://platform.openai.com/api-keys';
                 }
             }
             
             function updateApiStatus() {
-                // Vérifier le statut des API
+                // VÃ©rifier le statut des API
                 const geminiKey = apiKeys.gemini;
                 const chatgptKey = apiKeys.chatgpt;
                 
                 apiStatus.gemini = geminiKey && geminiKey.startsWith('AIza') && geminiKey.length > 30;
                 apiStatus.chatgpt = chatgptKey && chatgptKey.startsWith('sk-') && chatgptKey.length > 40;
                 
-                // Mettre à jour les indicateurs visuels
+                // Mettre Ã  jour les indicateurs visuels
                 if (controls.geminiStatus) {
                     controls.geminiStatus.classList.toggle('connected', apiStatus.gemini);
                 }
@@ -5230,12 +1783,12 @@
                 // Sauvegarder le choix
                 localStorage.setItem('current-api-provider', currentApiProvider);
                 
-                // Mettre à jour l'interface
+                // Mettre Ã  jour l'interface
                 updateApiInterface();
                 
                 // Afficher une notification
                 const providerName = currentApiProvider === 'gemini' ? 'Gemini' : 'ChatGPT';
-                showNotification(`🔄 Basculé vers l'API ${providerName}`, 'info', 3000);
+                showNotification(`ðŸ”„ BasculÃ© vers l'API ${providerName}`, 'info', 3000);
             }
             
             function saveApiKey(provider) {
@@ -5244,7 +1797,7 @@
                     : controls.chatgptApiKey.value.trim();
                 
                 if (!key) {
-                    showNotification(`❌ Veuillez entrer une clé API ${provider === 'gemini' ? 'Gemini' : 'ChatGPT'}`, 'error');
+                    showNotification(`âŒ Veuillez entrer une clÃ© API ${provider === 'gemini' ? 'Gemini' : 'ChatGPT'}`, 'error');
                     return;
                 }
                 
@@ -5255,7 +1808,7 @@
                 
                 if (!isValid) {
                     const format = provider === 'gemini' ? 'AIza...' : 'sk-...';
-                    showNotification(`❌ Format de clé ${provider === 'gemini' ? 'Gemini' : 'ChatGPT'} invalide (doit commencer par ${format})`, 'error');
+                    showNotification(`âŒ Format de clÃ© ${provider === 'gemini' ? 'Gemini' : 'ChatGPT'} invalide (doit commencer par ${format})`, 'error');
                     return;
                 }
                 
@@ -5263,12 +1816,12 @@
                 apiKeys[provider] = key;
                 localStorage.setItem(`${provider}-api-key`, key);
                 
-                // Mettre à jour le statut
+                // Mettre Ã  jour le statut
                 updateApiStatus();
                 
-                // Notification de succès
+                // Notification de succÃ¨s
                 const providerName = provider === 'gemini' ? 'Gemini' : 'ChatGPT';
-                showNotification(`✅ Clé API ${providerName} sauvegardée !`, 'success');
+                showNotification(`âœ… ClÃ© API ${providerName} sauvegardÃ©e !`, 'success');
             }
             
             function getCurrentApiKey() {
@@ -5280,8 +1833,8 @@
                 
                 if (!apiKey) {
                     const providerName = currentApiProvider === 'gemini' ? 'Gemini' : 'ChatGPT';
-                    showNotification(`❌ Clé API ${providerName} manquante ! Configurez votre clé dans la barre d'outils en haut.`, "error", 6000);
-                    // Faire clignoter le champ de la clé API
+                    showNotification(`âŒ ClÃ© API ${providerName} manquante ! Configurez votre clÃ© dans la barre d'outils en haut.`, "error", 6000);
+                    // Faire clignoter le champ de la clÃ© API
                     const inputField = currentApiProvider === 'gemini' ? controls.geminiApiKey : controls.chatgptApiKey;
                     if (inputField) {
                         inputField.style.animation = 'none';
@@ -5292,25 +1845,25 @@
                     return false;
                 }
                 
-                // Validation spécifique selon le fournisseur
+                // Validation spÃ©cifique selon le fournisseur
                 if (currentApiProvider === 'gemini') {
                     if (!apiKey.startsWith('AIza')) {
-                        showNotification("⚠️ Clé API Gemini invalide ! Elle doit commencer par 'AIza'. Vérifiez votre clé sur https://aistudio.google.com/app/apikey", "warning", 8000);
+                        showNotification("âš ï¸ ClÃ© API Gemini invalide ! Elle doit commencer par 'AIza'. VÃ©rifiez votre clÃ© sur https://aistudio.google.com/app/apikey", "warning", 8000);
                         return false;
                     }
                     
                     if (apiKey.length < 30) {
-                        showNotification("⚠️ Clé API Gemini trop courte ! Vérifiez votre clé.", "warning", 5000);
+                        showNotification("âš ï¸ ClÃ© API Gemini trop courte ! VÃ©rifiez votre clÃ©.", "warning", 5000);
                         return false;
                     }
                 } else if (currentApiProvider === 'chatgpt') {
                     if (!apiKey.startsWith('sk-')) {
-                        showNotification("⚠️ Clé API OpenAI invalide ! Elle doit commencer par 'sk-'. Vérifiez votre clé sur https://platform.openai.com/api-keys", "warning", 8000);
+                        showNotification("âš ï¸ ClÃ© API OpenAI invalide ! Elle doit commencer par 'sk-'. VÃ©rifiez votre clÃ© sur https://platform.openai.com/api-keys", "warning", 8000);
                         return false;
                     }
                     
                     if (apiKey.length < 40) {
-                        showNotification("⚠️ Clé API OpenAI trop courte ! Vérifiez votre clé.", "warning", 5000);
+                        showNotification("âš ï¸ ClÃ© API OpenAI trop courte ! VÃ©rifiez votre clÃ©.", "warning", 5000);
                         return false;
                     }
                 }
@@ -5318,86 +1871,86 @@
                 return true;
             }
 
-            // Fonction pour parser le JSON de l'IA de manière robuste
+            // Fonction pour parser le JSON de l'IA de maniÃ¨re robuste
             function parseAIJsonSafely(text) {
                 console.log("=== PARSING JSON ===");
-                console.log("📥 Texte brut de l'IA (longueur: " + (text ? text.length : 0) + "):", text);
+                console.log("ðŸ“¥ Texte brut de l'IA (longueur: " + (text ? text.length : 0) + "):", text);
                 
-                // Vérification initiale
+                // VÃ©rification initiale
                 if (!text) {
-                    console.error("❌ ERREUR: Aucun texte reçu de l'API (null/undefined)");
-                    throw new Error("Aucune réponse reçue de l'IA");
+                    console.error("âŒ ERREUR: Aucun texte reÃ§u de l'API (null/undefined)");
+                    throw new Error("Aucune rÃ©ponse reÃ§ue de l'IA");
                 }
                 
                 if (text.trim() === '') {
-                    console.error("❌ ERREUR: Texte vide reçu de l'API");
-                    throw new Error("Réponse vide de l'IA");
+                    console.error("âŒ ERREUR: Texte vide reÃ§u de l'API");
+                    throw new Error("RÃ©ponse vide de l'IA");
                 }
                 
                 try {
                     // Nettoyer le texte avant parsing
                     let cleanText = text.trim();
-                    console.log("🧹 Texte après trim (longueur: " + cleanText.length + "):", cleanText);
+                    console.log("ðŸ§¹ Texte aprÃ¨s trim (longueur: " + cleanText.length + "):", cleanText);
                     
-                    // Supprimer les balises markdown si présentes
+                    // Supprimer les balises markdown si prÃ©sentes
                     cleanText = cleanText.replace(/```json\s*/g, '').replace(/```\s*$/g, '');
                     cleanText = cleanText.replace(/```\s*/g, '');
-                    console.log("📝 Texte après suppression markdown:", cleanText);
+                    console.log("ðŸ“ Texte aprÃ¨s suppression markdown:", cleanText);
                     
-                    // Supprimer les commentaires de l'IA avant et après le JSON
+                    // Supprimer les commentaires de l'IA avant et aprÃ¨s le JSON
                     const jsonStart = cleanText.indexOf('{');
                     const jsonEnd = cleanText.lastIndexOf('}');
                     
                     if (jsonStart === -1 || jsonEnd === -1 || jsonStart >= jsonEnd) {
-                        console.error("❌ ERREUR: Aucun JSON valide trouvé dans la réponse");
-                        console.log("Contenu analysé:", cleanText);
-                        throw new Error("Format de réponse invalide - aucun JSON trouvé");
+                        console.error("âŒ ERREUR: Aucun JSON valide trouvÃ© dans la rÃ©ponse");
+                        console.log("Contenu analysÃ©:", cleanText);
+                        throw new Error("Format de rÃ©ponse invalide - aucun JSON trouvÃ©");
                     }
                     
                     cleanText = cleanText.substring(jsonStart, jsonEnd + 1);
-                    console.log("🎯 Texte final pour parsing (longueur: " + cleanText.length + "):", cleanText);
+                    console.log("ðŸŽ¯ Texte final pour parsing (longueur: " + cleanText.length + "):", cleanText);
                     
                     if (cleanText.length === 0) {
-                        console.error("❌ ERREUR: Texte vide après nettoyage complet");
-                        throw new Error("JSON vide après nettoyage");
+                        console.error("âŒ ERREUR: Texte vide aprÃ¨s nettoyage complet");
+                        throw new Error("JSON vide aprÃ¨s nettoyage");
                     }
                     
-                    // Vérifier que le JSON semble complet (ouverture et fermeture d'accolades)
+                    // VÃ©rifier que le JSON semble complet (ouverture et fermeture d'accolades)
                     const openBraces = (cleanText.match(/{/g) || []).length;
                     const closeBraces = (cleanText.match(/}/g) || []).length;
                     if (openBraces !== closeBraces) {
-                        console.warn("⚠️ Avertissement: Nombre d'accolades déséquilibré (ouverture: " + openBraces + ", fermeture: " + closeBraces + ")");
+                        console.warn("âš ï¸ Avertissement: Nombre d'accolades dÃ©sÃ©quilibrÃ© (ouverture: " + openBraces + ", fermeture: " + closeBraces + ")");
                     }
                     
                     // Tentative de parsing
                     const parsed = JSON.parse(cleanText);
-                    console.log("✅ JSON parsé avec succès:", parsed);
+                    console.log("âœ… JSON parsÃ© avec succÃ¨s:", parsed);
                     
-                    // Vérifier que les données essentielles sont présentes
+                    // VÃ©rifier que les donnÃ©es essentielles sont prÃ©sentes
                     // Pour les tests API, accepter si on a test et message
-                    // Pour les données CV, accepter si on a nom, prenom, poste ou description
+                    // Pour les donnÃ©es CV, accepter si on a nom, prenom, poste ou description
                     const hasTestData = parsed.test;
                     const hasCvData = parsed.nom || parsed.prenom || parsed.poste || parsed.description;
                     
                     if (parsed && (hasTestData || hasCvData)) {
-                        console.log("✅ Données validées:", { hasTestData, hasCvData });
+                        console.log("âœ… DonnÃ©es validÃ©es:", { hasTestData, hasCvData });
                         return parsed;
                     } else {
-                        console.log("⚠️ JSON valide mais données essentielles manquantes");
-                        console.log("Contenu reçu:", Object.keys(parsed || {}));
-                        console.log("Valeurs reçues:", parsed);
-                        throw new Error("Données incomplètes reçues de l'IA - aucune donnée reconnaissable trouvée");
+                        console.log("âš ï¸ JSON valide mais donnÃ©es essentielles manquantes");
+                        console.log("Contenu reÃ§u:", Object.keys(parsed || {}));
+                        console.log("Valeurs reÃ§ues:", parsed);
+                        throw new Error("DonnÃ©es incomplÃ¨tes reÃ§ues de l'IA - aucune donnÃ©e reconnaissable trouvÃ©e");
                     }
                     
                 } catch (error) {
-                    console.error("❌ Erreur lors du parsing JSON:", error);
-                    console.log("Texte qui a causé l'erreur:", text);
+                    console.error("âŒ Erreur lors du parsing JSON:", error);
+                    console.log("Texte qui a causÃ© l'erreur:", text);
                     console.log("Type d'erreur:", error.name);
                     console.log("Message d'erreur:", error.message);
                     
                     // Si c'est une erreur de syntaxe JSON, essayer de la corriger
                     if (error instanceof SyntaxError) {
-                        console.log("🔧 Tentative de correction automatique du JSON...");
+                        console.log("ðŸ”§ Tentative de correction automatique du JSON...");
                         try {
                             // Extraire un JSON plus simple
                             let fallbackText = text.trim();
@@ -5405,11 +1958,11 @@
                             const simpleJsonMatch = fallbackText.match(/\{[^{}]*\}/);
                             if (simpleJsonMatch) {
                                 const simpleJson = JSON.parse(simpleJsonMatch[0]);
-                                console.log("✅ JSON simple récupéré:", simpleJson);
+                                console.log("âœ… JSON simple rÃ©cupÃ©rÃ©:", simpleJson);
                                 return simpleJson;
                             }
                         } catch (fallbackJsonError) {
-                            console.log("❌ Correction automatique JSON échouée:", fallbackJsonError);
+                            console.log("âŒ Correction automatique JSON Ã©chouÃ©e:", fallbackJsonError);
                         }
                     }
                     
@@ -5417,23 +1970,23 @@
                     try {
                         const fallbackData = extractDataFromText(text);
                         if (fallbackData.nom || fallbackData.prenom || fallbackData.poste || fallbackData.test) {
-                            console.log("✅ Fallback réussi:", fallbackData);
+                            console.log("âœ… Fallback rÃ©ussi:", fallbackData);
                             return fallbackData;
                         }
                     } catch (fallbackError) {
-                        console.log("❌ Fallback a également échoué:", fallbackError);
+                        console.log("âŒ Fallback a Ã©galement Ã©chouÃ©:", fallbackError);
                     }
                     
-                    // Si tout échoue, lancer l'erreur originale
+                    // Si tout Ã©choue, lancer l'erreur originale
                     throw error;
                 }
             }
             
-            // Fonction de fallback pour extraire des données du texte
+            // Fonction de fallback pour extraire des donnÃ©es du texte
             function extractDataFromText(text) {
                 console.log("Extraction de fallback depuis le texte...");
                 
-                // D'abord essayer d'extraire des données de test API
+                // D'abord essayer d'extraire des donnÃ©es de test API
                 const testMatch = text.match(/test["\s:]*["']?([^"'\n]+)["']?/i);
                 const messageMatch = text.match(/message["\s:]*["']?([^"'\n]+)["']?/i);
                 
@@ -5464,19 +2017,19 @@
             async function callAI(prompt, schema) {
                 console.log(`=== APPEL API ${currentApiProvider.toUpperCase()} ===`);
                 
-                // Vérifier la clé API avant d'essayer l'appel
+                // VÃ©rifier la clÃ© API avant d'essayer l'appel
                 if (!validateApiKey()) {
-                    console.log("❌ Clé API invalide");
+                    console.log("âŒ ClÃ© API invalide");
                     return null;
                 }
                 
-                // Appeler l'API appropriée
+                // Appeler l'API appropriÃ©e
                 if (currentApiProvider === 'gemini') {
                     return await callGeminiAPI(prompt, schema);
                 } else if (currentApiProvider === 'chatgpt') {
                     return await callChatGPTAPI(prompt, schema);
                 } else {
-                    throw new Error(`Fournisseur d'API non supporté: ${currentApiProvider}`);
+                    throw new Error(`Fournisseur d'API non supportÃ©: ${currentApiProvider}`);
                 }
             }
 
@@ -5484,21 +2037,21 @@
                 console.log("=== APPEL API CHATGPT ===");
                 
                 const apiKey = getCurrentApiKey();
-                console.log("Clé API présente:", !!apiKey);
-                console.log("Longueur clé API:", apiKey.length);
+                console.log("ClÃ© API prÃ©sente:", !!apiKey);
+                console.log("Longueur clÃ© API:", apiKey.length);
                 
                 // Lancer l'animation Matrix au lieu du loader
                 showMatrixProcessing();
                 try {
                     const apiUrl = 'https://api.openai.com/v1/chat/completions';
                     
-                    // Construire le prompt avec les instructions pour le JSON si nécessaire
-                    let systemPrompt = "Tu es un assistant IA expert en création de CV.";
+                    // Construire le prompt avec les instructions pour le JSON si nÃ©cessaire
+                    let systemPrompt = "Tu es un assistant IA expert en crÃ©ation de CV.";
                     let userPrompt = prompt;
                     
                     if (schema) {
-                        systemPrompt += " Tu dois répondre UNIQUEMENT avec du JSON valide selon le schéma fourni, sans texte supplémentaire.";
-                        userPrompt += "\n\nImportant: Réponds UNIQUEMENT avec du JSON valide, sans markdown ni texte explicatif.";
+                        systemPrompt += " Tu dois rÃ©pondre UNIQUEMENT avec du JSON valide selon le schÃ©ma fourni, sans texte supplÃ©mentaire.";
+                        userPrompt += "\n\nImportant: RÃ©ponds UNIQUEMENT avec du JSON valide, sans markdown ni texte explicatif.";
                     }
                     
                     const payload = {
@@ -5511,7 +2064,7 @@
                         max_tokens: 2000
                     };
                     
-                    console.log("🚀 Envoi de la requête à OpenAI...");
+                    console.log("ðŸš€ Envoi de la requÃªte Ã  OpenAI...");
                     const response = await fetch(apiUrl, {
                         method: 'POST',
                         headers: {
@@ -5521,59 +2074,59 @@
                         body: JSON.stringify(payload)
                     });
                     
-                    console.log("📡 Statut de la réponse:", response.status);
+                    console.log("ðŸ“¡ Statut de la rÃ©ponse:", response.status);
                     
                     if (!response.ok) {
                         const errorBody = await response.text();
-                        console.error("❌ Erreur API OpenAI:", errorBody);
+                        console.error("âŒ Erreur API OpenAI:", errorBody);
                         
                         if (response.status === 401) {
-                            showNotification("❌ Clé API OpenAI invalide ! Vérifiez votre clé.", "error", 8000);
+                            showNotification("âŒ ClÃ© API OpenAI invalide ! VÃ©rifiez votre clÃ©.", "error", 8000);
                             const inputField = controls.chatgptApiKey;
                             if (inputField) {
                                 inputField.style.animation = 'pulse 1s ease-in-out 3';
                             }
                         } else if (response.status === 429) {
-                            showNotification("⚠️ Limite de requêtes OpenAI atteinte. Réessayez dans quelques minutes.", "warning", 8000);
+                            showNotification("âš ï¸ Limite de requÃªtes OpenAI atteinte. RÃ©essayez dans quelques minutes.", "warning", 8000);
                         } else {
-                            showNotification(`❌ Erreur API OpenAI (${response.status}): ${errorBody}`, "error", 8000);
+                            showNotification(`âŒ Erreur API OpenAI (${response.status}): ${errorBody}`, "error", 8000);
                         }
                         throw new Error(`Erreur API OpenAI: ${response.status}`);
                     }
                     
                     const data = await response.json();
-                    console.log("📋 Réponse complète de l'API:", data);
+                    console.log("ðŸ“‹ RÃ©ponse complÃ¨te de l'API:", data);
                     
                     if (!data.choices || data.choices.length === 0) {
-                        console.error("❌ ERREUR: Pas de réponse dans les choices");
-                        throw new Error("Réponse API vide");
+                        console.error("âŒ ERREUR: Pas de rÃ©ponse dans les choices");
+                        throw new Error("RÃ©ponse API vide");
                     }
                     
                     const choice = data.choices[0];
                     if (!choice.message || !choice.message.content) {
-                        console.error("❌ ERREUR: Pas de contenu dans la réponse");
-                        throw new Error("Contenu de réponse manquant");
+                        console.error("âŒ ERREUR: Pas de contenu dans la rÃ©ponse");
+                        throw new Error("Contenu de rÃ©ponse manquant");
                     }
                     
                     const text = choice.message.content;
-                    console.log("📝 Texte brut reçu de l'IA (longueur: " + (text ? text.length : 0) + "):", text);
+                    console.log("ðŸ“ Texte brut reÃ§u de l'IA (longueur: " + (text ? text.length : 0) + "):", text);
                     
                     if (!text || text.trim() === '') {
-                        console.error("❌ ERREUR: Texte vide reçu de l'IA");
-                        throw new Error("Texte généré vide");
+                        console.error("âŒ ERREUR: Texte vide reÃ§u de l'IA");
+                        throw new Error("Texte gÃ©nÃ©rÃ© vide");
                     }
                     
                     if (schema) {
-                        // Nettoyer et parser le JSON de manière robuste
+                        // Nettoyer et parser le JSON de maniÃ¨re robuste
                         return parseAIJsonSafely(text);
                     } else {
                         return text;
                     }
 
                 } catch (error) {
-                    console.error("❌ Erreur détaillée de l'IA:", error);
+                    console.error("âŒ Erreur dÃ©taillÃ©e de l'IA:", error);
                     showNotification(`Erreur de l'IA : ${error.message}`, 'error', 5000);
-                    throw error; // Re-throw pour permettre au code appelant de gérer l'erreur
+                    throw error; // Re-throw pour permettre au code appelant de gÃ©rer l'erreur
                 } finally {
                     hideMatrixProcessing();
                 }
@@ -5583,8 +2136,8 @@
                 console.log("=== APPEL API GEMINI ===");
                 
                 const apiKey = getCurrentApiKey();
-                console.log("Clé API présente:", !!apiKey);
-                console.log("Longueur clé API:", apiKey.length);
+                console.log("ClÃ© API prÃ©sente:", !!apiKey);
+                console.log("Longueur clÃ© API:", apiKey.length);
                 
                 // Lancer l'animation Matrix au lieu du loader
                 showMatrixProcessing();
@@ -5605,89 +2158,89 @@
                         body: JSON.stringify(payload)
                     });
 
-                    console.log("Status de la réponse:", response.status);
-                    console.log("Headers de la réponse:", Object.fromEntries(response.headers.entries()));
+                    console.log("Status de la rÃ©ponse:", response.status);
+                    console.log("Headers de la rÃ©ponse:", Object.fromEntries(response.headers.entries()));
 
                     if (!response.ok) {
                         const errorBody = await response.text();
-                        console.error("❌ Erreur API détaillée:", errorBody);
+                        console.error("âŒ Erreur API dÃ©taillÃ©e:", errorBody);
                         
                         if (response.status === 400) {
                             if (errorBody.includes('API_KEY_INVALID') || errorBody.includes('INVALID_API_KEY')) {
-                                showNotification("🔑 Clé API Gemini invalide ! Vérifiez votre clé dans la barre d'outils.", "error", 6000);
+                                showNotification("ðŸ”‘ ClÃ© API Gemini invalide ! VÃ©rifiez votre clÃ© dans la barre d'outils.", "error", 6000);
                                 controls.geminiApiKey.style.animation = 'pulse 1s ease-in-out 3';
-                                throw new Error("Clé API invalide");
+                                throw new Error("ClÃ© API invalide");
                             } else if (errorBody.includes('API_KEY_EXPIRED')) {
-                                showNotification("⏰ Clé API Gemini expirée ! Renouvelez votre clé.", "error", 6000);
-                                throw new Error("Clé API expirée");
+                                showNotification("â° ClÃ© API Gemini expirÃ©e ! Renouvelez votre clÃ©.", "error", 6000);
+                                throw new Error("ClÃ© API expirÃ©e");
                             } else if (errorBody.includes('QUOTA_EXCEEDED')) {
-                                showNotification("📊 Quota API Gemini dépassé ! Attendez ou changez de clé.", "error", 6000);
-                                throw new Error("Quota dépassé");
+                                showNotification("ðŸ“Š Quota API Gemini dÃ©passÃ© ! Attendez ou changez de clÃ©.", "error", 6000);
+                                throw new Error("Quota dÃ©passÃ©");
                             }
                         } else if (response.status === 403) {
-                            showNotification("🚫 Accès interdit à l'API Gemini. Vérifiez vos permissions.", "error", 6000);
-                            throw new Error("Accès interdit");
+                            showNotification("ðŸš« AccÃ¨s interdit Ã  l'API Gemini. VÃ©rifiez vos permissions.", "error", 6000);
+                            throw new Error("AccÃ¨s interdit");
                         } else if (response.status === 429) {
-                            showNotification("⚡ Trop de requêtes à l'API Gemini. Ralentissez.", "error", 6000);
-                            throw new Error("Trop de requêtes");
+                            showNotification("âš¡ Trop de requÃªtes Ã  l'API Gemini. Ralentissez.", "error", 6000);
+                            throw new Error("Trop de requÃªtes");
                         }
                         throw new Error(`Erreur API: ${response.status} ${response.statusText}`);
                     }
 
                     const result = await response.json();
-                    console.log("✅ Réponse API complète:", result);
+                    console.log("âœ… RÃ©ponse API complÃ¨te:", result);
                     
-                    // Vérification de la structure de la réponse
+                    // VÃ©rification de la structure de la rÃ©ponse
                     if (!result) {
-                        console.error("❌ ERREUR: Réponse API vide");
-                        throw new Error("Réponse API vide");
+                        console.error("âŒ ERREUR: RÃ©ponse API vide");
+                        throw new Error("RÃ©ponse API vide");
                     }
                     
                     if (!result.candidates || result.candidates.length === 0) {
-                        console.error("❌ ERREUR: Aucun candidat dans la réponse API");
-                        console.log("Structure de la réponse:", result);
-                        throw new Error("Aucune réponse générée par l'IA");
+                        console.error("âŒ ERREUR: Aucun candidat dans la rÃ©ponse API");
+                        console.log("Structure de la rÃ©ponse:", result);
+                        throw new Error("Aucune rÃ©ponse gÃ©nÃ©rÃ©e par l'IA");
                     }
                     
                     const candidate = result.candidates[0];
-                    console.log("📋 Premier candidat:", candidate);
+                    console.log("ðŸ“‹ Premier candidat:", candidate);
                     
                     if (candidate.finishReason && candidate.finishReason !== "STOP" && candidate.finishReason !== "MAX_TOKENS") {
-                        console.error("❌ IA bloquée, raison:", candidate.finishReason);
-                        throw new Error(`L'IA a été bloquée (raison: ${candidate.finishReason}). Veuillez reformuler votre demande.`);
+                        console.error("âŒ IA bloquÃ©e, raison:", candidate.finishReason);
+                        throw new Error(`L'IA a Ã©tÃ© bloquÃ©e (raison: ${candidate.finishReason}). Veuillez reformuler votre demande.`);
                     }
                     
                     if (!candidate.content) {
-                        console.error("❌ ERREUR: Aucun contenu dans le candidat");
+                        console.error("âŒ ERREUR: Aucun contenu dans le candidat");
                         console.log("Candidat complet:", candidate);
-                        throw new Error("Aucun contenu généré par l'IA");
+                        throw new Error("Aucun contenu gÃ©nÃ©rÃ© par l'IA");
                     }
                     
                     if (!candidate.content.parts || candidate.content.parts.length === 0) {
-                        console.error("❌ ERREUR: Aucune partie dans le contenu");
+                        console.error("âŒ ERREUR: Aucune partie dans le contenu");
                         console.log("Contenu complet:", candidate.content);
                         throw new Error("Contenu IA vide");
                     }
                     
                     const text = candidate.content.parts[0].text;
-                    console.log("📝 Texte brut reçu de l'IA (longueur: " + (text ? text.length : 0) + "):", text);
+                    console.log("ðŸ“ Texte brut reÃ§u de l'IA (longueur: " + (text ? text.length : 0) + "):", text);
                     
                     if (!text || text.trim() === '') {
-                        console.error("❌ ERREUR: Texte vide reçu de l'IA");
-                        throw new Error("Texte généré vide");
+                        console.error("âŒ ERREUR: Texte vide reÃ§u de l'IA");
+                        throw new Error("Texte gÃ©nÃ©rÃ© vide");
                     }
                     
                     if (schema) {
-                        // Nettoyer et parser le JSON de manière robuste
+                        // Nettoyer et parser le JSON de maniÃ¨re robuste
                         return parseAIJsonSafely(text);
                     } else {
                         return text;
                     }
 
                 } catch (error) {
-                    console.error("❌ Erreur détaillée de l'IA:", error);
+                    console.error("âŒ Erreur dÃ©taillÃ©e de l'IA:", error);
                     showNotification(`Erreur de l'IA : ${error.message}`, 'error', 5000);
-                    throw error; // Re-throw pour permettre au code appelant de gérer l'erreur
+                    throw error; // Re-throw pour permettre au code appelant de gÃ©rer l'erreur
                 } finally {
                     hideMatrixProcessing();
                 }
@@ -5695,31 +2248,31 @@
 
             async function generateAIColors() {
                 if (!validateApiKey()) {
-                    showNotification("Veuillez configurer votre clé API Gemini d'abord.", "error");
+                    showNotification("Veuillez configurer votre clÃ© API Gemini d'abord.", "error");
                     return;
                 }
 
-                // Récupérer le contexte du CV pour des suggestions pertinentes
+                // RÃ©cupÃ©rer le contexte du CV pour des suggestions pertinentes
                 const profession = document.getElementById('poste')?.value || 'professionnel';
                 const sector = document.getElementById('description')?.value || '';
                 
-                const prompt = `En tant qu'expert en design et psychologie des couleurs, suggère une palette de couleurs professionnelle pour un CV de ${profession}. 
-                Contexte supplémentaire: ${sector}
+                const prompt = `En tant qu'expert en design et psychologie des couleurs, suggÃ¨re une palette de couleurs professionnelle pour un CV de ${profession}. 
+                Contexte supplÃ©mentaire: ${sector}
                 
                 Recommande 3 couleurs:
-                1. Couleur principale (primary) - pour les titres et éléments importants
+                1. Couleur principale (primary) - pour les titres et Ã©lÃ©ments importants
                 2. Couleur secondaire (secondary) - pour les sous-titres et accents
                 3. Couleur du texte (body-text) - pour le contenu principal
                 
-                Les couleurs doivent être professionnelles, lisibles et adaptées au secteur d'activité. 
-                Fournis les couleurs au format hexadécimal (#RRGGBB).`;
+                Les couleurs doivent Ãªtre professionnelles, lisibles et adaptÃ©es au secteur d'activitÃ©. 
+                Fournis les couleurs au format hexadÃ©cimal (#RRGGBB).`;
 
                 const schema = {
                     type: "OBJECT",
                     properties: {
-                        primary: { type: "STRING", description: "Couleur principale en hexadécimal" },
-                        secondary: { type: "STRING", description: "Couleur secondaire en hexadécimal" },
-                        bodyText: { type: "STRING", description: "Couleur du texte principal en hexadécimal" },
+                        primary: { type: "STRING", description: "Couleur principale en hexadÃ©cimal" },
+                        secondary: { type: "STRING", description: "Couleur secondaire en hexadÃ©cimal" },
+                        bodyText: { type: "STRING", description: "Couleur du texte principal en hexadÃ©cimal" },
                         reasoning: { type: "STRING", description: "Explication du choix des couleurs" }
                     },
                     required: ["primary", "secondary", "bodyText", "reasoning"]
@@ -5728,7 +2281,7 @@
                 try {
                     const result = await callGeminiAPI(prompt, schema);
                     if (result && result.primary && result.secondary && result.bodyText) {
-                        // Appliquer les couleurs suggérées
+                        // Appliquer les couleurs suggÃ©rÃ©es
                         const primaryPicker = document.getElementById('primary-color-picker');
                         const secondaryPicker = document.getElementById('secondary-color-picker');
                         const bodyTextPicker = document.getElementById('body-text-color-picker');
@@ -5746,13 +2299,13 @@
                             bodyTextPicker.dispatchEvent(new Event('input'));
                         }
 
-                        showNotification(`Palette IA appliquée ! ${result.reasoning}`, 'success', 8000);
+                        showNotification(`Palette IA appliquÃ©e ! ${result.reasoning}`, 'success', 8000);
                     } else {
-                        showNotification("L'IA n'a pas pu générer de suggestions de couleurs.", 'error');
+                        showNotification("L'IA n'a pas pu gÃ©nÃ©rer de suggestions de couleurs.", 'error');
                     }
                 } catch (error) {
-                    console.error("Erreur lors de la génération des couleurs IA:", error);
-                    showNotification("Erreur lors de la génération des couleurs IA", 'error');
+                    console.error("Erreur lors de la gÃ©nÃ©ration des couleurs IA:", error);
+                    showNotification("Erreur lors de la gÃ©nÃ©ration des couleurs IA", 'error');
                 }
             }
             
@@ -5861,7 +2414,7 @@
                 
                 updatePreview('form');
                 updateAllStyles();
-                showNotification("Le CV a été réinitialisé.", "success");
+                showNotification("Le CV a Ã©tÃ© rÃ©initialisÃ©.", "success");
             }
 
             function applyTheme(themeName) {
@@ -5890,12 +2443,12 @@
                     case 'rewrite-profile':
                         const profileText = controls.description.value;
                         if (!profileText) { showNotification("Le profil est vide.", "error"); return; }
-                        prompt = `En tant qu'expert en recrutement, réécris ce profil de CV pour qu'il soit plus percutant et professionnel, en utilisant des verbes d'action forts. Garde une longueur similaire et un ton professionnel. Ne retourne que le paragraphe final réécrit, sans aucun commentaire. Le profil actuel est : "${profileText}"`;
+                        prompt = `En tant qu'expert en recrutement, rÃ©Ã©cris ce profil de CV pour qu'il soit plus percutant et professionnel, en utilisant des verbes d'action forts. Garde une longueur similaire et un ton professionnel. Ne retourne que le paragraphe final rÃ©Ã©crit, sans aucun commentaire. Le profil actuel est : "${profileText}"`;
                         targetControl = controls.description;
                         const newProfile = await callGeminiAPI(prompt);
                         if (newProfile && targetControl) {
                             targetControl.value = newProfile;
-                            showNotification("Profil amélioré par l'IA.", "success");
+                            showNotification("Profil amÃ©liorÃ© par l'IA.", "success");
                         }
                         break;
                     case 'summarize-experience':
@@ -5903,14 +2456,14 @@
                         break;
                     case 'rewrite-formation':
                         const formations = getDynamicData(controls.formationList);
-                        if (formations.length === 0) { showNotification("Aucune formation à améliorer.", "error"); return; }
+                        if (formations.length === 0) { showNotification("Aucune formation Ã  amÃ©liorer.", "error"); return; }
                         const formationSchema = { type: "ARRAY", items: { type: "OBJECT", properties: { title: { type: "STRING" }, meta: { type: "STRING" } } } };
-                        const formationPrompt = `En tant qu'expert RH, améliore la formulation de ces entrées de formation pour un CV. Rends les titres plus percutants et les descriptions plus claires si nécessaire. Ne retourne que le résultat final sous forme de tableau JSON \`[{"title": "...", "meta": "..."}]\` sans aucun commentaire ou texte additionnel. Voici les données actuelles : ${JSON.stringify(formations.map(f => ({ title: f.title, meta: f.meta })))}`;
+                        const formationPrompt = `En tant qu'expert RH, amÃ©liore la formulation de ces entrÃ©es de formation pour un CV. Rends les titres plus percutants et les descriptions plus claires si nÃ©cessaire. Ne retourne que le rÃ©sultat final sous forme de tableau JSON \`[{"title": "...", "meta": "..."}]\` sans aucun commentaire ou texte additionnel. Voici les donnÃ©es actuelles : ${JSON.stringify(formations.map(f => ({ title: f.title, meta: f.meta })))}`;
                         const newFormations = await callGeminiAPI(formationPrompt, formationSchema);
                         if (newFormations && Array.isArray(newFormations)) {
                             controls.formationList.innerHTML = '';
-                            newFormations.forEach(form => createDynamicItem(controls.formationList, [{ key: 'title', placeholder: 'Nom du diplôme' }, { key: 'meta', placeholder: 'Établissement & Année' }], form));
-                            showNotification("Formations améliorées par l'IA.", "success");
+                            newFormations.forEach(form => createDynamicItem(controls.formationList, [{ key: 'title', placeholder: 'Nom du diplÃ´me' }, { key: 'meta', placeholder: 'Ã‰tablissement & AnnÃ©e' }], form));
+                            showNotification("Formations amÃ©liorÃ©es par l'IA.", "success");
                         }
                         break;
                     case 'rewrite-skills':
@@ -5924,7 +2477,7 @@
             
             function setDefaultRecruiterInfo() {
                 if (controls.bannerNom) controls.bannerNom.value = "Lyes AMARA";
-                controls.bannerPoste.value = "Responsable d’activité recrutement – BTP – France";
+                controls.bannerPoste.value = "Responsable dâ€™activitÃ© recrutement â€“ BTP â€“ France";
                 controls.bannerEmail.value = "l.amara@ltd-international.com";
                 controls.bannerTel.value = "01 56 02 12 25 / 06 34 25 32 96";
             }
@@ -5936,7 +2489,7 @@
                     
                     controls.anonymizeBtn.innerHTML = '<i class="fa-solid fa-user-secret"></i> Anonymiser le CV';
                     isAnonymized = false;
-                    showNotification("CV désanonymisé.", "success");
+                    showNotification("CV dÃ©sanonymisÃ©.", "success");
                 } else {
                     originalData = {
                         nom: controls.nom.value,
@@ -5947,14 +2500,14 @@
                     controls.nom.value = firstLetter;
                     controls.prenom.value = originalData.prenom;
                     
-                    controls.anonymizeBtn.innerHTML = '<i class="fa-solid fa-user-check"></i> Désanonymiser le CV';
+                    controls.anonymizeBtn.innerHTML = '<i class="fa-solid fa-user-check"></i> DÃ©sanonymiser le CV';
                     isAnonymized = true;
-                    showNotification("CV anonymisé.", "success");
+                    showNotification("CV anonymisÃ©.", "success");
                 }
                 updatePreview('form');
             }
 
-            // Fonctions de sauvegarde/chargement de presets bannière
+            // Fonctions de sauvegarde/chargement de presets banniÃ¨re
             function saveBannerPreset() {
                 try {
                     const bannerPreset = {
@@ -5988,11 +2541,11 @@
                     };
                     
                     localStorage.setItem('banner-preset', JSON.stringify(bannerPreset));
-                    showNotification("Configuration de bannière sauvegardée !", "success");
+                    showNotification("Configuration de banniÃ¨re sauvegardÃ©e !", "success");
                     return true;
                 } catch (error) {
-                    console.error('Erreur lors de la sauvegarde du preset bannière:', error);
-                    showNotification("Erreur lors de la sauvegarde de la bannière.", "error");
+                    console.error('Erreur lors de la sauvegarde du preset banniÃ¨re:', error);
+                    showNotification("Erreur lors de la sauvegarde de la banniÃ¨re.", "error");
                     return false;
                 }
             }
@@ -6011,7 +2564,7 @@
                 try {
                     const savedPreset = localStorage.getItem('banner-preset');
                     if (!savedPreset) {
-                        showNotification("Aucune configuration de bannière sauvegardée.", "warning");
+                        showNotification("Aucune configuration de banniÃ¨re sauvegardÃ©e.", "warning");
                         return false;
                     }
                     
@@ -6053,7 +2606,7 @@
                         document.getElementById('banner-nom-size').value = textStyles.nomSize;
                         document.getElementById('banner-nom-color').value = textStyles.nomColor;
                         
-                        // Réinitialiser les styles
+                        // RÃ©initialiser les styles
                         document.getElementById('banner-nom-bold').classList.remove('active');
                         document.getElementById('banner-nom-italic').classList.remove('active');
                         if (textStyles.nomBold) document.getElementById('banner-nom-bold').classList.add('active');
@@ -6077,11 +2630,11 @@
                     }
                     
                     updatePreview('form');
-                    showNotification("Configuration de bannière chargée !", "success");
+                    showNotification("Configuration de banniÃ¨re chargÃ©e !", "success");
                     return true;
                 } catch (error) {
-                    console.error('Erreur lors du chargement du preset bannière:', error);
-                    showNotification("Erreur lors du chargement de la bannière.", "error");
+                    console.error('Erreur lors du chargement du preset banniÃ¨re:', error);
+                    showNotification("Erreur lors du chargement de la banniÃ¨re.", "error");
                     return false;
                 }
             }
@@ -6100,7 +2653,7 @@
                     };
                     
                     localStorage.setItem('recruiter-info', JSON.stringify(recruiterInfo));
-                    showNotification("Informations recruteur sauvegardées !", "success");
+                    showNotification("Informations recruteur sauvegardÃ©es !", "success");
                     return true;
                 } catch (error) {
                     console.error('Erreur lors de la sauvegarde des infos recruteur:', error);
@@ -6113,7 +2666,7 @@
                 try {
                     const savedInfo = localStorage.getItem('recruiter-info');
                     if (!savedInfo) {
-                        showNotification("Aucune information recruteur sauvegardée.", "warning");
+                        showNotification("Aucune information recruteur sauvegardÃ©e.", "warning");
                         return false;
                     }
                     
@@ -6129,7 +2682,7 @@
                     }
                     
                     updatePreview('form');
-                    showNotification("Informations recruteur chargées !", "success");
+                    showNotification("Informations recruteur chargÃ©es !", "success");
                     return true;
                 } catch (error) {
                     console.error('Erreur lors du chargement des infos recruteur:', error);
@@ -6141,16 +2694,16 @@
             async function summarizeAllExperiencesAI() {
                 const experienceItems = controls.experienceList.querySelectorAll('.data-desc');
                 if (experienceItems.length === 0) {
-                    showNotification("Aucune expérience à résumer.", "error");
+                    showNotification("Aucune expÃ©rience Ã  rÃ©sumer.", "error");
                     return;
                 }
 
-                showLoader("Synthèse des expériences...");
+                showLoader("SynthÃ¨se des expÃ©riences...");
                 for (let i = 0; i < experienceItems.length; i++) {
                     const textarea = experienceItems[i];
                     const originalText = textarea.value;
                     if (originalText) {
-                        const prompt = `Résume la description de cette mission professionnelle en 5 lignes maximum. Utilise des verbes d'action et un format de liste à puces (chaque point commençant par '• '). Ne retourne que le texte final formaté en liste à puces, sans aucune phrase d'introduction, de conclusion ou de commentaire. Voici la description : "${originalText}"`;
+                        const prompt = `RÃ©sume la description de cette mission professionnelle en 5 lignes maximum. Utilise des verbes d'action et un format de liste Ã  puces (chaque point commenÃ§ant par 'â€¢ '). Ne retourne que le texte final formatÃ© en liste Ã  puces, sans aucune phrase d'introduction, de conclusion ou de commentaire. Voici la description : "${originalText}"`;
                         const summary = await callGeminiAPI(prompt);
                         if (summary) {
                             textarea.value = summary;
@@ -6159,22 +2712,22 @@
                 }
                 hideLoader();
                 updatePreview('form');
-                showNotification("Toutes les expériences ont été synthétisées.", "success");
+                showNotification("Toutes les expÃ©riences ont Ã©tÃ© synthÃ©tisÃ©es.", "success");
             }
 
             async function synthesizeSkillsWithAI() {
                 const currentSkills = controls.competences.value;
                 if (!currentSkills) {
-                    showNotification("La liste de compétences est vide.", "error");
+                    showNotification("La liste de compÃ©tences est vide.", "error");
                     return;
                 }
-                const prompt = `Analyse cette liste de compétences de CV: "${currentSkills}". Regroupe-les par catégories pertinentes (ex: Langages, Frameworks, Outils, Logiciels, Langues, etc.). Retourne le résultat sous la forme "Catégorie 1: compétence A, compétence B\nCatégorie 2: compétence C, compétence D". Ne retourne que le texte final formaté, sans aucune phrase d'introduction, de conclusion ou de commentaire.`;
+                const prompt = `Analyse cette liste de compÃ©tences de CV: "${currentSkills}". Regroupe-les par catÃ©gories pertinentes (ex: Langages, Frameworks, Outils, Logiciels, Langues, etc.). Retourne le rÃ©sultat sous la forme "CatÃ©gorie 1: compÃ©tence A, compÃ©tence B\nCatÃ©gorie 2: compÃ©tence C, compÃ©tence D". Ne retourne que le texte final formatÃ©, sans aucune phrase d'introduction, de conclusion ou de commentaire.`;
 
                 const organizedSkills = await callGeminiAPI(prompt);
                 if (organizedSkills) {
                     controls.competences.value = organizedSkills;
                     updatePreview('form');
-                    showNotification("Compétences organisées par l'IA.", "success");
+                    showNotification("CompÃ©tences organisÃ©es par l'IA.", "success");
                 }
             }
 
@@ -6182,20 +2735,20 @@
                 const currentSkills = controls.competences.value;
                 const jobTitle = controls.poste.value;
                 if (!currentSkills) {
-                    showNotification("La liste de compétences est vide.", "error");
+                    showNotification("La liste de compÃ©tences est vide.", "error");
                     return;
                 }
                 if (!jobTitle) {
-                    showNotification("Veuillez renseigner le 'Poste recherché' pour de meilleurs résultats.", "error");
+                    showNotification("Veuillez renseigner le 'Poste recherchÃ©' pour de meilleurs rÃ©sultats.", "error");
                     return;
                 }
-                const prompt = `À partir de cette liste de compétences: "${currentSkills}", sélectionne les 10 compétences les plus importantes et pertinentes pour un poste de "${jobTitle}". Retourne uniquement la liste des 10 compétences, séparées par des virgules, sans aucune phrase d'introduction, de conclusion ou de commentaire.`;
+                const prompt = `Ã€ partir de cette liste de compÃ©tences: "${currentSkills}", sÃ©lectionne les 10 compÃ©tences les plus importantes et pertinentes pour un poste de "${jobTitle}". Retourne uniquement la liste des 10 compÃ©tences, sÃ©parÃ©es par des virgules, sans aucune phrase d'introduction, de conclusion ou de commentaire.`;
 
                 const limitedSkills = await callGeminiAPI(prompt);
                 if (limitedSkills) {
                     controls.competences.value = limitedSkills;
                     updatePreview('form');
-                    showNotification("Compétences limitées à 10 par l'IA.", "success");
+                    showNotification("CompÃ©tences limitÃ©es Ã  10 par l'IA.", "success");
                 }
             }
             
@@ -6204,64 +2757,64 @@
                     // Lancer l'animation spectaculaire de restructuration
                     const animationPromise = showCVRestructureAnimation();
                     
-                    // Attendre que l'animation démarre avant de continuer
+                    // Attendre que l'animation dÃ©marre avant de continuer
                     await new Promise(resolve => setTimeout(resolve, 1000));
                     
-                    showNotification("🧠 IA : Analyse intelligente du contenu...", "info");
+                    showNotification("ðŸ§  IA : Analyse intelligente du contenu...", "info");
                     
-                    // ÉTAPE 1: Analyse ultra-complète du contenu avec scoring avancé
+                    // Ã‰TAPE 1: Analyse ultra-complÃ¨te du contenu avec scoring avancÃ©
                     const contentAnalysis = analyzeContentForLayoutAdvanced();
-                    console.log("Analyse complète du contenu:", contentAnalysis);
+                    console.log("Analyse complÃ¨te du contenu:", contentAnalysis);
                     
-                    // ÉTAPE 2: Décision intelligente du layout optimal avec justification
+                    // Ã‰TAPE 2: DÃ©cision intelligente du layout optimal avec justification
                     const optimalLayout = await chooseOptimalLayoutIntelligent(contentAnalysis);
-                    showNotification(`📊 Layout sélectionné: ${optimalLayout.name} (${optimalLayout.justification})`, "success");
+                    showNotification(`ðŸ“Š Layout sÃ©lectionnÃ©: ${optimalLayout.name} (${optimalLayout.justification})`, "success");
                     
-                    // ÉTAPE 3: Configuration automatique de la bannière avec positionnement optimal
+                    // Ã‰TAPE 3: Configuration automatique de la banniÃ¨re avec positionnement optimal
                     await configureBannerIntelligent(contentAnalysis, optimalLayout);
                     
-                    // ÉTAPE 4: Optimisation complète de l'utilisation de l'espace (marges, colonnes)
+                    // Ã‰TAPE 4: Optimisation complÃ¨te de l'utilisation de l'espace (marges, colonnes)
                     const spaceOptimization = await optimizePageSpaceIntelligent(contentAnalysis, optimalLayout);
-                    showNotification(`📐 Espace optimisé: ${spaceOptimization.strategy}`, "info");
+                    showNotification(`ðŸ“ Espace optimisÃ©: ${spaceOptimization.strategy}`, "info");
                     
-                    // ÉTAPE 5: Ajustement intelligent des tailles de police selon la densité
+                    // Ã‰TAPE 5: Ajustement intelligent des tailles de police selon la densitÃ©
                     const fontOptimization = await optimizeFontsIntelligent(contentAnalysis, optimalLayout);
-                    showNotification(`🔤 Polices optimisées: ${fontOptimization.strategy}`, "info");
+                    showNotification(`ðŸ”¤ Polices optimisÃ©es: ${fontOptimization.strategy}`, "info");
                     
-                    // ÉTAPE 6: Reformulation automatique du contenu si nécessaire
+                    // Ã‰TAPE 6: Reformulation automatique du contenu si nÃ©cessaire
                     if (contentAnalysis.needsContentReduction) {
                         await reformulateContentIntelligent(contentAnalysis);
                     }
                     
-                    // ÉTAPE 7: Répartition automatique des modules dans les colonnes
+                    // Ã‰TAPE 7: RÃ©partition automatique des modules dans les colonnes
                     if (optimalLayout.columns > 1) {
                         await distributeModulesIntelligent(optimalLayout, contentAnalysis);
                     }
                     
-                    // ÉTAPE 8: Optimisation fine des styles pour économiser l'espace
+                    // Ã‰TAPE 8: Optimisation fine des styles pour Ã©conomiser l'espace
                     await optimizeStylesForSpace(contentAnalysis);
                     
-                    // Attendre la fin de l'animation avant les vérifications finales
+                    // Attendre la fin de l'animation avant les vÃ©rifications finales
                     await animationPromise;
                     
-                    // ÉTAPE 9: Mise à jour finale et vérifications
+                    // Ã‰TAPE 9: Mise Ã  jour finale et vÃ©rifications
                     updatePreview('form');
                     
-                    // ÉTAPE 10: Vérifications multiples et ajustements progressifs jusqu'à une page
+                    // Ã‰TAPE 10: VÃ©rifications multiples et ajustements progressifs jusqu'Ã  une page
                     setTimeout(async () => {
                         const finalResult = await ensureSinglePageCV(contentAnalysis, optimalLayout);
                         
-                        let successMessage = `✨ CV ULTRA-OPTIMISÉ par l'IA ! 
-📊 Layout: ${optimalLayout.name} 
-📏 Ratio colonnes: ${optimalLayout.ratio}
-🎯 Stratégie: ${finalResult.strategy}
-✅ Optimisations: ${finalResult.optimizations.join(', ')}`;
+                        let successMessage = `âœ¨ CV ULTRA-OPTIMISÃ‰ par l'IA ! 
+ðŸ“Š Layout: ${optimalLayout.name} 
+ðŸ“ Ratio colonnes: ${optimalLayout.ratio}
+ðŸŽ¯ StratÃ©gie: ${finalResult.strategy}
+âœ… Optimisations: ${finalResult.optimizations.join(', ')}`;
                         
                         if (finalResult.isOnePage) {
-                            successMessage += "\n🎉 OBJECTIF ATTEINT: CV sur une seule page !";
+                            successMessage += "\nðŸŽ‰ OBJECTIF ATTEINT: CV sur une seule page !";
                             showNotification(successMessage, "success", 10000);
                         } else {
-                            successMessage += "\n⚠️ Contenu très dense - quelques ajustements manuels peuvent être nécessaires";
+                            successMessage += "\nâš ï¸ Contenu trÃ¨s dense - quelques ajustements manuels peuvent Ãªtre nÃ©cessaires";
                             showNotification(successMessage, "warning", 8000);
                         }
                     }, 500);
@@ -6282,7 +2835,7 @@
                     slider.value = newValue;
                     valueDisplay.textContent = newValue;
                     
-                    // Déclencher l'événement change/input pour que les listeners existants se déclenchent
+                    // DÃ©clencher l'Ã©vÃ©nement change/input pour que les listeners existants se dÃ©clenchent
                     slider.dispatchEvent(new Event('input', { bubbles: true }));
                     slider.dispatchEvent(new Event('change', { bubbles: true }));
                 }
@@ -6293,13 +2846,13 @@
             async function optimizePageWidth(contentAnalysis) {
                 console.log("Optimisation de la largeur de page...");
                 
-                // Maximiser l'utilisation de l'espace avec des marges réduites
+                // Maximiser l'utilisation de l'espace avec des marges rÃ©duites
                 if (contentAnalysis.density > 0.5) {
                     // Pour un contenu dense, utiliser toute la largeur disponible
-                    triggerSliderChange('page-margin', 1.5); // Réduire les marges
-                    showNotification("📐 Largeur de page optimisée - marges réduites", "info");
+                    triggerSliderChange('page-margin', 1.5); // RÃ©duire les marges
+                    showNotification("ðŸ“ Largeur de page optimisÃ©e - marges rÃ©duites", "info");
                 } else {
-                    // Pour un contenu léger, garder des marges standard
+                    // Pour un contenu lÃ©ger, garder des marges standard
                     triggerSliderChange('page-margin', 2.0);
                 }
             }
@@ -6311,21 +2864,21 @@
                 }
                 
                 console.log("Reformulation automatique du contenu...");
-                showNotification("🤖 Reformulation intelligente du contenu...", "info");
+                showNotification("ðŸ¤– Reformulation intelligente du contenu...", "info");
                 
-                // Reformuler les descriptions d'expérience trop longues
+                // Reformuler les descriptions d'expÃ©rience trop longues
                 const experienceItems = controls.experienceList.querySelectorAll('.experience-item');
                 for (let item of experienceItems) {
                     const descTextarea = item.querySelector('[data-field="desc"]');
                     if (descTextarea && descTextarea.value.length > 300) {
                         const originalDesc = descTextarea.value;
-                        const prompt = `Reformule cette description d'expérience professionnelle en la condensant à maximum 3 lignes tout en gardant l'essentiel. Utilise des verbes d'action et sois concis. Format: liste à puces avec • . Description: "${originalDesc}"`;
+                        const prompt = `Reformule cette description d'expÃ©rience professionnelle en la condensant Ã  maximum 3 lignes tout en gardant l'essentiel. Utilise des verbes d'action et sois concis. Format: liste Ã  puces avec â€¢ . Description: "${originalDesc}"`;
                         
                         try {
                             const condensedDesc = await callGeminiAPI(prompt);
                             if (condensedDesc) {
                                 descTextarea.value = condensedDesc;
-                                showNotification("✂️ Description condensée automatiquement", "success");
+                                showNotification("âœ‚ï¸ Description condensÃ©e automatiquement", "success");
                             }
                         } catch (error) {
                             console.error("Erreur reformulation:", error);
@@ -6333,16 +2886,16 @@
                     }
                 }
                 
-                // Reformuler la description générale si elle est trop longue
+                // Reformuler la description gÃ©nÃ©rale si elle est trop longue
                 if (controls.description.value.length > 400) {
                     const originalDesc = controls.description.value;
-                    const prompt = `Reformule cette description de profil professionnel en la condensant à maximum 4 lignes tout en gardant l'impact. Sois percutant et concis. Description: "${originalDesc}"`;
+                    const prompt = `Reformule cette description de profil professionnel en la condensant Ã  maximum 4 lignes tout en gardant l'impact. Sois percutant et concis. Description: "${originalDesc}"`;
                     
                     try {
                         const condensedProfile = await callGeminiAPI(prompt);
                         if (condensedProfile) {
                             controls.description.value = condensedProfile;
-                            showNotification("📝 Profil condensé automatiquement", "success");
+                            showNotification("ðŸ“ Profil condensÃ© automatiquement", "success");
                         }
                     } catch (error) {
                         console.error("Erreur reformulation profil:", error);
@@ -6351,31 +2904,31 @@
             }
             
             async function chooseOptimalLayoutAndDistribution(contentAnalysis) {
-                console.log("Choix du layout optimal et répartition des blocs...");
+                console.log("Choix du layout optimal et rÃ©partition des blocs...");
                 
                 let layoutChoice, distribution, optimizations = [];
                 
                 // Logique intelligente pour le choix du layout
                 if (contentAnalysis.density > 0.8) {
-                    // Très dense - 2 colonnes 33/67 pour maximiser l'espace
+                    // TrÃ¨s dense - 2 colonnes 33/67 pour maximiser l'espace
                     layoutChoice = '2-col-33-67';
-                    distribution = "Colonne gauche: Contact + Compétences + Formation | Colonne droite: Expériences détaillées";
-                    optimizations.push("2 colonnes 33/67", "Répartition optimisée", "Espace maximisé");
+                    distribution = "Colonne gauche: Contact + CompÃ©tences + Formation | Colonne droite: ExpÃ©riences dÃ©taillÃ©es";
+                    optimizations.push("2 colonnes 33/67", "RÃ©partition optimisÃ©e", "Espace maximisÃ©");
                 } else if (contentAnalysis.density > 0.6) {
-                    // Dense - 2 colonnes équilibrées
+                    // Dense - 2 colonnes Ã©quilibrÃ©es
                     layoutChoice = '2-col-50-50';
-                    distribution = "Colonnes équilibrées pour un contenu équilibré";
-                    optimizations.push("2 colonnes équilibrées", "Répartition harmonieuse");
+                    distribution = "Colonnes Ã©quilibrÃ©es pour un contenu Ã©quilibrÃ©";
+                    optimizations.push("2 colonnes Ã©quilibrÃ©es", "RÃ©partition harmonieuse");
                 } else if (contentAnalysis.density > 0.3) {
-                    // Modéré - 2 colonnes 67/33 pour aérer
+                    // ModÃ©rÃ© - 2 colonnes 67/33 pour aÃ©rer
                     layoutChoice = '2-col-67-33';
-                    distribution = "Colonne principale large pour un contenu aéré";
-                    optimizations.push("2 colonnes 67/33", "Contenu aéré");
+                    distribution = "Colonne principale large pour un contenu aÃ©rÃ©";
+                    optimizations.push("2 colonnes 67/33", "Contenu aÃ©rÃ©");
                 } else {
-                    // Léger - 1 colonne pour simplicité
+                    // LÃ©ger - 1 colonne pour simplicitÃ©
                     layoutChoice = '1-col';
                     distribution = "Colonne unique pour un contenu simple et clair";
-                    optimizations.push("Colonne unique", "Design épuré");
+                    optimizations.push("Colonne unique", "Design Ã©purÃ©");
                 }
                 
                 // Appliquer le layout choisi
@@ -6384,13 +2937,13 @@
                 const layoutBtn = document.querySelector(`[data-layout="${layoutChoice}"]`);
                 if (layoutBtn) {
                     layoutBtn.click();
-                    showNotification(`📊 Layout optimisé: ${layoutChoice}`, "success");
+                    showNotification(`ðŸ“Š Layout optimisÃ©: ${layoutChoice}`, "success");
                 }
                 
-                // Si on utilise 2 colonnes, optimiser la répartition des modules
+                // Si on utilise 2 colonnes, optimiser la rÃ©partition des modules
                 if (layoutChoice.includes('2-col')) {
                     await optimizeModuleDistribution(layoutChoice, contentAnalysis);
-                    optimizations.push("Modules répartis intelligemment");
+                    optimizations.push("Modules rÃ©partis intelligemment");
                 }
                 
                 return {
@@ -6401,49 +2954,49 @@
             }
             
             async function optimizeModuleDistribution(layoutType, contentAnalysis) {
-                // Cette fonction pourrait être étendue pour déplacer automatiquement les modules
+                // Cette fonction pourrait Ãªtre Ã©tendue pour dÃ©placer automatiquement les modules
                 // entre les colonnes selon le type de layout et le contenu
-                console.log(`Optimisation de la répartition des modules pour ${layoutType}`);
+                console.log(`Optimisation de la rÃ©partition des modules pour ${layoutType}`);
                 
                 // Logique future pour le drag & drop automatique des modules
-                // En fonction du layout choisi et du contenu analysé
+                // En fonction du layout choisi et du contenu analysÃ©
                 
                 let recommendedDistribution = "";
                 if (layoutType === '2-col-33-67') {
-                    recommendedDistribution = "Colonne étroite (33%): Informations personnelles, compétences, formation. Colonne large (67%): Expériences, projets.";
+                    recommendedDistribution = "Colonne Ã©troite (33%): Informations personnelles, compÃ©tences, formation. Colonne large (67%): ExpÃ©riences, projets.";
                 } else if (layoutType === '2-col-50-50') {
-                    recommendedDistribution = "Répartition équilibrée: Alternance des sections pour un équilibre visuel.";
+                    recommendedDistribution = "RÃ©partition Ã©quilibrÃ©e: Alternance des sections pour un Ã©quilibre visuel.";
                 } else if (layoutType === '2-col-67-33') {
-                    recommendedDistribution = "Colonne large (67%): Contenu principal. Colonne étroite (33%): Informations complémentaires.";
+                    recommendedDistribution = "Colonne large (67%): Contenu principal. Colonne Ã©troite (33%): Informations complÃ©mentaires.";
                 }
                 
-                showNotification(`🎯 Répartition recommandée: ${recommendedDistribution}`, "info", 5000);
+                showNotification(`ðŸŽ¯ RÃ©partition recommandÃ©e: ${recommendedDistribution}`, "info", 5000);
             }
             
             async function emergencyContentOptimization() {
-                console.log("Optimisations d'urgence pour éviter le débordement...");
+                console.log("Optimisations d'urgence pour Ã©viter le dÃ©bordement...");
                 
                 // Ajustements progressifs plus intelligents
                 const currentPSize = parseFloat(document.getElementById('font-size-p').value);
                 const currentModuleSpacing = parseFloat(document.getElementById('module-spacing').value);
                 const currentPageMargin = parseFloat(document.getElementById('page-margin').value);
                 
-                // 1. Réduire les marges de page
+                // 1. RÃ©duire les marges de page
                 if (currentPageMargin > 1.0) {
                     triggerSliderChange('page-margin', Math.max(1.0, currentPageMargin - 0.3));
-                    showNotification("📏 Marges réduites d'urgence", "warning");
+                    showNotification("ðŸ“ Marges rÃ©duites d'urgence", "warning");
                 }
                 
-                // 2. Réduire l'espacement entre modules
+                // 2. RÃ©duire l'espacement entre modules
                 if (currentModuleSpacing > 0.8) {
                     triggerSliderChange('module-spacing', Math.max(0.8, currentModuleSpacing - 0.3));
-                    showNotification("📐 Espacement réduit d'urgence", "warning");
+                    showNotification("ðŸ“ Espacement rÃ©duit d'urgence", "warning");
                 }
                 
-                // 3. Réduire légèrement la taille de police
+                // 3. RÃ©duire lÃ©gÃ¨rement la taille de police
                 if (currentPSize > 8.5) {
                     triggerSliderChange('font-size-p', Math.max(8.5, currentPSize - 0.5));
-                    showNotification("🔤 Taille de police réduite d'urgence", "warning");
+                    showNotification("ðŸ”¤ Taille de police rÃ©duite d'urgence", "warning");
                 }
                 
                 // 4. Si toujours pas suffisant, reformuler automatiquement
@@ -6453,15 +3006,15 @@
                 if (checkPageOverflow()) {
                     if (validateApiKey()) {
                         await reformulateContentWithAI({ density: 1.0 }); // Force reformulation
-                        showNotification("🤖 Reformulation automatique d'urgence", "warning");
+                        showNotification("ðŸ¤– Reformulation automatique d'urgence", "warning");
                     } else {
-                        showNotification("⚠️ Contenu toujours trop long - reformulation manuelle nécessaire", "error");
+                        showNotification("âš ï¸ Contenu toujours trop long - reformulation manuelle nÃ©cessaire", "error");
                     }
                 }
             }
             
             function analyzeContentForLayoutAdvanced() {
-                // Analyse ultra-complète avec scoring avancé pour optimisation intelligente
+                // Analyse ultra-complÃ¨te avec scoring avancÃ© pour optimisation intelligente
                 const description = controls.description.value || '';
                 const competences = controls.competences.value || '';
                 const experiences = Array.from(controls.experienceList.querySelectorAll('[data-field="desc"]')).map(el => el.value).join(' ');
@@ -6470,7 +3023,7 @@
                 const totalContent = description + competences + experiences + formations;
                 const totalChars = totalContent.length;
                 
-                // Comptage détaillé des éléments
+                // Comptage dÃ©taillÃ© des Ã©lÃ©ments
                 const expCount = controls.experienceList.querySelectorAll('.experience-item').length;
                 const formCount = controls.formationList.querySelectorAll('.formation-item').length;
                 const skillsCount = competences.split(',').filter(s => s.trim()).length;
@@ -6480,18 +3033,18 @@
                 const avgExpLength = expDescriptions.length > 0 ? expDescriptions.reduce((sum, desc) => sum + desc.length, 0) / expDescriptions.length : 0;
                 const maxExpLength = expDescriptions.length > 0 ? Math.max(...expDescriptions.map(desc => desc.length)) : 0;
                 
-                // Calcul de densité multi-facteurs (0-1)
+                // Calcul de densitÃ© multi-facteurs (0-1)
                 let densityScore = 0;
-                densityScore += Math.min(totalChars / 3500, 1) * 0.35;  // Caractères total
-                densityScore += Math.min(expCount / 6, 1) * 0.25;       // Nombre d'expériences
+                densityScore += Math.min(totalChars / 3500, 1) * 0.35;  // CaractÃ¨res total
+                densityScore += Math.min(expCount / 6, 1) * 0.25;       // Nombre d'expÃ©riences
                 densityScore += Math.min(avgExpLength / 350, 1) * 0.2;  // Longueur moyenne
                 densityScore += Math.min(formCount / 5, 1) * 0.1;       // Formations
-                densityScore += Math.min(skillsCount / 30, 1) * 0.1;    // Compétences
+                densityScore += Math.min(skillsCount / 30, 1) * 0.1;    // CompÃ©tences
                 
-                // Score de complexité visuelle
+                // Score de complexitÃ© visuelle
                 const visualComplexity = (expCount * 0.4) + (formCount * 0.3) + (skillsCount / 5 * 0.3);
                 
-                // Prédiction de la stratégie optimale
+                // PrÃ©diction de la stratÃ©gie optimale
                 let optimalStrategy;
                 if (densityScore > 0.8) optimalStrategy = 'ultra-compress';
                 else if (densityScore > 0.6) optimalStrategy = 'compress';
@@ -6499,7 +3052,7 @@
                 else if (densityScore > 0.2) optimalStrategy = 'expand';
                 else optimalStrategy = 'minimal';
                 
-                // Analyse de la répartition idéale des colonnes
+                // Analyse de la rÃ©partition idÃ©ale des colonnes
                 const leftColumnContent = competences.length + (description.length * 0.3);
                 const rightColumnContent = experiences.length + formations.length;
                 const balanceRatio = leftColumnContent / (leftColumnContent + rightColumnContent);
@@ -6524,53 +3077,53 @@
                     needsContentReduction: maxExpLength > 280 || avgExpLength > 180 || totalChars > 3000,
                     pageUtilization: densityScore,
                     recommendedColumns: densityScore > 0.5 ? 2 : 1,
-                    estimatedPageUsage: Math.min((densityScore * 1.3) + 0.2, 1.1)  // Estimation si dépasse 1 page
+                    estimatedPageUsage: Math.min((densityScore * 1.3) + 0.2, 1.1)  // Estimation si dÃ©passe 1 page
                 };
             }
             
             async function chooseOptimalLayoutIntelligent(analysis) {
-                console.log("🧠 Choix intelligent du layout optimal...");
+                console.log("ðŸ§  Choix intelligent du layout optimal...");
                 
                 let layout, justification, ratio;
                 
-                // Logique ultra-intelligente basée sur l'analyse complète
+                // Logique ultra-intelligente basÃ©e sur l'analyse complÃ¨te
                 if (analysis.density > 0.85) {
-                    // Ultra-dense : priorité à l'efficacité d'espace
+                    // Ultra-dense : prioritÃ© Ã  l'efficacitÃ© d'espace
                     layout = '2-col-33-67';
                     ratio = '33/67';
-                    justification = "Contenu très dense - colonne étroite pour infos compactes, large pour détails";
+                    justification = "Contenu trÃ¨s dense - colonne Ã©troite pour infos compactes, large pour dÃ©tails";
                 } else if (analysis.density > 0.7) {
-                    // Dense : équilibrer lisibilité et espace
+                    // Dense : Ã©quilibrer lisibilitÃ© et espace
                     if (analysis.balanceRatio > 0.4) {
                         layout = '2-col-50-50';
                         ratio = '50/50';
-                        justification = "Contenu équilibré - colonnes égales pour répartition harmonieuse";
+                        justification = "Contenu Ã©quilibrÃ© - colonnes Ã©gales pour rÃ©partition harmonieuse";
                     } else {
                         layout = '2-col-33-67';
                         ratio = '33/67';
-                        justification = "Plus d'expériences - priorité à la colonne principale";
+                        justification = "Plus d'expÃ©riences - prioritÃ© Ã  la colonne principale";
                     }
                 } else if (analysis.density > 0.45) {
-                    // Modéré : privilégier la lisibilité
+                    // ModÃ©rÃ© : privilÃ©gier la lisibilitÃ©
                     if (analysis.expCount > analysis.formCount + 2) {
                         layout = '2-col-67-33';
                         ratio = '67/33';
-                        justification = "Beaucoup d'expériences - colonne large pour le contenu principal";
+                        justification = "Beaucoup d'expÃ©riences - colonne large pour le contenu principal";
                     } else {
                         layout = '2-col-50-50';
                         ratio = '50/50';
-                        justification = "Contenu modéré - équilibre optimal";
+                        justification = "Contenu modÃ©rÃ© - Ã©quilibre optimal";
                     }
                 } else if (analysis.density > 0.25) {
-                    // Léger : maximiser l'impact visuel
+                    // LÃ©ger : maximiser l'impact visuel
                     layout = '2-col-67-33';
                     ratio = '67/33';
-                    justification = "Contenu léger - colonne large pour impact visuel";
+                    justification = "Contenu lÃ©ger - colonne large pour impact visuel";
                 } else {
-                    // Minimal : clarté absolue
+                    // Minimal : clartÃ© absolue
                     layout = '1-col';
                     ratio = '100';
-                    justification = "Contenu minimal - colonne unique pour clarté maximale";
+                    justification = "Contenu minimal - colonne unique pour clartÃ© maximale";
                 }
                 
                 // Application du layout avec animation
@@ -6592,12 +3145,12 @@
             }
             
             async function configureBannerIntelligent(analysis, layout) {
-                console.log("🎯 Configuration intelligente de la bannière...");
+                console.log("ðŸŽ¯ Configuration intelligente de la banniÃ¨re...");
                 
-                // Activation automatique de la bannière
+                // Activation automatique de la banniÃ¨re
                 if (!controls.toggleBanner.checked) {
                     controls.toggleBanner.checked = true;
-                    showNotification("📢 Bannière activée automatiquement", "info");
+                    showNotification("ðŸ“¢ BanniÃ¨re activÃ©e automatiquement", "info");
                 }
                 
                 // Configuration automatique des informations manquantes
@@ -6605,35 +3158,35 @@
                     setDefaultRecruiterInfo();
                 }
                 
-                // Choix intelligent du style de bannière selon la densité
+                // Choix intelligent du style de banniÃ¨re selon la densitÃ©
                 let bannerStyle, bannerPosition, logoSize;
                 
                 if (analysis.density > 0.8) {
                     // Ultra-compact pour contenu dense
                     bannerStyle = 'banner-style-minimal';
-                    bannerPosition = 'bottom';  // En bas pour ne pas gêner
+                    bannerPosition = 'bottom';  // En bas pour ne pas gÃªner
                     logoSize = 'logo-sm';
-                    showNotification("📐 Style bannière: Minimal (optimisé pour contenu dense)", "info");
+                    showNotification("ðŸ“ Style banniÃ¨re: Minimal (optimisÃ© pour contenu dense)", "info");
                 } else if (analysis.density > 0.6) {
-                    // Équilibré
+                    // Ã‰quilibrÃ©
                     bannerStyle = 'banner-style-modern';
                     bannerPosition = analysis.strategy === 'compress' ? 'bottom' : 'top';
                     logoSize = 'logo-md';
-                    showNotification("🎨 Style bannière: Moderne (équilibré)", "info");
+                    showNotification("ðŸŽ¨ Style banniÃ¨re: Moderne (Ã©quilibrÃ©)", "info");
                 } else {
-                    // Généreux pour contenu léger
+                    // GÃ©nÃ©reux pour contenu lÃ©ger
                     bannerStyle = 'banner-style-elegant';
                     bannerPosition = 'top';
                     logoSize = 'logo-lg';
-                    showNotification("✨ Style bannière: Élégant (design aéré)", "info");
+                    showNotification("âœ¨ Style banniÃ¨re: Ã‰lÃ©gant (design aÃ©rÃ©)", "info");
                 }
                 
-                // Application des paramètres
+                // Application des paramÃ¨tres
                 if (controls.bannerStyleSelect) {
                     controls.bannerStyleSelect.value = bannerStyle;
                 }
                 
-                // Application de la position de la bannière
+                // Application de la position de la banniÃ¨re
                 if (bannerPosition === 'top') {
                     if (controls.fixBannerTopBtn) {
                         controls.fixBannerTopBtn.click();
@@ -6644,7 +3197,7 @@
                     }
                 }
                 
-                // Configuration du logo si présent
+                // Configuration du logo si prÃ©sent
                 if (preview && preview.bannerImg && preview.bannerImg.src) {
                     preview.bannerImg.className = `${logoSize}`;
                 }
@@ -6664,46 +3217,46 @@
             }
             
             async function optimizePageSpaceIntelligent(analysis, layout) {
-                console.log("📏 Optimisation intelligente de l'espace page...");
+                console.log("ðŸ“ Optimisation intelligente de l'espace page...");
                 
                 let margins, strategy;
                 
-                // Stratégie d'optimisation de l'espace basée sur l'analyse
+                // StratÃ©gie d'optimisation de l'espace basÃ©e sur l'analyse
                 switch (analysis.strategy) {
                     case 'ultra-compress':
                         margins = 1.0;  // Marges minimales pour utiliser tout l'espace
-                        strategy = "Marges ultra-réduites (1cm) - Utilisation maximale de l'espace";
+                        strategy = "Marges ultra-rÃ©duites (1cm) - Utilisation maximale de l'espace";
                         break;
                     case 'compress':
-                        margins = 1.3;  // Marges réduites mais lisibles
-                        strategy = "Marges réduites (1.3cm) - Bon compromis espace/lisibilité";
+                        margins = 1.3;  // Marges rÃ©duites mais lisibles
+                        strategy = "Marges rÃ©duites (1.3cm) - Bon compromis espace/lisibilitÃ©";
                         break;
                     case 'balance':
-                        margins = 1.7;  // Marges équilibrées
-                        strategy = "Marges équilibrées (1.7cm) - Confort de lecture";
+                        margins = 1.7;  // Marges Ã©quilibrÃ©es
+                        strategy = "Marges Ã©quilibrÃ©es (1.7cm) - Confort de lecture";
                         break;
                     case 'expand':
                         margins = 2.0;  // Marges standard
-                        strategy = "Marges standard (2cm) - Design aéré";
+                        strategy = "Marges standard (2cm) - Design aÃ©rÃ©";
                         break;
                     default:
-                        margins = 2.5;  // Marges généreuses
-                        strategy = "Marges généreuses (2.5cm) - Maximum d'élégance";
+                        margins = 2.5;  // Marges gÃ©nÃ©reuses
+                        strategy = "Marges gÃ©nÃ©reuses (2.5cm) - Maximum d'Ã©lÃ©gance";
                         break;
                 }
                 
-                // Application des marges optimisées
+                // Application des marges optimisÃ©es
                 triggerSliderChange('page-margin', margins);
                 
                 return { strategy, margins };
             }
             
             async function optimizeFontsIntelligent(analysis, layout) {
-                console.log("🔤 Optimisation intelligente des polices...");
+                console.log("ðŸ”¤ Optimisation intelligente des polices...");
                 
                 let fonts, strategy;
                 
-                // Calcul intelligent des tailles selon la stratégie
+                // Calcul intelligent des tailles selon la stratÃ©gie
                 switch (analysis.strategy) {
                     case 'ultra-compress':
                         fonts = { h1: 22, h2: 14, p: 8, banner: 7.5 };
@@ -6715,25 +3268,25 @@
                         break;
                     case 'balance':
                         fonts = { h1: 30, h2: 17, p: 9.5, banner: 9 };
-                        strategy = "Polices équilibrées - Lisibilité optimale";
+                        strategy = "Polices Ã©quilibrÃ©es - LisibilitÃ© optimale";
                         break;
                     case 'expand':
                         fonts = { h1: 34, h2: 19, p: 10.5, banner: 9.5 };
-                        strategy = "Polices généreuses - Confort de lecture";
+                        strategy = "Polices gÃ©nÃ©reuses - Confort de lecture";
                         break;
                     default:
                         fonts = { h1: 38, h2: 21, p: 11, banner: 10 };
-                        strategy = "Polices élégantes - Impact visuel maximum";
+                        strategy = "Polices Ã©lÃ©gantes - Impact visuel maximum";
                         break;
                 }
                 
                 // Ajustements fins selon le layout
                 if (layout.columns === 2) {
-                    fonts.h1 -= 2;  // Réduction pour colonnes
+                    fonts.h1 -= 2;  // RÃ©duction pour colonnes
                     fonts.h2 -= 1;
                 }
                 
-                // Application des tailles optimisées
+                // Application des tailles optimisÃ©es
                 triggerSliderChange('font-size-h1', fonts.h1);
                 triggerSliderChange('font-size-h2', fonts.h2);
                 triggerSliderChange('font-size-p', fonts.p);
@@ -6744,16 +3297,16 @@
             
             async function reformulateContentIntelligent(analysis) {
                 if (!validateApiKey()) {
-                    showNotification("🔑 API key requise pour la reformulation automatique", "warning");
+                    showNotification("ðŸ”‘ API key requise pour la reformulation automatique", "warning");
                     return;
                 }
                 
-                console.log("🤖 Reformulation intelligente du contenu...");
-                showNotification("🧠 IA: Reformulation intelligente en cours...", "info");
+                console.log("ðŸ¤– Reformulation intelligente du contenu...");
+                showNotification("ðŸ§  IA: Reformulation intelligente en cours...", "info");
                 
                 let reformulationCount = 0;
                 
-                // Reformulation ciblée des expériences trop longues
+                // Reformulation ciblÃ©e des expÃ©riences trop longues
                 const experienceItems = controls.experienceList.querySelectorAll('.experience-item');
                 for (let item of experienceItems) {
                     const descTextarea = item.querySelector('[data-field="desc"]');
@@ -6761,7 +3314,7 @@
                         const originalDesc = descTextarea.value;
                         const targetLength = analysis.strategy === 'ultra-compress' ? '2 lignes maximum' : '3 lignes maximum';
                         
-                        const prompt = `Reformule cette description d'expérience en la condensant à ${targetLength}. Garde seulement l'essentiel, utilise des verbes d'action percutants et des bullet points avec •. Reste professionnel et impactant. Description: "${originalDesc}"`;
+                        const prompt = `Reformule cette description d'expÃ©rience en la condensant Ã  ${targetLength}. Garde seulement l'essentiel, utilise des verbes d'action percutants et des bullet points avec â€¢. Reste professionnel et impactant. Description: "${originalDesc}"`;
                         
                         try {
                             const condensedDesc = await callGeminiAPI(prompt);
@@ -6770,17 +3323,17 @@
                                 reformulationCount++;
                             }
                         } catch (error) {
-                            console.error("Erreur reformulation expérience:", error);
+                            console.error("Erreur reformulation expÃ©rience:", error);
                         }
                     }
                 }
                 
-                // Reformulation du profil si nécessaire
+                // Reformulation du profil si nÃ©cessaire
                 if (controls.description.value.length > 350) {
                     const originalDesc = controls.description.value;
                     const targetLength = analysis.strategy === 'ultra-compress' ? '3 lignes' : '4 lignes';
                     
-                    const prompt = `Reformule ce profil professionnel en le condensant à ${targetLength} maximum. Garde l'impact et la personnalité, mais sois plus concis et percutant. Profil: "${originalDesc}"`;
+                    const prompt = `Reformule ce profil professionnel en le condensant Ã  ${targetLength} maximum. Garde l'impact et la personnalitÃ©, mais sois plus concis et percutant. Profil: "${originalDesc}"`;
                     
                     try {
                         const condensedProfile = await callGeminiAPI(prompt);
@@ -6794,40 +3347,40 @@
                 }
                 
                 if (reformulationCount > 0) {
-                    showNotification(`✂️ ${reformulationCount} sections reformulées intelligemment`, "success");
+                    showNotification(`âœ‚ï¸ ${reformulationCount} sections reformulÃ©es intelligemment`, "success");
                 }
             }
             
             async function distributeModulesIntelligent(layout, analysis) {
-                console.log("🎯 Répartition intelligente des modules...");
+                console.log("ðŸŽ¯ RÃ©partition intelligente des modules...");
                 
-                // Recommandations basées sur le type de layout et le contenu
+                // Recommandations basÃ©es sur le type de layout et le contenu
                 let recommendation = "";
                 
                 switch (layout.type) {
                     case '2-col-33-67':
-                        recommendation = "Colonne étroite (33%): Contact, Compétences, Formation | Colonne large (67%): Expériences, Projets, Description détaillée";
+                        recommendation = "Colonne Ã©troite (33%): Contact, CompÃ©tences, Formation | Colonne large (67%): ExpÃ©riences, Projets, Description dÃ©taillÃ©e";
                         break;
                     case '2-col-50-50':
-                        recommendation = "Répartition équilibrée: Alternez les sections pour un équilibre visuel optimal";
+                        recommendation = "RÃ©partition Ã©quilibrÃ©e: Alternez les sections pour un Ã©quilibre visuel optimal";
                         break;
                     case '2-col-67-33':
-                        recommendation = "Colonne large (67%): Expériences principales, Description | Colonne étroite (33%): Contact, Compétences";
+                        recommendation = "Colonne large (67%): ExpÃ©riences principales, Description | Colonne Ã©troite (33%): Contact, CompÃ©tences";
                         break;
                 }
                 
                 if (recommendation) {
-                    showNotification(`🎯 Répartition recommandée: ${recommendation}`, "info", 6000);
+                    showNotification(`ðŸŽ¯ RÃ©partition recommandÃ©e: ${recommendation}`, "info", 6000);
                 }
                 
-                // TODO: Implémentation future du drag & drop automatique
-                // Cette fonction pourrait être étendue pour déplacer automatiquement les modules
+                // TODO: ImplÃ©mentation future du drag & drop automatique
+                // Cette fonction pourrait Ãªtre Ã©tendue pour dÃ©placer automatiquement les modules
             }
             
             async function optimizeStylesForSpace(analysis) {
-                console.log("🎨 Optimisation des styles pour économiser l'espace...");
+                console.log("ðŸŽ¨ Optimisation des styles pour Ã©conomiser l'espace...");
                 
-                // Choix intelligent du style de titre selon la stratégie
+                // Choix intelligent du style de titre selon la stratÃ©gie
                 let titleStyle;
                 switch (analysis.strategy) {
                     case 'ultra-compress':
@@ -6835,7 +3388,7 @@
                         titleStyle = 'style-side-line';  // Plus compact
                         break;
                     case 'balance':
-                        titleStyle = 'style-underline';  // Équilibré
+                        titleStyle = 'style-underline';  // Ã‰quilibrÃ©
                         break;
                     default:
                         titleStyle = 'style-background';  // Plus visible
@@ -6851,7 +3404,7 @@
                     titleBtn.click();
                 }
                 
-                // Optimisation des espacements selon la stratégie
+                // Optimisation des espacements selon la stratÃ©gie
                 let spacing;
                 switch (analysis.strategy) {
                     case 'ultra-compress':
@@ -6872,11 +3425,11 @@
                 triggerSliderChange('paragraph-spacing', spacing.paragraph);
                 triggerSliderChange('banner-element-spacing', spacing.banner);
                 
-                showNotification(`🎨 Styles optimisés: ${titleStyle}, espacement ${analysis.strategy}`, "info");
+                showNotification(`ðŸŽ¨ Styles optimisÃ©s: ${titleStyle}, espacement ${analysis.strategy}`, "info");
             }
             
             async function ensureSinglePageCV(analysis, layout) {
-                console.log("🎯 Vérification finale et ajustements pour une page...");
+                console.log("ðŸŽ¯ VÃ©rification finale et ajustements pour une page...");
                 
                 const maxAttempts = 5;
                 let attempt = 0;
@@ -6884,7 +3437,7 @@
                 let strategy = "Optimisation standard";
                 
                 while (attempt < maxAttempts) {
-                    await new Promise(resolve => setTimeout(resolve, 300)); // Laisser le DOM se mettre à jour
+                    await new Promise(resolve => setTimeout(resolve, 300)); // Laisser le DOM se mettre Ã  jour
                     
                     const isOverflowing = checkPageOverflow();
                     
@@ -6902,12 +3455,12 @@
                     
                     switch (attempt) {
                         case 1:
-                            // Niveau 1: Réduction des marges
+                            // Niveau 1: RÃ©duction des marges
                             const currentMargin = parseFloat(document.getElementById('page-margin').value);
                             if (currentMargin > 1.0) {
                                 triggerSliderChange('page-margin', Math.max(1.0, currentMargin - 0.4));
-                                optimizations.push("Marges réduites");
-                                strategy = "Réduction marges";
+                                optimizations.push("Marges rÃ©duites");
+                                strategy = "RÃ©duction marges";
                             }
                             break;
                             
@@ -6915,18 +3468,18 @@
                             // Niveau 2: Compression des espacements
                             triggerSliderChange('module-spacing', 0.8);
                             triggerSliderChange('paragraph-spacing', 0.2);
-                            optimizations.push("Espacements compressés");
+                            optimizations.push("Espacements compressÃ©s");
                             strategy = "Compression espacements";
                             break;
                             
                         case 3:
-                            // Niveau 3: Réduction des polices
+                            // Niveau 3: RÃ©duction des polices
                             const currentH1 = parseFloat(document.getElementById('font-size-h1').value);
                             const currentP = parseFloat(document.getElementById('font-size-p').value);
                             triggerSliderChange('font-size-h1', Math.max(20, currentH1 - 3));
                             triggerSliderChange('font-size-h2', Math.max(13, currentP + 4));
                             triggerSliderChange('font-size-p', Math.max(7.5, currentP - 0.5));
-                            optimizations.push("Polices réduites");
+                            optimizations.push("Polices rÃ©duites");
                             strategy = "Compression polices";
                             break;
                             
@@ -6946,17 +3499,17 @@
                             break;
                             
                         case 5:
-                            // Niveau 5: Ajustements extrêmes
+                            // Niveau 5: Ajustements extrÃªmes
                             triggerSliderChange('font-size-p', 7);
                             triggerSliderChange('paragraph-spacing', 0.1);
                             triggerSliderChange('page-margin', 0.7);
-                            optimizations.push("Ajustements extrêmes");
-                            strategy = "Compression extrême";
+                            optimizations.push("Ajustements extrÃªmes");
+                            strategy = "Compression extrÃªme";
                             break;
                     }
                     
                     updatePreview('form');
-                    showNotification(`🔧 Ajustement niveau ${attempt}: ${strategy}`, "info");
+                    showNotification(`ðŸ”§ Ajustement niveau ${attempt}: ${strategy}`, "info");
                 }
                 
                 return {
@@ -6968,13 +3521,13 @@
             }
             
             async function reformulateContentUrgent(analysis) {
-                console.log("🚨 Reformulation d'urgence...");
+                console.log("ðŸš¨ Reformulation d'urgence...");
                 
                 // Reformulation ultra-agressive pour tenir sur une page
                 const experiences = controls.experienceList.querySelectorAll('.experience-item [data-field="desc"]');
                 for (let desc of experiences) {
                     if (desc.value.length > 150) {
-                        const prompt = `Résume cette expérience en 1 ligne maximum, garde seulement l'essentiel: "${desc.value}"`;
+                        const prompt = `RÃ©sume cette expÃ©rience en 1 ligne maximum, garde seulement l'essentiel: "${desc.value}"`;
                         try {
                             const ultra_short = await callGeminiAPI(prompt);
                             if (ultra_short) desc.value = ultra_short;
@@ -6984,9 +3537,9 @@
                     }
                 }
                 
-                // Réduction du profil aussi
+                // RÃ©duction du profil aussi
                 if (controls.description.value.length > 200) {
-                    const prompt = `Résume ce profil en 2 lignes maximum: "${controls.description.value}"`;
+                    const prompt = `RÃ©sume ce profil en 2 lignes maximum: "${controls.description.value}"`;
                     try {
                         const short_profile = await callGeminiAPI(prompt);
                         if (short_profile) controls.description.value = short_profile;
@@ -6999,10 +3552,10 @@
             function calculateOptimalFontSizes(analysis) {
                 const baseSizes = { h1: 32, h2: 18, p: 10, banner: 9 };
                 
-                // Stratégie basée sur l'analyse intelligente
+                // StratÃ©gie basÃ©e sur l'analyse intelligente
                 switch (analysis.recommendedStrategy) {
                     case 'compress':
-                        // Stratégie de compression maximale pour contenu très dense
+                        // StratÃ©gie de compression maximale pour contenu trÃ¨s dense
                         return { 
                             h1: 24, 
                             h2: 15, 
@@ -7010,7 +3563,7 @@
                             banner: 8 
                         };
                     case 'balance':
-                        // Stratégie d'équilibre pour contenu modéré
+                        // StratÃ©gie d'Ã©quilibre pour contenu modÃ©rÃ©
                         return { 
                             h1: 28, 
                             h2: 16.5, 
@@ -7018,7 +3571,7 @@
                             banner: 8.5 
                         };
                     case 'expand':
-                        // Stratégie d'expansion pour contenu léger
+                        // StratÃ©gie d'expansion pour contenu lÃ©ger
                         return { 
                             h1: 36, 
                             h2: 20, 
@@ -7026,7 +3579,7 @@
                             banner: 10 
                         };
                     default:
-                        // Fallback sur l'ancienne logique basée sur la densité
+                        // Fallback sur l'ancienne logique basÃ©e sur la densitÃ©
                         if (analysis.density > 0.8) {
                             return { h1: 26, h2: 16, p: 9, banner: 8 };
                         } else if (analysis.density > 0.6) {
@@ -7040,26 +3593,26 @@
             }
             
             function calculateOptimalSpacing(analysis) {
-                // Stratégie basée sur l'analyse intelligente et utilisation maximale de l'espace
+                // StratÃ©gie basÃ©e sur l'analyse intelligente et utilisation maximale de l'espace
                 switch (analysis.recommendedStrategy) {
                     case 'compress':
                         // Compression maximale - utiliser toute la largeur disponible
                         return { 
-                            pageMargin: 1.2, // Marges très réduites pour utiliser toute la largeur
+                            pageMargin: 1.2, // Marges trÃ¨s rÃ©duites pour utiliser toute la largeur
                             moduleSpacing: 0.8, 
                             paragraphSpacing: 0.25, 
                             bannerSpacing: 0.6 
                         };
                     case 'balance':
-                        // Équilibre - bon compromis entre espace et lisibilité
+                        // Ã‰quilibre - bon compromis entre espace et lisibilitÃ©
                         return { 
-                            pageMargin: 1.6, // Marges réduites mais lisibles
+                            pageMargin: 1.6, // Marges rÃ©duites mais lisibles
                             moduleSpacing: 1.2, 
                             paragraphSpacing: 0.4, 
                             bannerSpacing: 0.8 
                         };
                     case 'expand':
-                        // Expansion - espacement généreux pour un contenu aéré
+                        // Expansion - espacement gÃ©nÃ©reux pour un contenu aÃ©rÃ©
                         return { 
                             pageMargin: 2.2, 
                             moduleSpacing: 1.8, 
@@ -7105,7 +3658,7 @@
                 const progressText = document.getElementById('progress-text');
 
                 if(progressBar) progressBar.style.width = `${percentage}%`;
-                if(progressText) progressText.textContent = `${completed}/${total} sections complétées`;
+                if(progressText) progressText.textContent = `${completed}/${total} sections complÃ©tÃ©es`;
             }
 
             function populateLevelsFromText() {
@@ -7166,7 +3719,7 @@
                 });
 
                 controls.addExperienceBtn.addEventListener('click', () => createDynamicItem(controls.experienceList, [{ key: 'title', placeholder: 'Titre du poste' }, { key: 'meta', placeholder: 'Entreprise & Dates' }, { key: 'desc', placeholder: 'Description des missions', type: 'textarea' }]));
-                controls.addFormationBtn.addEventListener('click', () => createDynamicItem(controls.formationList, [{ key: 'title', placeholder: 'Nom du diplôme' }, { key: 'meta', placeholder: 'Établissement & Année' }]));
+                controls.addFormationBtn.addEventListener('click', () => createDynamicItem(controls.formationList, [{ key: 'title', placeholder: 'Nom du diplÃ´me' }, { key: 'meta', placeholder: 'Ã‰tablissement & AnnÃ©e' }]));
                 
                 const controlsPanel = document.getElementById('controls');
                 controlsPanel.addEventListener('input', (e) => {
@@ -7214,7 +3767,7 @@
                     }
                 });
                 
-                // Gestionnaire spécifique pour la checkbox de la bannière
+                // Gestionnaire spÃ©cifique pour la checkbox de la banniÃ¨re
                 if (controls.toggleBanner) {
                     controls.toggleBanner.addEventListener('change', () => {
                         console.log('Banner toggle changed:', controls.toggleBanner.checked);
@@ -7282,7 +3835,7 @@
                         const index = parseInt(addLineBtn.dataset.index, 10);
                         const type = addLineBtn.dataset.type;
                         if (type === 'experience') createDynamicItem(controls.experienceList, [{ key: 'title', placeholder: 'Titre du poste' }, { key: 'meta', placeholder: 'Entreprise & Dates' }, { key: 'desc', placeholder: 'Description des missions', type: 'textarea' }], {}, index);
-                        else if (type === 'formation') createDynamicItem(controls.formationList, [{ key: 'title', placeholder: 'Nom du diplôme' }, { key: 'meta', placeholder: 'Établissement & Année' }], {}, index);
+                        else if (type === 'formation') createDynamicItem(controls.formationList, [{ key: 'title', placeholder: 'Nom du diplÃ´me' }, { key: 'meta', placeholder: 'Ã‰tablissement & AnnÃ©e' }], {}, index);
                         return;
                     }
 
@@ -7410,7 +3963,7 @@
                 if (aiColorBtn) {
                     aiColorBtn.addEventListener('click', async () => {
                         if (!isApiConfigured()) {
-                            showNotification("Veuillez configurer votre clé API Gemini d'abord.", "error");
+                            showNotification("Veuillez configurer votre clÃ© API Gemini d'abord.", "error");
                             return;
                         }
                         
@@ -7420,18 +3973,18 @@
                 
                 controls.analyzeBtn.addEventListener('click', async () => {
                     const text = controls.aiInput.value;
-                    if (!text) { showNotification("Veuillez coller du texte à analyser.", "error"); return; }
+                    if (!text) { showNotification("Veuillez coller du texte Ã  analyser.", "error"); return; }
                     
-                    // Vérifier la clé API avant de continuer
+                    // VÃ©rifier la clÃ© API avant de continuer
                     if (!validateApiKey()) {
-                        showNotification("Veuillez configurer votre clé API Gemini d'abord.", "error");
+                        showNotification("Veuillez configurer votre clÃ© API Gemini d'abord.", "error");
                         return;
                     }
                     
                     // Afficher le loader pendant l'analyse
-                    showLoader("🤖 Analyse IA en cours...");
+                    showLoader("ðŸ¤– Analyse IA en cours...");
                     
-                    // Désactiver le bouton pendant le traitement
+                    // DÃ©sactiver le bouton pendant le traitement
                     controls.analyzeBtn.disabled = true;
                     controls.analyzeBtn.classList.add('opacity-50', 'cursor-not-allowed');
                     
@@ -7450,79 +4003,79 @@
                         };
                         const prompt = `Tu es un expert en analyse de CV. Analyse le texte suivant et extrais EXACTEMENT les informations personnelles et professionnelles.
 
-RÈGLES STRICTES :
-1. Réponds UNIQUEMENT avec un JSON valide
-2. Pas de commentaires, pas de texte avant ou après le JSON
-3. Utilise des guillemets doubles pour toutes les chaînes
-4. Échappe correctement les guillemets dans le contenu
-5. Si une information n'est pas trouvée, mets une chaîne vide ""
+RÃˆGLES STRICTES :
+1. RÃ©ponds UNIQUEMENT avec un JSON valide
+2. Pas de commentaires, pas de texte avant ou aprÃ¨s le JSON
+3. Utilise des guillemets doubles pour toutes les chaÃ®nes
+4. Ã‰chappe correctement les guillemets dans le contenu
+5. Si une information n'est pas trouvÃ©e, mets une chaÃ®ne vide ""
 6. Assure-toi que le JSON est complet et valide
 
 FORMAT EXACT :
 {
   "nom": "NOM_DE_FAMILLE",
-  "prenom": "Prénom", 
-  "poste": "Titre du poste recherché",
-  "description": "Résumé professionnel court",
-  "experiences": [{"title": "Titre", "meta": "Entreprise • Dates", "desc": "Description"}],
-  "formations": [{"title": "Diplôme", "meta": "École • Année"}],
-  "competences": "Compétence1, Compétence2, Compétence3"
+  "prenom": "PrÃ©nom", 
+  "poste": "Titre du poste recherchÃ©",
+  "description": "RÃ©sumÃ© professionnel court",
+  "experiences": [{"title": "Titre", "meta": "Entreprise â€¢ Dates", "desc": "Description"}],
+  "formations": [{"title": "DiplÃ´me", "meta": "Ã‰cole â€¢ AnnÃ©e"}],
+  "competences": "CompÃ©tence1, CompÃ©tence2, CompÃ©tence3"
 }
 
-TEXTE À ANALYSER :
+TEXTE Ã€ ANALYSER :
 ${text}
 
 JSON :`;
                         
-                        // Mettre à jour le texte du loader pendant l'appel API
-                        controls.loaderText.textContent = "🧠 Traitement par l'IA...";
+                        // Mettre Ã  jour le texte du loader pendant l'appel API
+                        controls.loaderText.textContent = "ðŸ§  Traitement par l'IA...";
                         
-                        console.log("=== DÉBUT ANALYSE IA ===");
-                        console.log("Texte à analyser:", text);
-                        console.log("Prompt envoyé:", prompt);
+                        console.log("=== DÃ‰BUT ANALYSE IA ===");
+                        console.log("Texte Ã  analyser:", text);
+                        console.log("Prompt envoyÃ©:", prompt);
                         
                         const extractedData = await callGeminiAPI(prompt, schema);
                         
-                        console.log("=== RÉSULTAT IA ===");
-                        console.log("Données extraites par l'IA:", extractedData);
-                        console.log("Type des données:", typeof extractedData);
-                        console.log("L'IA a-t-elle retourné des données?", !!extractedData);
+                        console.log("=== RÃ‰SULTAT IA ===");
+                        console.log("DonnÃ©es extraites par l'IA:", extractedData);
+                        console.log("Type des donnÃ©es:", typeof extractedData);
+                        console.log("L'IA a-t-elle retournÃ© des donnÃ©es?", !!extractedData);
                         
                         if (extractedData && extractedData.nom) {
-                            console.log("✅ IA a réussi - utilisation des vraies données");
+                            console.log("âœ… IA a rÃ©ussi - utilisation des vraies donnÃ©es");
                         } else {
-                            console.log("❌ IA a échoué - utilisation de fallback");
+                            console.log("âŒ IA a Ã©chouÃ© - utilisation de fallback");
                         }
                         
                         if (extractedData) {
-                            // Mettre à jour le texte du loader
-                            controls.loaderText.textContent = "✨ Remplissage du CV...";
+                            // Mettre Ã  jour le texte du loader
+                            controls.loaderText.textContent = "âœ¨ Remplissage du CV...";
                             
-                            // Debug : Vérifier que les contrôles existent
-                            console.log("=== VÉRIFICATION DES CONTRÔLES ===");
+                            // Debug : VÃ©rifier que les contrÃ´les existent
+                            console.log("=== VÃ‰RIFICATION DES CONTRÃ”LES ===");
                             console.log("controls.nom:", controls.nom, "existe?", !!controls.nom);
                             console.log("controls.prenom:", controls.prenom, "existe?", !!controls.prenom);
                             console.log("controls.poste:", controls.poste, "existe?", !!controls.poste);
                             console.log("controls.description:", controls.description, "existe?", !!controls.description);
                             console.log("controls.competences:", controls.competences, "existe?", !!controls.competences);
                             
-                            // Vérifier aussi avec getElementById direct
-                            console.log("=== VÉRIFICATION DIRECTE DU DOM ===");
+                            // VÃ©rifier aussi avec getElementById direct
+                            console.log("=== VÃ‰RIFICATION DIRECTE DU DOM ===");
                             console.log("document.getElementById('nom'):", document.getElementById('nom'));
                             console.log("document.getElementById('prenom'):", document.getElementById('prenom'));
                             console.log("document.getElementById('poste'):", document.getElementById('poste'));
                             
-                            console.log("Valeurs à insérer:", {
+                            console.log("Valeurs Ã  insÃ©rer:", {
                                 nom: extractedData.nom,
                                 prenom: extractedData.prenom,
                                 poste: extractedData.poste,
                                 description: extractedData.description
                             });
                             
-                            // Attendre que l'animation soit bien avancée avant de remplir
+                            // Attendre que l'animation soit bien avancÃ©e avant de remplir
                             await new Promise(resolve => setTimeout(resolve, 2000));
                             
-                            // Remplir avec l'effet Matrix d'écriture en temps réel
+                            // Remplir avec l'effet Matrix d'Ã©criture en temps rÃ©el
                             const elementsToFill = [
                                 { element: controls.nom, text: extractedData.nom || '' },
                                 { element: controls.prenom, text: extractedData.prenom || '' },
@@ -7531,9 +4084,9 @@ JSON :`;
                                 { element: controls.competences, text: extractedData.competences || '' }
                             ];
                             
-                            console.log("Elements à remplir:", elementsToFill);
+                            console.log("Elements Ã  remplir:", elementsToFill);
                             
-                            // TEST: Remplissage direct sans animation pour déboguer
+                            // TEST: Remplissage direct sans animation pour dÃ©boguer
                             console.log("=== REMPLISSAGE DIRECT (TEST) ===");
                             if (controls.nom && extractedData.nom) {
                                 controls.nom.value = extractedData.nom;
@@ -7541,7 +4094,7 @@ JSON :`;
                             }
                             if (controls.prenom && extractedData.prenom) {
                                 controls.prenom.value = extractedData.prenom;
-                                console.log(`Prénom rempli: ${controls.prenom.value}`);
+                                console.log(`PrÃ©nom rempli: ${controls.prenom.value}`);
                             }
                             if (controls.poste && extractedData.poste) {
                                 controls.poste.value = extractedData.poste;
@@ -7553,14 +4106,14 @@ JSON :`;
                             }
                             if (controls.competences && extractedData.competences) {
                                 controls.competences.value = extractedData.competences;
-                                console.log(`Compétences remplies: ${controls.competences.value}`);
+                                console.log(`CompÃ©tences remplies: ${controls.competences.value}`);
                             }
                             
-                            // Remplir les expériences et formations
+                            // Remplir les expÃ©riences et formations
                             console.log("=== REMPLISSAGE LISTES ===");
                             controls.experienceList.innerHTML = '';
                             (extractedData.experiences || []).forEach((exp, index) => {
-                                console.log(`Ajout expérience ${index}:`, exp);
+                                console.log(`Ajout expÃ©rience ${index}:`, exp);
                                 createDynamicItem(controls.experienceList, [
                                     { key: 'title', placeholder: 'Titre du poste' }, 
                                     { key: 'meta', placeholder: 'Entreprise & Dates' }, 
@@ -7572,43 +4125,43 @@ JSON :`;
                             (extractedData.formations || []).forEach((form, index) => {
                                 console.log(`Ajout formation ${index}:`, form);
                                 createDynamicItem(controls.formationList, [
-                                    { key: 'title', placeholder: 'Nom du diplôme' }, 
-                                    { key: 'meta', placeholder: 'Établissement & Année' }
+                                    { key: 'title', placeholder: 'Nom du diplÃ´me' }, 
+                                    { key: 'meta', placeholder: 'Ã‰tablissement & AnnÃ©e' }
                                 ], form);
                             });
                             
-                            // Mettre à jour l'aperçu immédiatement
-                            console.log("=== MISE À JOUR APERÇU ===");
+                            // Mettre Ã  jour l'aperÃ§u immÃ©diatement
+                            console.log("=== MISE Ã€ JOUR APERÃ‡U ===");
                             updatePreview('form');
                             
                             // Finaliser
                             animationPromise.then(() => {
                                 hideLoader();
-                                showNotification("✨ CV rempli avec succès !", "success");
+                                showNotification("âœ¨ CV rempli avec succÃ¨s !", "success");
                                 controls.analyzeBtn.disabled = false;
                                 controls.analyzeBtn.classList.remove('opacity-50', 'cursor-not-allowed');
                             });
                             
                             return; // Skip Matrix animation for now
                             
-                            // Écrire les champs principaux avec effet Matrix
+                            // Ã‰crire les champs principaux avec effet Matrix
                             let currentFieldIndex = 0;
                             function fillNextField() {
                                 if (currentFieldIndex >= elementsToFill.length) {
-                                    // Remplir les listes après les champs principaux
+                                    // Remplir les listes aprÃ¨s les champs principaux
                                     controls.experienceList.innerHTML = '';
                                     (testData.experiences || []).forEach(exp => createDynamicItem(controls.experienceList, [{ key: 'title', placeholder: 'Titre du poste' }, { key: 'meta', placeholder: 'Entreprise & Dates' }, { key: 'desc', placeholder: 'Description', type: 'textarea' }], exp));
                                     
                                     controls.formationList.innerHTML = '';
-                                    (testData.formations || []).forEach(form => createDynamicItem(controls.formationList, [{ key: 'title', placeholder: 'Nom du diplôme' }, { key: 'meta', placeholder: 'Établissement & Année' }], form));
+                                    (testData.formations || []).forEach(form => createDynamicItem(controls.formationList, [{ key: 'title', placeholder: 'Nom du diplÃ´me' }, { key: 'meta', placeholder: 'Ã‰tablissement & AnnÃ©e' }], form));
                                     
                                     // Attendre la fin de l'animation avant de finaliser
                                     animationPromise.then(() => {
                                         updatePreview('form');
                                         hideLoader(); // Masquer le loader
-                                        showNotification("✨ CV restructuré et rempli par la Matrix !", "success");
+                                        showNotification("âœ¨ CV restructurÃ© et rempli par la Matrix !", "success");
                                         
-                                        // Réactiver le bouton
+                                        // RÃ©activer le bouton
                                         controls.analyzeBtn.disabled = false;
                                         controls.analyzeBtn.classList.remove('opacity-50', 'cursor-not-allowed');
                                     });
@@ -7632,9 +4185,9 @@ JSON :`;
                             // En cas d'erreur, masquer l'animation et le loader
                             hideCVRestructureAnimation();
                             hideLoader();
-                            showNotification("❌ Aucune donnée extraite. L'IA n'a pas pu analyser le texte.", "error");
+                            showNotification("âŒ Aucune donnÃ©e extraite. L'IA n'a pas pu analyser le texte.", "error");
                             
-                            // Réactiver le bouton
+                            // RÃ©activer le bouton
                             controls.analyzeBtn.disabled = false;
                             controls.analyzeBtn.classList.remove('opacity-50', 'cursor-not-allowed');
                         }
@@ -7643,21 +4196,21 @@ JSON :`;
                         hideLoader();
                         hideCVRestructureAnimation();
                         
-                        // Message d'erreur plus spécifique selon le type d'erreur
-                        let errorMessage = "❌ Erreur lors de l'analyse.";
+                        // Message d'erreur plus spÃ©cifique selon le type d'erreur
+                        let errorMessage = "âŒ Erreur lors de l'analyse.";
                         if (error.message.includes("API")) {
-                            errorMessage = "❌ Erreur API. Vérifiez votre clé Gemini.";
+                            errorMessage = "âŒ Erreur API. VÃ©rifiez votre clÃ© Gemini.";
                         } else if (error.message.includes("JSON")) {
-                            errorMessage = "❌ Erreur de format. L'IA n'a pas répondu correctement.";
-                        } else if (error.message.includes("réseau") || error.message.includes("connexion")) {
-                            errorMessage = "❌ Erreur de connexion. Vérifiez votre internet.";
+                            errorMessage = "âŒ Erreur de format. L'IA n'a pas rÃ©pondu correctement.";
+                        } else if (error.message.includes("rÃ©seau") || error.message.includes("connexion")) {
+                            errorMessage = "âŒ Erreur de connexion. VÃ©rifiez votre internet.";
                         } else {
-                            errorMessage = `❌ Erreur: ${error.message}`;
+                            errorMessage = `âŒ Erreur: ${error.message}`;
                         }
                         
                         showNotification(errorMessage, "error", 8000);
                         
-                        // Réactiver le bouton
+                        // RÃ©activer le bouton
                         controls.analyzeBtn.disabled = false;
                         controls.analyzeBtn.classList.remove('opacity-50', 'cursor-not-allowed');
                     }
@@ -7672,24 +4225,24 @@ JSON :`;
                         // Test direct des champs
                         if (controls.nom) {
                             controls.nom.value = "MARTIN";
-                            console.log("Nom mis à jour:", controls.nom.value);
+                            console.log("Nom mis Ã  jour:", controls.nom.value);
                         }
                         if (controls.prenom) {
                             controls.prenom.value = "Jean";
-                            console.log("Prénom mis à jour:", controls.prenom.value);
+                            console.log("PrÃ©nom mis Ã  jour:", controls.prenom.value);
                         }
                         if (controls.poste) {
-                            controls.poste.value = "Développeur Web";
-                            console.log("Poste mis à jour:", controls.poste.value);
+                            controls.poste.value = "DÃ©veloppeur Web";
+                            console.log("Poste mis Ã  jour:", controls.poste.value);
                         }
                         if (controls.description) {
-                            controls.description.value = "Développeur passionné avec 5 ans d'expérience.";
-                            console.log("Description mise à jour:", controls.description.value);
+                            controls.description.value = "DÃ©veloppeur passionnÃ© avec 5 ans d'expÃ©rience.";
+                            console.log("Description mise Ã  jour:", controls.description.value);
                         }
                         
-                        // Mettre à jour l'aperçu
+                        // Mettre Ã  jour l'aperÃ§u
                         updatePreview('form');
-                        showNotification("✅ Test de remplissage effectué !", "success");
+                        showNotification("âœ… Test de remplissage effectuÃ© !", "success");
                     });
                 }
                 
@@ -7699,7 +4252,7 @@ JSON :`;
                     testApiBtn.addEventListener('click', async () => {
                         console.log("=== TEST API GEMINI ===");
                         
-                        const testPrompt = `Réponds par un JSON simple avec juste: {"test": "ok", "message": "API fonctionne"}`;
+                        const testPrompt = `RÃ©ponds par un JSON simple avec juste: {"test": "ok", "message": "API fonctionne"}`;
                         const testSchema = {
                             type: "OBJECT",
                             properties: {
@@ -7709,21 +4262,21 @@ JSON :`;
                         };
                         
                         try {
-                            showLoader("🧪 Test de l'API...");
+                            showLoader("ðŸ§ª Test de l'API...");
                             const result = await callAI(testPrompt, testSchema);
                             hideLoader();
                             
                             if (result && result.test === "ok") {
-                                showNotification("✅ API Gemini fonctionne parfaitement !", "success");
-                                console.log("✅ Test API réussi:", result);
+                                showNotification("âœ… API Gemini fonctionne parfaitement !", "success");
+                                console.log("âœ… Test API rÃ©ussi:", result);
                             } else {
-                                showNotification("⚠️ API répond mais données incohérentes", "warning");
-                                console.log("⚠️ Résultat inattendu:", result);
+                                showNotification("âš ï¸ API rÃ©pond mais donnÃ©es incohÃ©rentes", "warning");
+                                console.log("âš ï¸ RÃ©sultat inattendu:", result);
                             }
                         } catch (error) {
                             hideLoader();
-                            showNotification("❌ Test API échoué: " + error.message, "error");
-                            console.error("❌ Test API échoué:", error);
+                            showNotification("âŒ Test API Ã©chouÃ©: " + error.message, "error");
+                            console.error("âŒ Test API Ã©chouÃ©:", error);
                         }
                     });
                 }
@@ -7738,37 +4291,37 @@ JSON :`;
                     const posteRecruteur = controls.bannerPoste.value || "cabinet de recrutement";
 
                     if (!nomCandidat || !posteCandidat) {
-                        showNotification("Veuillez renseigner au moins le nom, prénom et poste du candidat.", "error");
+                        showNotification("Veuillez renseigner au moins le nom, prÃ©nom et poste du candidat.", "error");
                         return;
                     }
 
-                    const prompt = `En tant que consultant en recrutement pour un cabinet, rédige un e-mail de vente percutant destiné à un client pour lui présenter un excellent candidat.
+                    const prompt = `En tant que consultant en recrutement pour un cabinet, rÃ©dige un e-mail de vente percutant destinÃ© Ã  un client pour lui prÃ©senter un excellent candidat.
                     
-                    **Ton Persona:** Tu es ${nomRecruteur}, ${posteRecruteur}. Tu es proactif, professionnel et tu connais bien ton marché.
-                    **Objectif:** Convaincre le client de l'adéquation du profil avec ses besoins potentiels et l'inciter à en savoir plus.
+                    **Ton Persona:** Tu es ${nomRecruteur}, ${posteRecruteur}. Tu es proactif, professionnel et tu connais bien ton marchÃ©.
+                    **Objectif:** Convaincre le client de l'adÃ©quation du profil avec ses besoins potentiels et l'inciter Ã  en savoir plus.
                     
-                    **Informations sur le candidat à intégrer:**
+                    **Informations sur le candidat Ã  intÃ©grer:**
                     - Nom du candidat: ${nomCandidat}
-                    - Poste ciblé: ${posteCandidat}
-                    - Disponibilité: ${dispoCandidat || 'à discuter'}
-                    - Prétentions salariales: ${salaireCandidat || 'à discuter'}
-                    - Résumé du profil: "${profilCandidat}"
+                    - Poste ciblÃ©: ${posteCandidat}
+                    - DisponibilitÃ©: ${dispoCandidat || 'Ã  discuter'}
+                    - PrÃ©tentions salariales: ${salaireCandidat || 'Ã  discuter'}
+                    - RÃ©sumÃ© du profil: "${profilCandidat}"
 
                     **Structure de l'e-mail:**
-                    1.  **Objet accrocheur:** Ex: "Profil - [Poste du candidat]" ou "Opportunité: Un [Poste du candidat] pour vos équipes".
-                    2.  **Introduction:** Commence par une formule de politesse professionnelle (ex: "Bonjour,"). Mentionne que tu le contactes pour lui présenter un profil qui pourrait l'intéresser.
-                    3.  **Présentation du profil:** Met en avant les points forts du candidat en te basant sur son résumé. Sois concis et impactant. Mentionne le poste, et éventuellement une ou deux compétences clés si elles sont évidentes.
-                    4.  **Informations pratiques:** Indique sa disponibilité et ses prétentions salariales de manière professionnelle.
-                    5.  **Call to action:** Propose d'envoyer le CV complet et/ou de planifier un bref appel pour discuter plus en détail du profil.
+                    1.  **Objet accrocheur:** Ex: "Profil - [Poste du candidat]" ou "OpportunitÃ©: Un [Poste du candidat] pour vos Ã©quipes".
+                    2.  **Introduction:** Commence par une formule de politesse professionnelle (ex: "Bonjour,"). Mentionne que tu le contactes pour lui prÃ©senter un profil qui pourrait l'intÃ©resser.
+                    3.  **PrÃ©sentation du profil:** Met en avant les points forts du candidat en te basant sur son rÃ©sumÃ©. Sois concis et impactant. Mentionne le poste, et Ã©ventuellement une ou deux compÃ©tences clÃ©s si elles sont Ã©videntes.
+                    4.  **Informations pratiques:** Indique sa disponibilitÃ© et ses prÃ©tentions salariales de maniÃ¨re professionnelle.
+                    5.  **Call to action:** Propose d'envoyer le CV complet et/ou de planifier un bref appel pour discuter plus en dÃ©tail du profil.
                     6.  **Conclusion:** Termine par une formule de politesse et ta signature (${nomRecruteur}).
 
-                    **Important:** Ne retourne QUE le texte de l'e-mail (objet inclus, sous la forme "Objet: ..."), sans aucune phrase d'introduction ou de conclusion de ta part. Le ton doit être celui d'un partenaire commercial, pas celui du candidat.`;
+                    **Important:** Ne retourne QUE le texte de l'e-mail (objet inclus, sous la forme "Objet: ..."), sans aucune phrase d'introduction ou de conclusion de ta part. Le ton doit Ãªtre celui d'un partenaire commercial, pas celui du candidat.`;
 
                     const mailContent = await callGeminiAPI(prompt);
                     if (mailContent) {
-                        // Écrire l'email avec l'effet Matrix
+                        // Ã‰crire l'email avec l'effet Matrix
                         writeTextMatrixStyle(controls.recruiterMailContent, mailContent, () => {
-                            showNotification("E-mail de présentation client généré par la Matrix.", "success");
+                            showNotification("E-mail de prÃ©sentation client gÃ©nÃ©rÃ© par la Matrix.", "success");
                         });
                     }
                 });
@@ -7852,14 +4405,14 @@ JSON :`;
                 });
 
                 controls.resetCvBtn.addEventListener('click', async () => {
-                    const confirmed = await showConfirmModal("Nouveau CV", "Êtes-vous sûr de vouloir réinitialiser complètement le CV ?");
+                    const confirmed = await showConfirmModal("Nouveau CV", "ÃŠtes-vous sÃ»r de vouloir rÃ©initialiser complÃ¨tement le CV ?");
                     if (confirmed) resetCVToDefault();
                 });
                 
                 controls.togglePresentationModeBtn.addEventListener('click', () => {
                     document.body.classList.toggle('presentation-mode');
                     const isActive = document.body.classList.contains('presentation-mode');
-                    controls.togglePresentationModeBtn.innerHTML = `<i class="fa-solid ${isActive ? 'fa-eye-slash' : 'fa-eye'}"></i> ${isActive ? 'Quitter Présentation' : 'Mode Présentation'}`;
+                    controls.togglePresentationModeBtn.innerHTML = `<i class="fa-solid ${isActive ? 'fa-eye-slash' : 'fa-eye'}"></i> ${isActive ? 'Quitter PrÃ©sentation' : 'Mode PrÃ©sentation'}`;
                 });
                 
                 controls.toggleOverflowBtn.addEventListener('click', (e) => {
@@ -7869,11 +4422,11 @@ JSON :`;
                     const isActive = document.body.classList.contains('overflow-check-active');
                     
                     if (isActive) {
-                        showNotification('Mode détection de dépassement activé', 'info', 3000);
+                        showNotification('Mode dÃ©tection de dÃ©passement activÃ©', 'info', 3000);
                         e.currentTarget.style.backgroundColor = '#ef4444';
                         e.currentTarget.style.color = 'white';
                     } else {
-                        showNotification('Mode détection de dépassement désactivé', 'info', 3000);
+                        showNotification('Mode dÃ©tection de dÃ©passement dÃ©sactivÃ©', 'info', 3000);
                         e.currentTarget.style.backgroundColor = '';
                         e.currentTarget.style.color = '';
                     }
@@ -7895,7 +4448,7 @@ JSON :`;
                     copyShareLink();
                 });
 
-                // Fermer le modal en cliquant à l'extérieur
+                // Fermer le modal en cliquant Ã  l'extÃ©rieur
                 controls.shareModal.addEventListener('click', (e) => {
                     if (e.target === controls.shareModal) {
                         controls.shareModal.classList.remove('active');
@@ -7948,8 +4501,8 @@ JSON :`;
                             // ...existing code...
                         }
                     } catch (error) {
-                        console.error('Erreur lors de la limitation des compétences:', error);
-                        showNotification("Erreur lors de la limitation des compétences avec l'IA", "error");
+                        console.error('Erreur lors de la limitation des compÃ©tences:', error);
+                        showNotification("Erreur lors de la limitation des compÃ©tences avec l'IA", "error");
                     }
                 }
                 
@@ -7980,14 +4533,14 @@ JSON :`;
                 // Nouveaux event listeners pour la barre d'outils
                 controls.toolbarSaveBtn.addEventListener('click', () => {
                     saveCV();
-                    showNotification("CV sauvegardé localement avec succès.", "success");
+                    showNotification("CV sauvegardÃ© localement avec succÃ¨s.", "success");
                 });
 
                 controls.toolbarLoadBtn.addEventListener('click', () => {
                     if (loadCV()) {
-                        showNotification("CV chargé depuis la sauvegarde locale.", "success");
+                        showNotification("CV chargÃ© depuis la sauvegarde locale.", "success");
                     } else {
-                        showNotification("Aucune sauvegarde trouvée.", "error");
+                        showNotification("Aucune sauvegarde trouvÃ©e.", "error");
                     }
                 });
 
@@ -7999,12 +4552,12 @@ JSON :`;
                     }
                 });
                 
-                // --- GESTIONNAIRES D'ÉVÉNEMENTS POUR LES API ---
+                // --- GESTIONNAIRES D'Ã‰VÃ‰NEMENTS POUR LES API ---
                 
-                // Chargement des paramètres API au démarrage
+                // Chargement des paramÃ¨tres API au dÃ©marrage
                 initializeApiSettings();
                 
-                // Sauvegarder automatiquement les clés pendant la frappe
+                // Sauvegarder automatiquement les clÃ©s pendant la frappe
                 if (controls.geminiApiKey) {
                     controls.geminiApiKey.addEventListener('input', (e) => {
                         if (e.target.value.trim()) {
@@ -8025,7 +4578,7 @@ JSON :`;
                     });
                 }
                 
-                // Boutons de sélection d'API
+                // Boutons de sÃ©lection d'API
                 if (controls.selectGeminiBtn) {
                     controls.selectGeminiBtn.addEventListener('click', () => {
                         switchApiProvider('gemini');
@@ -8045,7 +4598,7 @@ JSON :`;
                     });
                 }
                 
-                // Boutons de sauvegarde des clés
+                // Boutons de sauvegarde des clÃ©s
                 if (controls.saveGeminiKeyBtn) {
                     controls.saveGeminiKeyBtn.addEventListener('click', async () => {
                         saveApiKey('gemini');
@@ -8058,18 +4611,18 @@ JSON :`;
                     });
                 }
                 
-                // Compatibilité avec l'ancien bouton (redirige vers le bon gestionnaire)
+                // CompatibilitÃ© avec l'ancien bouton (redirige vers le bon gestionnaire)
                 if (controls.saveApiKeyBtn) {
                     controls.saveApiKeyBtn.addEventListener('click', async () => {
                         saveApiKey(currentApiProvider);
                     });
                 }
 
-                // Tentative de chargement automatique au démarrage
+                // Tentative de chargement automatique au dÃ©marrage
                 if (localStorage.getItem('cv-data')) {
                     setTimeout(() => {
                         if (loadCV()) {
-                            showNotification("CV restauré depuis la sauvegarde locale.", "info");
+                            showNotification("CV restaurÃ© depuis la sauvegarde locale.", "info");
                         }
                     }, 1000);
                 }
@@ -8077,7 +4630,7 @@ JSON :`;
                 // Chargement automatique des informations recruteur si disponibles
                 setTimeout(() => {
                     if (localStorage.getItem('recruiter-info')) {
-                        // Ne charge que si les champs sont vides (pour éviter d'écraser les données chargées du CV)
+                        // Ne charge que si les champs sont vides (pour Ã©viter d'Ã©craser les donnÃ©es chargÃ©es du CV)
                         if (!controls.bannerNom.value && !controls.bannerPoste.value && !controls.bannerEmail.value && !controls.bannerTel.value) {
                             loadRecruiterInfo();
                         }
@@ -8120,12 +4673,12 @@ JSON :`;
                     setupOverflowObserver(pageElement);
                 });
 
-                // --- FONCTIONS POUR LES OPTIONS DE MISE EN PAGE AVANCÉES ---
+                // --- FONCTIONS POUR LES OPTIONS DE MISE EN PAGE AVANCÃ‰ES ---
                 
                 function initializeAdvancedLayoutControls() {
                 console.log("Initializing advanced layout controls...");
                 
-                // Gestionnaires pour les arrière-plans
+                // Gestionnaires pour les arriÃ¨re-plans
                 const bgStyleButtons = document.querySelectorAll('[data-bg-style]');
                 bgStyleButtons.forEach(btn => {
                     btn.addEventListener('click', function() {
@@ -8133,7 +4686,7 @@ JSON :`;
                         updateBackgroundStyle(style);
                         setActiveButton(bgStyleButtons, this);
                         
-                        // Afficher/masquer les contrôles spécifiques
+                        // Afficher/masquer les contrÃ´les spÃ©cifiques
                         const gradientControls = document.getElementById('gradient-controls');
                         const patternControls = document.getElementById('pattern-controls');
                         const textureControls = document.getElementById('texture-controls');
@@ -8144,7 +4697,7 @@ JSON :`;
                     });
                 });
 
-                // Couleurs d'arrière-plan
+                // Couleurs d'arriÃ¨re-plan
                 const bgColorInput = document.getElementById('bg-color');
                 if (bgColorInput) {
                     bgColorInput.addEventListener('input', function() {
@@ -8155,7 +4708,7 @@ JSON :`;
                     });
                 }
 
-                // Dégradés
+                // DÃ©gradÃ©s
                 const gradientColor1 = document.getElementById('gradient-color-1');
                 const gradientColor2 = document.getElementById('gradient-color-2');
                 const gradientDirButtons = document.querySelectorAll('[data-gradient-dir]');
@@ -8221,7 +4774,7 @@ JSON :`;
                         updateBorderStyle(style);
                         setActiveButton(borderStyleButtons, this);
                         
-                        // Afficher/masquer les contrôles de bordure
+                        // Afficher/masquer les contrÃ´les de bordure
                         const borderControls = document.getElementById('border-controls');
                         if (borderControls) {
                             borderControls.style.display = style !== 'none' ? 'block' : 'none';
@@ -8229,7 +4782,7 @@ JSON :`;
                     });
                 });
 
-                // Épaisseur de bordure et arrondis
+                // Ã‰paisseur de bordure et arrondis
                 const borderWidthInput = document.getElementById('border-width');
                 const borderRadiusInput = document.getElementById('border-radius');
                 
@@ -8335,7 +4888,7 @@ JSON :`;
                     });
                 });
 
-                // Échelle de la page
+                // Ã‰chelle de la page
                 const pageScaleInput = document.getElementById('page-scale');
                 if (pageScaleInput) {
                     pageScaleInput.addEventListener('input', function() {
@@ -8418,7 +4971,7 @@ JSON :`;
                     highContrastPrint.addEventListener('change', updatePrintOptions);
                 }
 
-                // Césure et contrôle typographique
+                // CÃ©sure et contrÃ´le typographique
                 const hyphenation = document.getElementById('hyphenation');
                 const widowOrphan = document.getElementById('widow-orphan');
                 
@@ -8441,7 +4994,7 @@ JSON :`;
                     });
                 }
 
-                // Padding personnalisé
+                // Padding personnalisÃ©
                 const paddingInputs = ['padding-top', 'padding-right', 'padding-bottom', 'padding-left'];
                 paddingInputs.forEach(id => {
                     const input = document.getElementById(id);
@@ -8511,7 +5064,7 @@ JSON :`;
                 // Retirer toutes les classes de background
                 preview.classList.remove('bg-solid', 'bg-gradient-linear', 'bg-gradient-radial', 'bg-pattern-dots', 'bg-pattern-lines', 'bg-pattern-grid', 'bg-texture-paper', 'bg-texture-fabric');
                 
-                // Ajouter la classe appropriée
+                // Ajouter la classe appropriÃ©e
                 switch(style) {
                     case 'solid':
                         preview.classList.add('bg-solid');
@@ -8520,10 +5073,10 @@ JSON :`;
                         preview.classList.add('bg-gradient-linear');
                         break;
                     case 'pattern':
-                        // La classe sera ajoutée par updatePattern()
+                        // La classe sera ajoutÃ©e par updatePattern()
                         break;
                     case 'texture':
-                        // La classe sera ajoutée par updateTexture()
+                        // La classe sera ajoutÃ©e par updateTexture()
                         break;
                 }
             }
@@ -8580,7 +5133,7 @@ JSON :`;
                 const color = document.getElementById('shadow-color')?.value || '#000000';
                 const opacity = document.getElementById('shadow-opacity')?.value || '0.1';
                 
-                // Convertir hex en rgb pour l'opacité
+                // Convertir hex en rgb pour l'opacitÃ©
                 const r = parseInt(color.slice(1, 3), 16);
                 const g = parseInt(color.slice(3, 5), 16);
                 const b = parseInt(color.slice(5, 7), 16);
@@ -8657,7 +5210,7 @@ JSON :`;
                 const preview = document.querySelector('.a4-page');
                 if (!preview) return;
 
-                // Réinitialiser les styles d'impression
+                // RÃ©initialiser les styles d'impression
                 preview.classList.remove('print-optimized', 'high-contrast-print');
                 
                 if (printOptimized && printOptimized.checked) {
@@ -8676,7 +5229,7 @@ JSON :`;
                 // Retirer toutes les classes de motifs
                 preview.classList.remove('bg-pattern-dots', 'bg-pattern-lines', 'bg-pattern-grid');
                 
-                // Ajouter la classe appropriée
+                // Ajouter la classe appropriÃ©e
                 if (pattern !== 'none') {
                     preview.classList.add(`bg-pattern-${pattern}`);
                 }
@@ -8689,7 +5242,7 @@ JSON :`;
                 // Retirer toutes les classes de textures
                 preview.classList.remove('bg-texture-paper', 'bg-texture-fabric');
                 
-                // Ajouter la classe appropriée
+                // Ajouter la classe appropriÃ©e
                 if (texture !== 'none') {
                     preview.classList.add(`bg-texture-${texture}`);
                 }
@@ -8702,7 +5255,7 @@ JSON :`;
                 // Retirer toutes les classes de style de bordure
                 preview.classList.remove('border-style-solid', 'border-style-dashed', 'border-style-dotted', 'border-style-double');
                 
-                // Ajouter la classe appropriée
+                // Ajouter la classe appropriÃ©e
                 if (style !== 'none') {
                     preview.classList.add(`border-style-${style}`);
                 }
@@ -8715,7 +5268,7 @@ JSON :`;
                 // Retirer toutes les classes d'ombre
                 preview.classList.remove('shadow-soft', 'shadow-medium', 'shadow-strong', 'shadow-colored', 'shadow-inset');
                 
-                // Ajouter la classe appropriée
+                // Ajouter la classe appropriÃ©e
                 if (shadow !== 'none') {
                     preview.classList.add(`shadow-${shadow}`);
                 }
@@ -8727,7 +5280,7 @@ JSON :`;
                     // Retirer toutes les classes de forme
                     section.classList.remove('shape-rectangle', 'shape-rounded', 'shape-circle', 'shape-pill', 'shape-custom');
                     
-                    // Ajouter la classe appropriée
+                    // Ajouter la classe appropriÃ©e
                     if (shape !== 'none') {
                         section.classList.add(`shape-${shape}`);
                     }
@@ -8753,7 +5306,7 @@ JSON :`;
                 // Retirer toutes les classes d'alignement
                 preview.classList.remove('text-align-left', 'text-align-center', 'text-align-right', 'text-align-justify');
                 
-                // Ajouter la classe appropriée
+                // Ajouter la classe appropriÃ©e
                 preview.classList.add(`text-align-${align}`);
             }
 
@@ -8763,7 +5316,7 @@ JSON :`;
                     // Retirer toutes les classes d'animation
                     section.classList.remove('animation-fade-in', 'animation-slide-in', 'animation-zoom-in', 'animation-bounce');
                     
-                    // Ajouter la classe appropriée
+                    // Ajouter la classe appropriÃ©e
                     if (animation !== 'none') {
                         section.classList.add(`animation-${animation}`);
                     }
@@ -8781,7 +5334,7 @@ JSON :`;
                     // Retirer toutes les classes de filtre
                     preview.classList.remove('filter-blur', 'filter-brightness', 'filter-contrast', 'filter-grayscale', 'filter-sepia');
                     
-                    // Ajouter les filtres sélectionnés
+                    // Ajouter les filtres sÃ©lectionnÃ©s
                     filters.forEach(filter => {
                         preview.classList.add(`filter-${filter}`);
                     });
@@ -8789,7 +5342,7 @@ JSON :`;
             }
 
             function updatePrintOptions() {
-                // Cette fonction peut être étendue pour gérer des options d'impression spécifiques
+                // Cette fonction peut Ãªtre Ã©tendue pour gÃ©rer des options d'impression spÃ©cifiques
                 console.log('Print options updated');
             }
 
@@ -8805,7 +5358,7 @@ JSON :`;
                 }
             }
 
-            // --- FONCTION POUR RÉDUIRE/DÉVELOPPER TOUTES LES SECTIONS ---
+            // --- FONCTION POUR RÃ‰DUIRE/DÃ‰VELOPPER TOUTES LES SECTIONS ---
             
             function initializeCollapseAllButton() {
                 if (!controls.collapseAllBtn) return;
@@ -8822,7 +5375,7 @@ JSON :`;
                 
                 if (allDetails.length === 0) return;
                 
-                // Vérifier si toutes les sections sont fermées
+                // VÃ©rifier si toutes les sections sont fermÃ©es
                 const allClosed = Array.from(allDetails).every(detail => !detail.open);
                 
                 if (allClosed) {
@@ -8830,17 +5383,17 @@ JSON :`;
                     allDetails.forEach(detail => {
                         detail.open = true;
                     });
-                    btnText.textContent = 'Réduire toutes les sections';
+                    btnText.textContent = 'RÃ©duire toutes les sections';
                     btnIcon.className = 'fas fa-compress-alt';
-                    showNotification('Toutes les sections ont été développées', 'success', 2000);
+                    showNotification('Toutes les sections ont Ã©tÃ© dÃ©veloppÃ©es', 'success', 2000);
                 } else {
                     // Fermer toutes les sections
                     allDetails.forEach(detail => {
                         detail.open = false;
                     });
-                    btnText.textContent = 'Développer toutes les sections';
+                    btnText.textContent = 'DÃ©velopper toutes les sections';
                     btnIcon.className = 'fas fa-expand-alt';
-                    showNotification('Toutes les sections ont été réduites', 'success', 2000);
+                    showNotification('Toutes les sections ont Ã©tÃ© rÃ©duites', 'success', 2000);
                 }
             }
 
@@ -8922,7 +5475,7 @@ JSON :`;
                     });
                 });
                 
-                // Restaurer les tailles sauvegardées
+                // Restaurer les tailles sauvegardÃ©es
                 restorePanelSizes();
             }
             
@@ -8982,7 +5535,7 @@ JSON :`;
                     });
                 }
                 
-                // Restaurer l'état des panneaux
+                // Restaurer l'Ã©tat des panneaux
                 const savedLeftPanelState = localStorage.getItem('cvCreator_leftPanelVisible');
                 const savedTopPanelState = localStorage.getItem('cvCreator_topPanelVisible');
                 
@@ -9013,7 +5566,7 @@ JSON :`;
                     }
                 }
                 
-                // Event listeners pour les contrôles de zoom
+                // Event listeners pour les contrÃ´les de zoom
                 if (controls.zoomSlider) {
                     controls.zoomSlider.addEventListener('input', (e) => {
                         applyZoom(parseInt(e.target.value));
@@ -9035,7 +5588,7 @@ JSON :`;
                 if (controls.zoomReset) {
                     controls.zoomReset.addEventListener('click', () => {
                         applyZoom(100);
-                        showNotification('Zoom réinitialisé à 100%', 'success', 2000);
+                        showNotification('Zoom rÃ©initialisÃ© Ã  100%', 'success', 2000);
                     });
                 }
                 
@@ -9066,7 +5619,7 @@ JSON :`;
                     }
                 });
                 
-                // Restaurer le niveau de zoom sauvegardé
+                // Restaurer le niveau de zoom sauvegardÃ©
                 const savedZoom = localStorage.getItem('cvCreator_zoomLevel');
                 if (savedZoom) {
                     applyZoom(parseInt(savedZoom));
@@ -9080,11 +5633,11 @@ JSON :`;
             function openShareModal() {
                 if (!controls.shareModal) return;
                 
-                // Générer le lien de partage
+                // GÃ©nÃ©rer le lien de partage
                 const shareData = generateShareData();
                 const shareUrl = generateShareUrl(shareData);
                 
-                // Mettre à jour le champ input avec l'URL
+                // Mettre Ã  jour le champ input avec l'URL
                 if (controls.shareLinkInput) {
                     controls.shareLinkInput.value = shareUrl;
                 }
@@ -9092,11 +5645,11 @@ JSON :`;
                 // Afficher le modal
                 controls.shareModal.classList.add('active');
                 
-                showNotification('Lien de partage généré !', 'success', 3000);
+                showNotification('Lien de partage gÃ©nÃ©rÃ© !', 'success', 3000);
             }
 
             function generateShareData() {
-                // Récupérer toutes les données du CV
+                // RÃ©cupÃ©rer toutes les donnÃ©es du CV
                 const cvData = {
                     // Informations personnelles
                     nom: document.getElementById('nom')?.value || '',
@@ -9107,7 +5660,7 @@ JSON :`;
                     adresse: document.getElementById('adresse')?.value || '',
                     description: document.getElementById('description')?.value || '',
                     
-                    // Expériences
+                    // ExpÃ©riences
                     experiences: Array.from(document.querySelectorAll('#experience-list .experience-item')).map(item => ({
                         title: item.querySelector('[data-field="title"]')?.value || '',
                         meta: item.querySelector('[data-field="meta"]')?.value || '',
@@ -9121,7 +5674,7 @@ JSON :`;
                         desc: item.querySelector('[data-field="desc"]')?.value || ''
                     })),
                     
-                    // Compétences
+                    // CompÃ©tences
                     competences: document.getElementById('competences')?.value || '',
                     
                     // Style et couleurs
@@ -9134,10 +5687,10 @@ JSON :`;
             }
 
             function generateShareUrl(data) {
-                // Encoder les données en base64 pour l'URL
+                // Encoder les donnÃ©es en base64 pour l'URL
                 const encodedData = btoa(encodeURIComponent(JSON.stringify(data)));
                 
-                // Créer l'URL de partage
+                // CrÃ©er l'URL de partage
                 const baseUrl = window.location.origin + window.location.pathname;
                 const shareUrl = `${baseUrl}?shared=${encodedData}`;
                 
@@ -9147,18 +5700,18 @@ JSON :`;
             function copyShareLink() {
                 if (!controls.shareLinkInput) return;
                 
-                // Sélectionner et copier le lien
+                // SÃ©lectionner et copier le lien
                 controls.shareLinkInput.select();
                 controls.shareLinkInput.setSelectionRange(0, 99999); // Pour mobile
                 
                 try {
                     document.execCommand('copy');
-                    showNotification('Lien copié dans le presse-papiers !', 'success', 3000);
+                    showNotification('Lien copiÃ© dans le presse-papiers !', 'success', 3000);
                 } catch (err) {
                     // Fallback avec l'API moderne si disponible
                     if (navigator.clipboard) {
                         navigator.clipboard.writeText(controls.shareLinkInput.value).then(() => {
-                            showNotification('Lien copié dans le presse-papiers !', 'success', 3000);
+                            showNotification('Lien copiÃ© dans le presse-papiers !', 'success', 3000);
                         }).catch(() => {
                             showNotification('Erreur lors de la copie', 'error', 3000);
                         });
@@ -9169,26 +5722,26 @@ JSON :`;
             }
 
             function loadSharedCV() {
-                // Vérifier s'il y a des données partagées dans l'URL
+                // VÃ©rifier s'il y a des donnÃ©es partagÃ©es dans l'URL
                 const urlParams = new URLSearchParams(window.location.search);
                 const sharedData = urlParams.get('shared');
                 
                 if (sharedData) {
                     try {
-                        // Décoder les données
+                        // DÃ©coder les donnÃ©es
                         const decodedData = JSON.parse(decodeURIComponent(atob(sharedData)));
                         
-                        // Charger les données dans le formulaire
+                        // Charger les donnÃ©es dans le formulaire
                         loadCVData(decodedData);
                         
-                        showNotification('CV partagé chargé avec succès !', 'success', 5000);
+                        showNotification('CV partagÃ© chargÃ© avec succÃ¨s !', 'success', 5000);
                         
                         // Nettoyer l'URL
                         window.history.replaceState({}, document.title, window.location.pathname);
                         
                     } catch (error) {
-                        console.error('Erreur lors du chargement du CV partagé:', error);
-                        showNotification('Erreur lors du chargement du CV partagé', 'error', 5000);
+                        console.error('Erreur lors du chargement du CV partagÃ©:', error);
+                        showNotification('Erreur lors du chargement du CV partagÃ©', 'error', 5000);
                     }
                 }
             }
@@ -9196,12 +5749,12 @@ JSON :`;
             // --- FONCTIONS D'ANIMATION IA ---
             
             function showMatrixProcessing() {
-                // Animation professionnelle discrète pour le processus d'API
+                // Animation professionnelle discrÃ¨te pour le processus d'API
                 const body = document.body;
                 body.style.transition = 'all 0.3s ease';
                 body.style.background = 'linear-gradient(135deg, rgba(248, 250, 252, 0.02), rgba(241, 245, 249, 0.01))';
                 
-                // Créer quelques indicateurs professionnels discrets
+                // CrÃ©er quelques indicateurs professionnels discrets
                 for (let i = 0; i < 4; i++) {
                     createGlobalFloatingChar(i);
                 }
@@ -9211,7 +5764,7 @@ JSON :`;
                 const body = document.body;
                 body.style.background = '';
                 
-                // Nettoyer les caractères flottants globaux
+                // Nettoyer les caractÃ¨res flottants globaux
                 const floatingChars = document.querySelectorAll('.global-matrix-char');
                 floatingChars.forEach(char => char.remove());
             }
@@ -9219,7 +5772,7 @@ JSON :`;
             function createGlobalFloatingChar(index) {
                 const char = document.createElement('div');
                 char.className = 'global-matrix-char';
-                char.textContent = ['•', '◦', '▪', '▫'][Math.floor(Math.random() * 4)];
+                char.textContent = ['â€¢', 'â—¦', 'â–ª', 'â–«'][Math.floor(Math.random() * 4)];
                 char.style.cssText = `
                     position: fixed;
                     color: rgba(156, 163, 175, 0.15);
@@ -9235,9 +5788,9 @@ JSON :`;
                 
                 document.body.appendChild(char);
                 
-                // Changer le caractère de manière ultra rapide et contrôlée
+                // Changer le caractÃ¨re de maniÃ¨re ultra rapide et contrÃ´lÃ©e
                 const changeInterval = setInterval(() => {
-                    char.textContent = ['•', '◦', '▪', '▫'][Math.floor(Math.random() * 4)];
+                    char.textContent = ['â€¢', 'â—¦', 'â–ª', 'â–«'][Math.floor(Math.random() * 4)];
                 }, 75); // Ultra rapide: 150ms -> 75ms
                 
                 // Nettoyer
@@ -9247,37 +5800,37 @@ JSON :`;
                 }, 12000);
             }
             
-            function showAIThinking(title = "IA Professionnelle en cours d'analyse...", subtitle = "Traitement intelligent des données") {
+            function showAIThinking(title = "IA Professionnelle en cours d'analyse...", subtitle = "Traitement intelligent des donnÃ©es") {
                 if (!controls.aiThinkingOverlay) return;
                 
                 controls.aiThinkingTitle.textContent = title;
                 controls.aiThinkingSubtitle.textContent = subtitle;
                 controls.aiThinkingOverlay.classList.add('active');
                 
-                // Réinitialiser les étapes
+                // RÃ©initialiser les Ã©tapes
                 document.querySelectorAll('.ai-step').forEach((step, index) => {
                     step.classList.remove('active', 'completed');
                     if (index === 0) step.classList.add('active');
                 });
                 
-                // Démarrer l'animation Matrix dans l'overlay IA
+                // DÃ©marrer l'animation Matrix dans l'overlay IA
                 startAIMatrixAnimation();
-                // Démarrer l'animation des étapes
+                // DÃ©marrer l'animation des Ã©tapes
                 startAIStepAnimation();
             }
 
             function hideAIThinking() {
                 if (controls.aiThinkingOverlay) {
                     controls.aiThinkingOverlay.classList.remove('active');
-                    // Arrêter l'animation Matrix
+                    // ArrÃªter l'animation Matrix
                     stopAIMatrixAnimation();
                 }
             }
 
-            // --- FONCTION D'ÉCRITURE MATRIX EN TEMPS RÉEL ---
+            // --- FONCTION D'Ã‰CRITURE MATRIX EN TEMPS RÃ‰EL ---
             
             function writeTextMatrixStyle(element, newText, callback = null) {
-                console.log("writeTextMatrixStyle appelé avec:", {
+                console.log("writeTextMatrixStyle appelÃ© avec:", {
                     element: element,
                     elementId: element?.id,
                     newText: newText,
@@ -9285,7 +5838,7 @@ JSON :`;
                 });
                 
                 if (!element || !newText) {
-                    console.log("Élément ou texte manquant, arrêt de la fonction");
+                    console.log("Ã‰lÃ©ment ou texte manquant, arrÃªt de la fonction");
                     if (callback) callback();
                     return;
                 }
@@ -9297,10 +5850,10 @@ JSON :`;
                 element.style.fontWeight = '500';
                 
                 let currentIndex = 0;
-                const chars = ['0', '1', '•', '◦', '▪'];
+                const chars = ['0', '1', 'â€¢', 'â—¦', 'â–ª'];
                 
                 // Phase 1: Scramble initial professionnel minimal
-                const scramblePhases = 1; // Réduit pour plus de rapidité
+                const scramblePhases = 1; // RÃ©duit pour plus de rapiditÃ©
                 let currentPhase = 0;
                 
                 function scrambleText() {
@@ -9311,7 +5864,7 @@ JSON :`;
                         } else {
                             // Principalement des points discrets
                             if (Math.random() < 0.9) {
-                                scrambled += Math.random() < 0.6 ? '•' : '◦';
+                                scrambled += Math.random() < 0.6 ? 'â€¢' : 'â—¦';
                             } else {
                                 scrambled += chars[Math.floor(Math.random() * chars.length)];
                             }
@@ -9321,7 +5874,7 @@ JSON :`;
                     element.style.opacity = '0.6';
                 }
                 
-                // Scrambles contrôlés - ultra rapides
+                // Scrambles contrÃ´lÃ©s - ultra rapides
                 const scrambleInterval = setInterval(() => {
                     scrambleText();
                     currentPhase++;
@@ -9338,10 +5891,10 @@ JSON :`;
                     const writeInterval = setInterval(() => {
                         let displayText = '';
                         
-                        // Texte déjà écrit (stable)
+                        // Texte dÃ©jÃ  Ã©crit (stable)
                         displayText += newText.substring(0, currentIndex);
                         
-                        // Caractère en cours d'écriture (avec effet)
+                        // CaractÃ¨re en cours d'Ã©criture (avec effet)
                         if (currentIndex < newText.length) {
                             if (newText[currentIndex] === ' ') {
                                 displayText += ' ';
@@ -9362,7 +5915,7 @@ JSON :`;
                             if (newText[i] === ' ') {
                                 displayText += ' ';
                             } else {
-                                if (Math.random() < 0.95) { // Presque que des 0 et 1 pour la fluidité
+                                if (Math.random() < 0.95) { // Presque que des 0 et 1 pour la fluiditÃ©
                                     displayText += Math.random() < 0.5 ? '0' : '1';
                                 } else {
                                     displayText += chars[Math.floor(Math.random() * chars.length)];
@@ -9372,7 +5925,7 @@ JSON :`;
                         
                         element.textContent = displayText;
                         
-                        // Effet de flash subtil sur le caractère en cours
+                        // Effet de flash subtil sur le caractÃ¨re en cours
                         if (currentIndex < newText.length) {
                             element.style.textShadow = '0 0 5px rgba(55, 65, 81, 0.6)';
                             setTimeout(() => {
@@ -9393,11 +5946,11 @@ JSON :`;
                                 if (callback) callback();
                             }, 200); // Ultra rapide: 400ms -> 200ms
                         }
-                    }, 12); // Ultra rapide: 25ms -> 12ms pour une fluidité giga
+                    }, 12); // Ultra rapide: 25ms -> 12ms pour une fluiditÃ© giga
                 }
             }
             
-            // Fonction pour écrire plusieurs éléments en séquence - ultra optimisée
+            // Fonction pour Ã©crire plusieurs Ã©lÃ©ments en sÃ©quence - ultra optimisÃ©e
             function writeMultipleElementsMatrix(elements, texts, finalCallback = null) {
                 let currentElementIndex = 0;
                 
@@ -9412,7 +5965,7 @@ JSON :`;
                     
                     writeTextMatrixStyle(element, text, () => {
                         currentElementIndex++;
-                        setTimeout(writeNext, 50); // Ultra rapide: 100ms -> 50ms entre les éléments
+                        setTimeout(writeNext, 50); // Ultra rapide: 100ms -> 50ms entre les Ã©lÃ©ments
                     });
                 }
                 
@@ -9421,10 +5974,10 @@ JSON :`;
 
             function startAIMatrixAnimation() {
                 const neurons = document.querySelectorAll('.ai-brain .neuron');
-                const professionalChars = ['•', '◦', '▪', '▫', '›', '‹'];
+                const professionalChars = ['â€¢', 'â—¦', 'â–ª', 'â–«', 'â€º', 'â€¹'];
                 
                 neurons.forEach((neuron, index) => {
-                    // Style professionnel pour les colonnes de données
+                    // Style professionnel pour les colonnes de donnÃ©es
                     neuron.style.cssText += `
                         font-size: 11px;
                         opacity: 0.5;
@@ -9435,7 +5988,7 @@ JSON :`;
                         color: #9ca3af;
                     `;
                     
-                    // Changer les caractères avec un timing professionnel - ultra optimisé
+                    // Changer les caractÃ¨res avec un timing professionnel - ultra optimisÃ©
                     neuron.matrixInterval = setInterval(() => {
                         if (Math.random() < 0.85) {
                             // 85% de chance d'avoir des puces professionnelles
@@ -9454,7 +6007,7 @@ JSON :`;
                     }, 25 + Math.random() * 35); // Ultra rapide: 25-60ms
                 });
                 
-                // Créer des éléments flottants plus sophistiqués
+                // CrÃ©er des Ã©lÃ©ments flottants plus sophistiquÃ©s
                 const brainContainer = document.querySelector('.ai-brain');
                 for (let i = 0; i < 12; i++) {
                     setTimeout(() => {
@@ -9465,7 +6018,7 @@ JSON :`;
 
             function createFloatingChar(container, index) {
                 const floatingChar = document.createElement('div');
-                const chars = ['0', '1', '0', '1', '▓', '▒', '░', '█'];
+                const chars = ['0', '1', '0', '1', 'â–“', 'â–’', 'â–‘', 'â–ˆ'];
                 floatingChar.textContent = chars[Math.floor(Math.random() * chars.length)];
                 floatingChar.style.cssText = `
                     position: absolute;
@@ -9484,7 +6037,7 @@ JSON :`;
                 
                 container.appendChild(floatingChar);
                 
-                // Changer le caractère de manière plus contrôlée
+                // Changer le caractÃ¨re de maniÃ¨re plus contrÃ´lÃ©e
                 const changeInterval = setInterval(() => {
                     if (Math.random() < 0.75) {
                         floatingChar.textContent = Math.random() < 0.5 ? '0' : '1';
@@ -9493,7 +6046,7 @@ JSON :`;
                     }
                 }, 120 + Math.random() * 180);
                 
-                // Nettoyer après un certain temps
+                // Nettoyer aprÃ¨s un certain temps
                 setTimeout(() => {
                     clearInterval(changeInterval);
                     if (floatingChar.parentNode) {
@@ -9511,7 +6064,7 @@ JSON :`;
                     }
                 });
                 
-                // Nettoyer les caractères flottants
+                // Nettoyer les caractÃ¨res flottants
                 const floatingChars = document.querySelectorAll('.ai-brain div:not(.neuron)');
                 floatingChars.forEach(char => {
                     if (char.parentNode) {
@@ -9524,12 +6077,12 @@ JSON :`;
                 cvPages.forEach(page => {
                     const container = page.querySelector('.matrix-rain-container');
                     if (container) {
-                        // Arrêter l'interval de pulse
+                        // ArrÃªter l'interval de pulse
                         if (container.pulseInterval) {
                             clearInterval(container.pulseInterval);
                         }
                         
-                        // Nettoyer tous les intervals des caractères
+                        // Nettoyer tous les intervals des caractÃ¨res
                         const chars = container.querySelectorAll('.matrix-column div');
                         chars.forEach(char => {
                             if (char.changeInterval) {
@@ -9561,7 +6114,7 @@ JSON :`;
                 });
             }
 
-            // --- FONCTIONS D'ANIMATION MATRIX RAIN INTÉGRÉE SPECTACULAIRE ---
+            // --- FONCTIONS D'ANIMATION MATRIX RAIN INTÃ‰GRÃ‰E SPECTACULAIRE ---
             
             function showCVRestructureAnimation() {
                 const cvPreview = document.querySelector('#cv-preview-wrapper');
@@ -9569,33 +6122,33 @@ JSON :`;
                 
                 if (!cvPreview || !cvPages.length) return Promise.resolve();
                 
-                // Démarrer l'animation professionnelle ultra-rapide directement sur le CV
+                // DÃ©marrer l'animation professionnelle ultra-rapide directement sur le CV
                 return new Promise((resolve) => {
                     // PHASE 1: Initialisation professionnelle (0-200ms)
                     startProfessionalDataFlow(cvPages);
-                    showNotification("🔍 Scanning CV data...", "info", 500);
+                    showNotification("ðŸ” Scanning CV data...", "info", 500);
                     
                     setTimeout(() => {
                         // PHASE 2: Intensification + transformation du contenu (200ms-800ms)
                         intensifyProfessionalFlow(cvPages);
                         transformCVContentProfessional(cvPages);
-                        showNotification("💻 Processing with AI...", "info", 600);
+                        showNotification("ðŸ’» Processing with AI...", "info", 600);
                     }, 200);
                     
                     setTimeout(() => {
                         // PHASE 3: Reconstruction avec effet de digitalisation (800ms-1400ms)
                         startProfessionalReconstruction(cvPages);
-                        showNotification("🧠 Optimizing layout...", "info", 600);
+                        showNotification("ðŸ§  Optimizing layout...", "info", 600);
                     }, 800);
                     
                     setTimeout(() => {
                         // PHASE 4: Finalisation avec effet de compilation (1400ms-1800ms)
                         finalizeProfessionalCompilation(cvPages);
-                        showNotification("✨ Optimization complete...", "success", 400);
+                        showNotification("âœ¨ Optimization complete...", "success", 400);
                     }, 1400);
                     
                     setTimeout(() => {
-                        // PHASE 5: Nettoyage et révélation finale (1800ms-2000ms)
+                        // PHASE 5: Nettoyage et rÃ©vÃ©lation finale (1800ms-2000ms)
                         cleanupProfessionalEffects(cvPages);
                         resolve();
                     }, 1800);
@@ -9667,7 +6220,7 @@ JSON :`;
             
             function startProfessionalDataFlow(cvPages) {
                 cvPages.forEach((page, pageIndex) => {
-                    // Créer un conteneur de flux de données professionnel
+                    // CrÃ©er un conteneur de flux de donnÃ©es professionnel
                     const flowContainer = document.createElement('div');
                     flowContainer.className = 'professional-flow-container';
                     flowContainer.style.cssText = `
@@ -9685,7 +6238,7 @@ JSON :`;
                     page.style.position = 'relative';
                     page.appendChild(flowContainer);
                     
-                    // Créer 15 colonnes de flux professionnels (léger et élégant)
+                    // CrÃ©er 15 colonnes de flux professionnels (lÃ©ger et Ã©lÃ©gant)
                     for (let i = 0; i < 15; i++) {
                         setTimeout(() => {
                             createProfessionalColumn(flowContainer, i);
@@ -9696,7 +6249,7 @@ JSON :`;
                     page.style.transition = 'all 0.3s ease';
                     page.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(59, 130, 246, 0.1)';
                     
-                    // Animation pulsante discrète professionnelle
+                    // Animation pulsante discrÃ¨te professionnelle
                     let pulseInterval = setInterval(() => {
                         page.style.boxShadow = page.style.boxShadow.includes('0.1') 
                             ? '0 6px 20px rgba(0, 0, 0, 0.12), 0 3px 10px rgba(59, 130, 246, 0.15)' 
@@ -9725,8 +6278,8 @@ JSON :`;
                     font-weight: 400;
                 `;
                 
-                // Générer du contenu professionnel
-                const chars = ['•', '◦', '▪', '▫', '›', '‹', '0', '1'];
+                // GÃ©nÃ©rer du contenu professionnel
+                const chars = ['â€¢', 'â—¦', 'â–ª', 'â–«', 'â€º', 'â€¹', '0', '1'];
                 let content = '';
                 for (let i = 0; i < 20; i++) {
                     content += chars[Math.floor(Math.random() * chars.length)] + '\n';
@@ -9735,7 +6288,7 @@ JSON :`;
                 
                 container.appendChild(column);
                 
-                // Changer les caractères de façon ultra-rapide
+                // Changer les caractÃ¨res de faÃ§on ultra-rapide
                 column.changeInterval = setInterval(() => {
                     let newContent = '';
                     for (let i = 0; i < 20; i++) {
@@ -9781,7 +6334,7 @@ JSON :`;
                     const modules = page.querySelectorAll('.cv-module');
                     modules.forEach((module, index) => {
                         setTimeout(() => {
-                            // Reset des effets précédents
+                            // Reset des effets prÃ©cÃ©dents
                             module.style.background = '';
                             module.style.borderLeft = '';
                             
@@ -9855,7 +6408,7 @@ JSON :`;
                         module.style.animation = '';
                     });
                     
-                    // Retirer tous les éléments d'animation professionnels
+                    // Retirer tous les Ã©lÃ©ments d'animation professionnels
                     const professionalElements = page.querySelectorAll(
                         '.professional-flow-container, .professional-column, .scan-line'
                     );
@@ -9865,7 +6418,7 @@ JSON :`;
                         el.remove();
                     });
                     
-                    // Effet de révélation finale professionnel
+                    // Effet de rÃ©vÃ©lation finale professionnel
                     page.style.animation = 'professionalReveal 0.2s ease-out';
                     setTimeout(() => {
                         page.style.animation = '';
@@ -9886,7 +6439,7 @@ JSON :`;
                         if (i < text.length) {
                             element.value += text.charAt(i);
                             i++;
-                            // Déclencher l'événement input pour mettre à jour l'aperçu
+                            // DÃ©clencher l'Ã©vÃ©nement input pour mettre Ã  jour l'aperÃ§u
                             element.dispatchEvent(new Event('input'));
                         } else {
                             clearInterval(typeInterval);
@@ -9896,23 +6449,23 @@ JSON :`;
                 });
             }
             
-            // --- NOUVELLES FONCTIONS IA AVANCÉES ---
+            // --- NOUVELLES FONCTIONS IA AVANCÃ‰ES ---
             
             async function generateAchievements() {
                 cvPages.forEach(page => {
                     const modules = page.querySelectorAll('.cv-module');
                     
-                    // Effet de reconstruction avec particules dorées
+                    // Effet de reconstruction avec particules dorÃ©es
                     modules.forEach((module, index) => {
                         setTimeout(() => {
-                            // Créer l'effet de reconstruction
+                            // CrÃ©er l'effet de reconstruction
                             module.style.transition = 'all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
                             module.style.transform = 'translateX(0) translateY(0) scale(1.05) rotate(0deg)';
                             module.style.opacity = '1';
                             module.style.filter = 'blur(0)';
                             module.style.boxShadow = '0 8px 25px rgba(255, 215, 0, 0.4)';
                             
-                            // Effet de construction avec lignes dorées
+                            // Effet de construction avec lignes dorÃ©es
                             createReconstructionLines(module);
                             
                             setTimeout(() => {
@@ -9923,14 +6476,14 @@ JSON :`;
                         }, index * 200);
                     });
                     
-                    // Arrêter l'effet de tremblement
+                    // ArrÃªter l'effet de tremblement
                     page.style.animation = '';
                 });
             }
             
             function startCVFinalizationEffect(cvPages) {
                 cvPages.forEach(page => {
-                    // Effet d'éclat final sur toute la page
+                    // Effet d'Ã©clat final sur toute la page
                     const glowOverlay = document.createElement('div');
                     glowOverlay.style.cssText = `
                         position: absolute;
@@ -9954,7 +6507,7 @@ JSON :`;
                         }, index * 100);
                     });
                     
-                    // Retirer l'overlay après l'animation
+                    // Retirer l'overlay aprÃ¨s l'animation
                     setTimeout(() => {
                         if (glowOverlay.parentNode) {
                             glowOverlay.remove();
@@ -9983,7 +6536,7 @@ JSON :`;
                         element.style.animation = '';
                     });
                     
-                    // Retirer tous les éléments d'animation ajoutés
+                    // Retirer tous les Ã©lÃ©ments d'animation ajoutÃ©s
                     const animationElements = page.querySelectorAll('.cv-scan-line, .module-particle, .reconstruction-line, .glow-overlay');
                     animationElements.forEach(el => el.remove());
                 });
@@ -10008,7 +6561,7 @@ JSON :`;
                     
                     module.appendChild(particle);
                     
-                    // Retirer la particule après l'animation
+                    // Retirer la particule aprÃ¨s l'animation
                     setTimeout(() => {
                         if (particle.parentNode) {
                             particle.remove();
@@ -10018,7 +6571,7 @@ JSON :`;
             }
             
             function createReconstructionLines(module) {
-                // Créer des lignes dorées qui "construisent" le module
+                // CrÃ©er des lignes dorÃ©es qui "construisent" le module
                 for (let i = 0; i < 4; i++) {
                     const line = document.createElement('div');
                     line.className = 'reconstruction-line';
@@ -10045,7 +6598,7 @@ JSON :`;
                 const lettersContainer = document.getElementById('letters-container');
                 if (!lettersContainer) return;
                 
-                const words = ['CV', 'EXPÉRIENCE', 'FORMATION', 'COMPÉTENCES', 'PROJET', 'OPTIMISATION', 'IA', 'DESIGN', 'CARRIÈRE', 'TALENT'];
+                const words = ['CV', 'EXPÃ‰RIENCE', 'FORMATION', 'COMPÃ‰TENCES', 'PROJET', 'OPTIMISATION', 'IA', 'DESIGN', 'CARRIÃˆRE', 'TALENT'];
                 const letters = words.join(' ').split('');
                 const colors = ['#3b82f6', '#8b5cf6', '#06b6d4', '#10b981', '#f59e0b', '#ef4444'];
                 
@@ -10055,10 +6608,10 @@ JSON :`;
                         letterEl.className = 'flying-letter';
                         letterEl.textContent = letter;
                         
-                        // Couleur aléatoire
+                        // Couleur alÃ©atoire
                         letterEl.style.color = colors[Math.floor(Math.random() * colors.length)];
                         
-                        // Position initiale aléatoire dans un cercle
+                        // Position initiale alÃ©atoire dans un cercle
                         const angle = (index / letters.length) * 360 + Math.random() * 60;
                         const radius = 200 + Math.random() * 100;
                         const startX = Math.cos(angle * Math.PI / 180) * radius;
@@ -10068,7 +6621,7 @@ JSON :`;
                         letterEl.style.top = `50%`;
                         letterEl.style.transform = `translate(${startX}px, ${startY}px)`;
                         
-                        // Variables CSS personnalisées pour l'animation plus complexe
+                        // Variables CSS personnalisÃ©es pour l'animation plus complexe
                         letterEl.style.setProperty('--random-x', `${Math.random() * 500 - 250}px`);
                         letterEl.style.setProperty('--random-y', `${Math.random() * 400 - 200}px`);
                         letterEl.style.setProperty('--random-x2', `${Math.random() * 300 - 150}px`);
@@ -10097,7 +6650,7 @@ JSON :`;
                     const particle = document.createElement('div');
                     particle.className = 'particle';
                     
-                    // Position initiale aléatoire
+                    // Position initiale alÃ©atoire
                     particle.style.left = `${Math.random() * 100}%`;
                     particle.style.top = `${Math.random() * 100}%`;
                     
@@ -10120,13 +6673,13 @@ JSON :`;
                 const lettersContainer = document.getElementById('letters-container');
                 if (!lettersContainer) return;
                 
-                // Créer des éléments de construction (rectangles représentant les sections du CV)
+                // CrÃ©er des Ã©lÃ©ments de construction (rectangles reprÃ©sentant les sections du CV)
                 const elements = [
                     { width: 200, height: 40, x: 300, y: 150, delay: 0 }, // Titre
                     { width: 150, height: 20, x: 325, y: 200, delay: 0.2 }, // Contact
-                    { width: 180, height: 60, x: 310, y: 240, delay: 0.4 }, // Expérience
+                    { width: 180, height: 60, x: 310, y: 240, delay: 0.4 }, // ExpÃ©rience
                     { width: 160, height: 40, x: 320, y: 320, delay: 0.6 }, // Formation
-                    { width: 140, height: 50, x: 330, y: 380, delay: 0.8 }  // Compétences
+                    { width: 140, height: 50, x: 330, y: 380, delay: 0.8 }  // CompÃ©tences
                 ];
                 
                 elements.forEach((elem, index) => {
@@ -10147,7 +6700,7 @@ JSON :`;
                 const actions = [
                     "Lecture et analyse du contenu...",
                     "Traitement par l'intelligence artificielle...",
-                    "Génération du contenu optimisé...",
+                    "GÃ©nÃ©ration du contenu optimisÃ©...",
                     "Application des modifications..."
                 ];
                 
@@ -10165,7 +6718,7 @@ JSON :`;
                         currentStep++;
                     } else {
                         clearInterval(stepInterval);
-                        controls.aiCurrentAction.textContent = "Terminé !";
+                        controls.aiCurrentAction.textContent = "TerminÃ© !";
                     }
                 }, 1000);
             }
@@ -10190,7 +6743,7 @@ JSON :`;
                         if (i < text.length) {
                             element.value += text.charAt(i);
                             i++;
-                            // Déclencher l'événement input pour mettre à jour l'aperçu
+                            // DÃ©clencher l'Ã©vÃ©nement input pour mettre Ã  jour l'aperÃ§u
                             element.dispatchEvent(new Event('input'));
                         } else {
                             clearInterval(typeInterval);
@@ -10205,7 +6758,7 @@ JSON :`;
             
             async function optimizeAllCV() {
                 if (!validateApiKey()) {
-                    showNotification("Veuillez configurer votre clé API Gemini d'abord.", "error");
+                    showNotification("Veuillez configurer votre clÃ© API Gemini d'abord.", "error");
                     return;
                 }
 
@@ -10226,25 +6779,25 @@ JSON :`;
                         competences: document.getElementById('competences')?.value || ''
                     };
 
-                    const prompt = `En tant qu'expert en ressources humaines et rédaction de CV, optimise ce CV complet pour le rendre plus impactant et professionnel.
+                    const prompt = `En tant qu'expert en ressources humaines et rÃ©daction de CV, optimise ce CV complet pour le rendre plus impactant et professionnel.
 
                     CV actuel:
                     Nom: ${cvContent.nom} ${cvContent.prenom}
                     Poste: ${cvContent.poste}
                     Description: ${cvContent.description}
-                    Compétences: ${cvContent.competences}
+                    CompÃ©tences: ${cvContent.competences}
                     
-                    Expériences:
+                    ExpÃ©riences:
                     ${cvContent.experiences.map((exp, i) => `${i+1}. ${exp.title} - ${exp.meta}\n${exp.desc}`).join('\n\n')}
                     
-                    Améliore tous les éléments: descriptions plus percutantes, orthographe, syntaxe, structure.`;
+                    AmÃ©liore tous les Ã©lÃ©ments: descriptions plus percutantes, orthographe, syntaxe, structure.`;
 
                     const schema = {
                         type: "OBJECT",
                         properties: {
-                            poste: { type: "STRING", description: "Titre de poste optimisé" },
-                            description: { type: "STRING", description: "Description de profil améliorée" },
-                            competences: { type: "STRING", description: "Liste de compétences optimisée" },
+                            poste: { type: "STRING", description: "Titre de poste optimisÃ©" },
+                            description: { type: "STRING", description: "Description de profil amÃ©liorÃ©e" },
+                            competences: { type: "STRING", description: "Liste de compÃ©tences optimisÃ©e" },
                             experiences: {
                                 type: "ARRAY",
                                 items: {
@@ -10262,12 +6815,12 @@ JSON :`;
                     const result = await callGeminiAPI(prompt, schema);
                     
                     if (result) {
-                        // Appliquer les améliorations avec animation
+                        // Appliquer les amÃ©liorations avec animation
                         if (result.poste) await simulateTyping(document.getElementById('poste'), result.poste);
                         if (result.description) await simulateTyping(document.getElementById('description'), result.description);
                         if (result.competences) await simulateTyping(document.getElementById('competences'), result.competences);
                         
-                        // Mettre à jour les expériences
+                        // Mettre Ã  jour les expÃ©riences
                         if (result.experiences) {
                             const expItems = document.querySelectorAll('#experience-list .experience-item');
                             for (let i = 0; i < Math.min(result.experiences.length, expItems.length); i++) {
@@ -10282,7 +6835,7 @@ JSON :`;
                         // Attendre la fin de l'animation
                         await animationPromise;
                         
-                        showNotification("✨ CV entièrement restructuré et optimisé ! ✨", "success", 5000);
+                        showNotification("âœ¨ CV entiÃ¨rement restructurÃ© et optimisÃ© ! âœ¨", "success", 5000);
                     }
                 } catch (error) {
                     console.error("Erreur lors de l'optimisation:", error);
@@ -10295,11 +6848,11 @@ JSON :`;
 
             async function rewriteDescriptions() {
                 if (!validateApiKey()) {
-                    showNotification("Veuillez configurer votre clé API Gemini d'abord.", "error");
+                    showNotification("Veuillez configurer votre clÃ© API Gemini d'abord.", "error");
                     return;
                 }
 
-                showAIThinking("Réécriture matricielle", "Reformulation binaire des données");
+                showAIThinking("RÃ©Ã©criture matricielle", "Reformulation binaire des donnÃ©es");
                 
                 try {
                     const experiences = Array.from(document.querySelectorAll('#experience-list .experience-item')).map(item => ({
@@ -10311,18 +6864,18 @@ JSON :`;
 
                     for (const exp of experiences) {
                         if (exp.desc.trim()) {
-                            const prompt = `Réécris cette description d'expérience professionnelle pour la rendre plus impactante et professionnelle:
+                            const prompt = `RÃ©Ã©cris cette description d'expÃ©rience professionnelle pour la rendre plus impactante et professionnelle:
                             
                             Poste: ${exp.title}
-                            Entreprise/Période: ${exp.meta}
+                            Entreprise/PÃ©riode: ${exp.meta}
                             Description actuelle: ${exp.desc}
                             
-                            Rends la description plus dynamique, utilise des verbes d'action, quantifie les résultats si possible.`;
+                            Rends la description plus dynamique, utilise des verbes d'action, quantifie les rÃ©sultats si possible.`;
 
                             const result = await callGeminiAPI(prompt, {
                                 type: "OBJECT",
                                 properties: {
-                                    description: { type: "STRING", description: "Description réécrite et améliorée" }
+                                    description: { type: "STRING", description: "Description rÃ©Ã©crite et amÃ©liorÃ©e" }
                                 }
                             });
 
@@ -10334,10 +6887,10 @@ JSON :`;
                         }
                     }
                     
-                    showNotification("Descriptions réécrites par la Matrix ! ✍️", "success", 5000);
+                    showNotification("Descriptions rÃ©Ã©crites par la Matrix ! âœï¸", "success", 5000);
                 } catch (error) {
-                    console.error("Erreur lors de la réécriture:", error);
-                    showNotification("Erreur lors de la réécriture des descriptions", "error");
+                    console.error("Erreur lors de la rÃ©Ã©criture:", error);
+                    showNotification("Erreur lors de la rÃ©Ã©criture des descriptions", "error");
                 } finally {
                     hideAIThinking();
                 }
@@ -10372,50 +6925,50 @@ JSON :`;
                     }
                 }
                 
-                // Mettre à jour l'aperçu
+                // Mettre Ã  jour l'aperÃ§u
                 updatePreview('all');
             }
             
             // --- START THE APP ---
             initializeAll();
-            loadSharedCV(); // Vérifier s'il y a un CV partagé à charger
+            loadSharedCV(); // VÃ©rifier s'il y a un CV partagÃ© Ã  charger
             resetCVToDefault(); // Start with a clean slate
             
-            // --- NOUVELLES FONCTIONS IA AVANCÉES ---
+            // --- NOUVELLES FONCTIONS IA AVANCÃ‰ES ---
             
             async function generateAchievements() {
                 try {
-                    showAIThinking('Génération binaire de réalisations', 'La Matrix analyse vos expériences pour générer des réalisations percutantes...');
+                    showAIThinking('GÃ©nÃ©ration binaire de rÃ©alisations', 'La Matrix analyse vos expÃ©riences pour gÃ©nÃ©rer des rÃ©alisations percutantes...');
                     
                     const experiences = Array.from(document.querySelectorAll('#experiences .experience-item')).map(exp => {
                         return {
                             title: exp.querySelector('input[placeholder="Titre du poste"]')?.value || '',
                             company: exp.querySelector('input[placeholder="Nom de l\'entreprise"]')?.value || '',
-                            description: exp.querySelector('textarea[placeholder="Description de vos responsabilités..."]')?.value || ''
+                            description: exp.querySelector('textarea[placeholder="Description de vos responsabilitÃ©s..."]')?.value || ''
                         };
                     });
                     
-                    const prompt = `En tant qu'expert en rédaction de CV, générez des réalisations quantifiées et percutantes pour ces expériences professionnelles :
+                    const prompt = `En tant qu'expert en rÃ©daction de CV, gÃ©nÃ©rez des rÃ©alisations quantifiÃ©es et percutantes pour ces expÃ©riences professionnelles :
                     
                     ${experiences.map((exp, index) => `
                     ${index + 1}. ${exp.title} chez ${exp.company}
                     Description actuelle : ${exp.description}
                     `).join('\n')}
                     
-                    Pour chaque expérience, proposez 2-3 réalisations concrètes avec des chiffres, pourcentages ou résultats mesurables.
-                    Format souhaité : "• [Réalisation avec chiffres et impact]"`;
+                    Pour chaque expÃ©rience, proposez 2-3 rÃ©alisations concrÃ¨tes avec des chiffres, pourcentages ou rÃ©sultats mesurables.
+                    Format souhaitÃ© : "â€¢ [RÃ©alisation avec chiffres et impact]"`;
                     
                     const result = await callGeminiAPI(prompt);
                     
-                    // Simulation de mise à jour progressive
+                    // Simulation de mise Ã  jour progressive
                     const lines = result.split('\n').filter(line => line.trim());
                     let currentExpIndex = 0;
                     
                     for (let i = 0; i < lines.length; i++) {
-                        if (lines[i].includes('•')) {
+                        if (lines[i].includes('â€¢')) {
                             const expElement = document.querySelectorAll('#experiences .experience-item')[currentExpIndex];
                             if (expElement) {
-                                const textarea = expElement.querySelector('textarea[placeholder="Description de vos responsabilités..."]');
+                                const textarea = expElement.querySelector('textarea[placeholder="Description de vos responsabilitÃ©s..."]');
                                 if (textarea) {
                                     textarea.value += '\n' + lines[i];
                                     await simulateTyping(textarea, lines[i]);
@@ -10427,17 +6980,17 @@ JSON :`;
                     }
                     
                     hideAIThinking();
-                    showNotification('✨ Réalisations générées avec succès !', 'success');
+                    showNotification('âœ¨ RÃ©alisations gÃ©nÃ©rÃ©es avec succÃ¨s !', 'success');
                 } catch (error) {
                     hideAIThinking();
-                    showNotification('❌ Erreur lors de la génération des réalisations', 'error');
-                    console.error('Erreur génération réalisations:', error);
+                    showNotification('âŒ Erreur lors de la gÃ©nÃ©ration des rÃ©alisations', 'error');
+                    console.error('Erreur gÃ©nÃ©ration rÃ©alisations:', error);
                 }
             }
             
             async function suggestSkills() {
                 try {
-                    showAIThinking('Analyse Matrix des compétences', 'La Matrix analyse votre profil pour suggérer des compétences pertinentes...');
+                    showAIThinking('Analyse Matrix des compÃ©tences', 'La Matrix analyse votre profil pour suggÃ©rer des compÃ©tences pertinentes...');
                     
                     const profile = document.querySelector('#about textarea')?.value || '';
                     const experiences = Array.from(document.querySelectorAll('#experiences .experience-item')).map(exp => {
@@ -10448,19 +7001,19 @@ JSON :`;
                         return skill.querySelector('input')?.value || '';
                     });
                     
-                    const prompt = `En tant qu'expert RH, analysez ce profil professionnel et suggérez 5-8 compétences supplémentaires pertinentes :
+                    const prompt = `En tant qu'expert RH, analysez ce profil professionnel et suggÃ©rez 5-8 compÃ©tences supplÃ©mentaires pertinentes :
                     
                     Profil : ${profile}
-                    Expériences : ${experiences}
-                    Compétences actuelles : ${currentSkills.join(', ')}
+                    ExpÃ©riences : ${experiences}
+                    CompÃ©tences actuelles : ${currentSkills.join(', ')}
                     
-                    Suggérez des compétences techniques et comportementales qui manquent et qui seraient valorisantes pour ce profil.
-                    Répondez uniquement avec une liste de compétences séparées par des virgules.`;
+                    SuggÃ©rez des compÃ©tences techniques et comportementales qui manquent et qui seraient valorisantes pour ce profil.
+                    RÃ©pondez uniquement avec une liste de compÃ©tences sÃ©parÃ©es par des virgules.`;
                     
                     const result = await callGeminiAPI(prompt);
                     const suggestedSkills = result.split(',').map(s => s.trim()).filter(s => s.length > 0);
                     
-                    // Ajouter progressivement les compétences
+                    // Ajouter progressivement les compÃ©tences
                     for (const skill of suggestedSkills.slice(0, 6)) {
                         const addBtn = document.querySelector('#skills .add-skill');
                         if (addBtn) {
@@ -10477,52 +7030,52 @@ JSON :`;
                     }
                     
                     hideAIThinking();
-                    showNotification('🎯 Compétences suggérées et ajoutées !', 'success');
+                    showNotification('ðŸŽ¯ CompÃ©tences suggÃ©rÃ©es et ajoutÃ©es !', 'success');
                 } catch (error) {
                     hideAIThinking();
-                    showNotification('❌ Erreur lors de la suggestion de compétences', 'error');
-                    console.error('Erreur suggestion compétences:', error);
+                    showNotification('âŒ Erreur lors de la suggestion de compÃ©tences', 'error');
+                    console.error('Erreur suggestion compÃ©tences:', error);
                 }
             }
             
             async function improveProfile() {
                 try {
-                    showAIThinking('Amélioration binaire du profil', 'La Matrix restructure votre profil pour maximiser l\'impact...');
+                    showAIThinking('AmÃ©lioration binaire du profil', 'La Matrix restructure votre profil pour maximiser l\'impact...');
                     
                     const profileTextarea = document.querySelector('#about textarea');
                     const currentProfile = profileTextarea?.value || '';
                     
                     if (!currentProfile.trim()) {
                         hideAIThinking();
-                        showNotification('⚠️ Veuillez d\'abord remplir votre profil', 'warning');
+                        showNotification('âš ï¸ Veuillez d\'abord remplir votre profil', 'warning');
                         return;
                     }
                     
-                    const prompt = `En tant qu'expert en personal branding, réécrivez ce profil professionnel pour le rendre plus percutant et mémorable :
+                    const prompt = `En tant qu'expert en personal branding, rÃ©Ã©crivez ce profil professionnel pour le rendre plus percutant et mÃ©morable :
                     
                     Profil actuel : ${currentProfile}
                     
-                    Améliorez-le en :
-                    - Commençant par un accroche forte
+                    AmÃ©liorez-le en :
+                    - CommenÃ§ant par un accroche forte
                     - Utilisant des mots d'action puissants
-                    - Quantifiant les réalisations quand possible
+                    - Quantifiant les rÃ©alisations quand possible
                     - Terminant par une proposition de valeur claire
                     - Gardant un ton professionnel mais engageant
                     
-                    Limitez à 4-5 phrases maximum.`;
+                    Limitez Ã  4-5 phrases maximum.`;
                     
                     const improvedProfile = await callGeminiAPI(prompt);
                     
-                    // Animation Matrix de réécriture
+                    // Animation Matrix de rÃ©Ã©criture
                     profileTextarea.value = '';
                     writeTextMatrixStyle(profileTextarea, improvedProfile, () => {
                         hideAIThinking();
-                        showNotification('✨ Profil amélioré par la Matrix !', 'success');
+                        showNotification('âœ¨ Profil amÃ©liorÃ© par la Matrix !', 'success');
                     });
                 } catch (error) {
                     hideAIThinking();
-                    showNotification('❌ Erreur lors de l\'amélioration du profil', 'error');
-                    console.error('Erreur amélioration profil:', error);
+                    showNotification('âŒ Erreur lors de l\'amÃ©lioration du profil', 'error');
+                    console.error('Erreur amÃ©lioration profil:', error);
                 }
             }
             
@@ -10531,7 +7084,7 @@ JSON :`;
                     showAIThinking('Adaptation sectorielle Matrix', 'La Matrix adapte votre CV au secteur cible...');
                     
                     // Demander le secteur cible
-                    const sector = prompt('Dans quel secteur souhaitez-vous adapter votre CV ? (ex: Tech, Finance, Marketing, Santé...)');
+                    const sector = prompt('Dans quel secteur souhaitez-vous adapter votre CV ? (ex: Tech, Finance, Marketing, SantÃ©...)');
                     if (!sector) {
                         hideAIThinking();
                         return;
@@ -10547,35 +7100,35 @@ JSON :`;
                     const prompt = `En tant qu'expert du secteur ${sector}, adaptez ce CV pour maximiser son impact dans ce domaine :
                     
                     Profil actuel : ${currentProfile}
-                    Expériences : ${experiences.join('\n---\n')}
+                    ExpÃ©riences : ${experiences.join('\n---\n')}
                     
                     Adaptez le profil en utilisant :
-                    - Le vocabulaire spécifique au secteur ${sector}
-                    - Les compétences valorisées dans ce domaine
+                    - Le vocabulaire spÃ©cifique au secteur ${sector}
+                    - Les compÃ©tences valorisÃ©es dans ce domaine
                     - Les tendances actuelles du secteur
                     
-                    Proposez uniquement le nouveau profil adapté.`;
+                    Proposez uniquement le nouveau profil adaptÃ©.`;
                     
                     const adaptedProfile = await callGeminiAPI(prompt);
                     
-                    // Animation Matrix de mise à jour
+                    // Animation Matrix de mise Ã  jour
                     profileTextarea.value = '';
                     writeTextMatrixStyle(profileTextarea, adaptedProfile, () => {
                         hideAIThinking();
-                        showNotification(`🎯 CV adapté au secteur ${sector} par la Matrix !`, 'success');
+                        showNotification(`ðŸŽ¯ CV adaptÃ© au secteur ${sector} par la Matrix !`, 'success');
                     });
                 } catch (error) {
                     hideAIThinking();
-                    showNotification('❌ Erreur lors de l\'adaptation sectorielle', 'error');
+                    showNotification('âŒ Erreur lors de l\'adaptation sectorielle', 'error');
                     console.error('Erreur adaptation secteur:', error);
                 }
             }
             
             async function boostKeywords() {
                 try {
-                    showAIThinking('Optimisation Matrix des mots-clés', 'La Matrix enrichit votre CV avec des mots-clés stratégiques...');
+                    showAIThinking('Optimisation Matrix des mots-clÃ©s', 'La Matrix enrichit votre CV avec des mots-clÃ©s stratÃ©giques...');
                     
-                    const jobTitle = prompt('Pour quel poste/métier souhaitez-vous optimiser les mots-clés ? (ex: Développeur Full Stack, Chef de projet, Consultant...)');
+                    const jobTitle = prompt('Pour quel poste/mÃ©tier souhaitez-vous optimiser les mots-clÃ©s ? (ex: DÃ©veloppeur Full Stack, Chef de projet, Consultant...)');
                     if (!jobTitle) {
                         hideAIThinking();
                         return;
@@ -10587,21 +7140,21 @@ JSON :`;
                         skills: Array.from(document.querySelectorAll('#skills .skill-item input')).map(i => i.value).join(' ')
                     };
                     
-                    const prompt = `En tant qu'expert ATS (Applicant Tracking System), identifiez et intégrez naturellement les mots-clés essentiels pour le poste "${(jobTitle || '').replace(/`/g, '').replace(/\$/g, '')}" dans ce CV :
+                    const prompt = `En tant qu'expert ATS (Applicant Tracking System), identifiez et intÃ©grez naturellement les mots-clÃ©s essentiels pour le poste "${(jobTitle || '').replace(/`/g, '').replace(/\$/g, '')}" dans ce CV :
                     
                     Contenu actuel : ${JSON.stringify(allContent)}
                     
-                    Proposez 10-15 mots-clés/expressions clés pertinents pour ce poste, en précisant où les intégrer naturellement dans le CV.
-                    Format : "MOT-CLÉ : suggestion d'intégration"`;
+                    Proposez 10-15 mots-clÃ©s/expressions clÃ©s pertinents pour ce poste, en prÃ©cisant oÃ¹ les intÃ©grer naturellement dans le CV.
+                    Format : "MOT-CLÃ‰ : suggestion d'intÃ©gration"`;
                     
                     const keywords = await callGeminiAPI(prompt);
                     
-                    // Afficher les suggestions dans une fenêtre modale
+                    // Afficher les suggestions dans une fenÃªtre modale
                     const modal = document.createElement('div');
                     modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
                     modal.innerHTML = `
                         <div class="bg-white rounded-xl p-6 max-w-2xl max-h-80vh overflow-y-auto">
-                            <h3 class="text-xl font-bold mb-4">🎯 Mots-clés suggérés pour "${jobTitle?.replace(/"/g, '&quot;') || ''}"</h3>
+                            <h3 class="text-xl font-bold mb-4">ðŸŽ¯ Mots-clÃ©s suggÃ©rÃ©s pour "${jobTitle?.replace(/"/g, '&quot;') || ''}"</h3>
                             <div class="whitespace-pre-line text-sm mb-4">${keywords?.replace(/`/g, '&#96;')?.replace(/\$/g, '&#36;') || ''}</div>
                             <button class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600" onclick="this.closest('.fixed').remove()">
                                 Compris
@@ -10612,11 +7165,11 @@ JSON :`;
                     document.body.appendChild(modal);
                     
                     hideAIThinking();
-                    showNotification('📝 Mots-clés suggérés ! Intégrez-les manuellement selon les recommandations.', 'success');
+                    showNotification('ðŸ“ Mots-clÃ©s suggÃ©rÃ©s ! IntÃ©grez-les manuellement selon les recommandations.', 'success');
                 } catch (error) {
                     hideAIThinking();
-                    showNotification('❌ Erreur lors de l\'optimisation des mots-clés', 'error');
-                    console.error('Erreur mots-clés:', error);
+                    showNotification('âŒ Erreur lors de l\'optimisation des mots-clÃ©s', 'error');
+                    console.error('Erreur mots-clÃ©s:', error);
                 }
             }
             
@@ -10626,7 +7179,7 @@ JSON :`;
             setupKeyboardShortcuts();
             setupTemplateManager();
             
-            // S'assurer que l'état initial de la bannière est correct
+            // S'assurer que l'Ã©tat initial de la banniÃ¨re est correct
             setTimeout(() => {
                 updatePreview('form');
                 updateAllStyles();
@@ -10638,10 +7191,4 @@ JSON :`;
         
     }); // Fermeture de DOMContentLoaded
     
-    </script>
-</body>
-</html>
-
-
-
-
+    
