@@ -4690,7 +4690,9 @@
             }
 
             function checkAllPagesOverflow() {
-                document.querySelectorAll('.a4-page').forEach(checkPageOverflow);
+                document.querySelectorAll('.a4-page').forEach(function(pageElement) {
+                    checkPageOverflow(pageElement);
+                });
             }
 
             function setupOverflowObserver(pageElement) {
@@ -8083,7 +8085,9 @@ JSON :`;
                     });
                 });
 
-                document.querySelectorAll('.a4-page').forEach(setupOverflowObserver);
+                document.querySelectorAll('.a4-page').forEach(function(pageElement) {
+                    setupOverflowObserver(pageElement);
+                });
 
                 // --- FONCTIONS POUR LES OPTIONS DE MISE EN PAGE AVANCÉES ---
                 
