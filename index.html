@@ -2329,6 +2329,7 @@
                             <textarea id="ai-input" rows="6" class="w-full p-2 border rounded-md" placeholder="Collez ici une description de poste, un CV brut..."></textarea>
                             <div class="tooltip">
                                 <button id="analyze-btn" class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 flex items-center justify-center gap-2"><i class="fa-solid fa-wand-magic-sparkles"></i> Analyser & Remplir</button>
+                                <button id="test-fill-btn" class="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 flex items-center justify-center gap-2 mt-2"><i class="fa-solid fa-bug"></i> Test Remplissage</button>
                                 <div class="tooltip-content top">
                                     <strong>Analyser & Remplir</strong><br>
                                     Utilise l'IA pour analyser le texte saisi et remplir<br>
@@ -6889,11 +6890,11 @@
                             
                             // Remplir avec l'effet Matrix d'écriture en temps réel
                             const elementsToFill = [
-                                { element: controls.nom, text: extractedData.nom || '' },
-                                { element: controls.prenom, text: extractedData.prenom || '' },
-                                { element: controls.poste, text: extractedData.poste || '' },
-                                { element: controls.description, text: extractedData.description || '' },
-                                { element: controls.competences, text: extractedData.competences || '' }
+                                { element: controls.nom, text: testData.nom || '' },
+                                { element: controls.prenom, text: testData.prenom || '' },
+                                { element: controls.poste, text: testData.poste || '' },
+                                { element: controls.description, text: testData.description || '' },
+                                { element: controls.competences, text: testData.competences || '' }
                             ];
                             
                             // Écrire les champs principaux avec effet Matrix
@@ -6902,10 +6903,10 @@
                                 if (currentFieldIndex >= elementsToFill.length) {
                                     // Remplir les listes après les champs principaux
                                     controls.experienceList.innerHTML = '';
-                                    (extractedData.experiences || []).forEach(exp => createDynamicItem(controls.experienceList, [{ key: 'title', placeholder: 'Titre du poste' }, { key: 'meta', placeholder: 'Entreprise & Dates' }, { key: 'desc', placeholder: 'Description', type: 'textarea' }], exp));
+                                    (testData.experiences || []).forEach(exp => createDynamicItem(controls.experienceList, [{ key: 'title', placeholder: 'Titre du poste' }, { key: 'meta', placeholder: 'Entreprise & Dates' }, { key: 'desc', placeholder: 'Description', type: 'textarea' }], exp));
                                     
                                     controls.formationList.innerHTML = '';
-                                    (extractedData.formations || []).forEach(form => createDynamicItem(controls.formationList, [{ key: 'title', placeholder: 'Nom du diplôme' }, { key: 'meta', placeholder: 'Établissement & Année' }], form));
+                                    (testData.formations || []).forEach(form => createDynamicItem(controls.formationList, [{ key: 'title', placeholder: 'Nom du diplôme' }, { key: 'meta', placeholder: 'Établissement & Année' }], form));
                                     
                                     // Attendre la fin de l'animation avant de finaliser
                                     animationPromise.then(() => {
@@ -6954,6 +6955,36 @@
                         controls.analyzeBtn.classList.remove('opacity-50', 'cursor-not-allowed');
                     }
                 });
+                
+                // BOUTON DE TEST TEMPORAIRE
+                const testFillBtn = document.getElementById('test-fill-btn');
+                if (testFillBtn) {
+                    testFillBtn.addEventListener('click', () => {
+                        console.log("Test de remplissage manuel...");
+                        
+                        // Test direct des champs
+                        if (controls.nom) {
+                            controls.nom.value = "MARTIN";
+                            console.log("Nom mis à jour:", controls.nom.value);
+                        }
+                        if (controls.prenom) {
+                            controls.prenom.value = "Jean";
+                            console.log("Prénom mis à jour:", controls.prenom.value);
+                        }
+                        if (controls.poste) {
+                            controls.poste.value = "Développeur Web";
+                            console.log("Poste mis à jour:", controls.poste.value);
+                        }
+                        if (controls.description) {
+                            controls.description.value = "Développeur passionné avec 5 ans d'expérience.";
+                            console.log("Description mise à jour:", controls.description.value);
+                        }
+                        
+                        // Mettre à jour l'aperçu
+                        updatePreview('form');
+                        showNotification("✅ Test de remplissage effectué !", "success");
+                    });
+                }
                 
                 controls.generateMailBtn.addEventListener('click', async () => {
                     const nomCandidat = `${controls.prenom.value} ${controls.nom.value}`.trim();
