@@ -7199,6 +7199,15 @@
                         reader.readAsDataURL(file);
                     }
                 });
+                
+                // Gestionnaire spécifique pour la checkbox de la bannière
+                if (controls.toggleBanner) {
+                    controls.toggleBanner.addEventListener('change', () => {
+                        console.log('Banner toggle changed:', controls.toggleBanner.checked);
+                        updatePreview('form');
+                        updateAllStyles();
+                    });
+                }
 
                 preview.previewWrapper.addEventListener('input', (e) => {
                     if (e.target.hasAttribute('contenteditable')) {
@@ -8073,11 +8082,10 @@ JSON :`;
                 });
 
                 document.querySelectorAll('.a4-page').forEach(setupOverflowObserver);
-            }
 
-            // --- FONCTIONS POUR LES OPTIONS DE MISE EN PAGE AVANCÉES ---
-            
-            function initializeAdvancedLayoutControls() {
+                // --- FONCTIONS POUR LES OPTIONS DE MISE EN PAGE AVANCÉES ---
+                
+                function initializeAdvancedLayoutControls() {
                 console.log("Initializing advanced layout controls...");
                 
                 // Gestionnaires pour les arrière-plans
@@ -10580,6 +10588,12 @@ JSON :`;
             loadAccessibilitySettings();
             setupKeyboardShortcuts();
             setupTemplateManager();
+            
+            // S'assurer que l'état initial de la bannière est correct
+            setTimeout(() => {
+                updatePreview('form');
+                updateAllStyles();
+            }, 100);
         });
 
     </script>
