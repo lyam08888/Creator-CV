@@ -3463,10 +3463,21 @@
                     aiThinkingOverlay.classList.remove('active');
                 }
                 
-                // Hide confirm modal
-                const confirmModal = document.getElementById('confirm-modal-overlay');
+                // Hide confirm modal (correct id)
+                const confirmModal = document.getElementById('confirm-modal');
                 if (confirmModal) {
                     confirmModal.classList.remove('active');
+                }
+
+                // Ensure any modal overlays are not active
+                document.querySelectorAll('.modal-overlay').forEach(modal => {
+                    modal.classList.remove('active');
+                });
+
+                // Hide CV restructure overlay if present
+                const cvRestructureOverlay = document.getElementById('cv-restructure-overlay');
+                if (cvRestructureOverlay) {
+                    cvRestructureOverlay.classList.remove('active');
                 }
                 
                 // Ensure body doesn't have presentation mode class
@@ -3833,24 +3844,22 @@
                     updateAccessibilityUI();
                     // Focus sur le premier élément focusable
                     const firstFocusable = modal.querySelector('button, input, select, textarea, [tabindex]:not([tabindex="-1"])');
-                    if (firstFocusable) firstFocusable.focus();
+                    firstFocusable?.focus();
                 });
                 
                 // Fermer la modal
                 closeBtns.forEach(btn => {
-                    if (btn) {
-                        btn.addEventListener('click', () => {
-                            modal.classList.add('hidden');
-                            if (openBtn) openBtn.focus(); // Retourner le focus au bouton d'ouverture
-                        });
-                    }
+                    btn?.addEventListener('click', () => {
+                        modal.classList.add('hidden');
+                        openBtn?.focus(); // Retourner le focus au bouton d'ouverture
+                    });
                 });
                 
                 // Fermer avec Échap
                 document.addEventListener('keydown', (e) => {
                     if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
                         modal.classList.add('hidden');
-                        if (openBtn) openBtn.focus();
+                        openBtn?.focus();
                     }
                 });
                 
@@ -3858,7 +3867,7 @@
                 modal.addEventListener('click', (e) => {
                     if (e.target === modal) {
                         modal.classList.add('hidden');
-                        if (openBtn) openBtn.focus();
+                        openBtn?.focus();
                     }
                 });
                 
@@ -3872,21 +3881,15 @@
                 });
                 
                 // Sliders
-                const fontSizeSlider = document.getElementById('font-size-slider');
-                if (fontSizeSlider) {
-                    fontSizeSlider.addEventListener('input', (e) => {
-                        accessibilitySettings.fontSize = parseInt(e.target.value);
-                        applyAccessibilitySettings();
-                    });
-                }
+                document.getElementById('font-size-slider')?.addEventListener('input', (e) => {
+                    accessibilitySettings.fontSize = parseInt(e.target.value);
+                    applyAccessibilitySettings();
+                });
                 
-                const lineHeightSlider = document.getElementById('line-height-slider');
-                if (lineHeightSlider) {
-                    lineHeightSlider.addEventListener('input', (e) => {
-                        accessibilitySettings.lineHeight = parseFloat(e.target.value);
-                        applyAccessibilitySettings();
-                    });
-                }
+                document.getElementById('line-height-slider')?.addEventListener('input', (e) => {
+                    accessibilitySettings.lineHeight = parseFloat(e.target.value);
+                    applyAccessibilitySettings();
+                });
                 
                 // Checkboxes
                 const checkboxes = [
@@ -3895,22 +3898,16 @@
                 ];
                 
                 checkboxes.forEach(id => {
-                    const element = document.getElementById(id);
-                    if (element) {
-                        element.addEventListener('change', (e) => {
-                            const setting = id.replace(/-([a-z])/g, (match, letter) => letter.toUpperCase());
-                            accessibilitySettings[setting] = e.target.checked;
-                            applyAccessibilitySettings();
-                        });
-                    }
+                    document.getElementById(id)?.addEventListener('change', (e) => {
+                        const setting = id.replace(/-([a-z])/g, (match, letter) => letter.toUpperCase());
+                        accessibilitySettings[setting] = e.target.checked;
+                        applyAccessibilitySettings();
+                    });
                 });
                 
                 // Boutons d'action
-                const saveBtn = document.getElementById('save-accessibility');
-                if (saveBtn) saveBtn.addEventListener('click', saveAccessibilitySettings);
-                
-                const resetBtn = document.getElementById('reset-accessibility');
-                if (resetBtn) resetBtn.addEventListener('click', resetAccessibilitySettings);
+                document.getElementById('save-accessibility')?.addEventListener('click', saveAccessibilitySettings);
+                document.getElementById('reset-accessibility')?.addEventListener('click', resetAccessibilitySettings);
             }
             
             // Raccourcis clavier globaux
@@ -3922,11 +3919,11 @@
                         switch (e.key) {
                             case 's':
                                 e.preventDefault();
-                                if (controls.toolbarSaveBtn) controls.toolbarSaveBtn.click();
+                                controls.toolbarSaveBtn?.click();
                                 break;
                             case 'p':
                                 e.preventDefault();
-                                if (controls.downloadPdfBtn) controls.downloadPdfBtn.click();
+                                controls.downloadPdfBtn?.click();
                                 break;
                         }
                     }
@@ -3939,30 +3936,30 @@
             function extractCurrentLayoutConfig() {
                 return {
                     // Layout et colonnes
-                    layout: (document.querySelector('.layout-btn.active') && document.querySelector('.layout-btn.active').dataset.layout) || 'layout-2-col-33-67',
+                    layout: document.querySelector('.layout-btn.active')?.dataset.layout || 'layout-2-col-33-67',
                     
                     // Couleurs
-                    primaryColor: (document.getElementById('primary-color-picker') && document.getElementById('primary-color-picker').value) || '#3b82f6',
-                    secondaryColor: (document.getElementById('secondary-color-picker') && document.getElementById('secondary-color-picker').value) || '#334155',
+                    primaryColor: document.getElementById('primary-color-picker')?.value || '#3b82f6',
+                    secondaryColor: document.getElementById('secondary-color-picker')?.value || '#334155',
                     
                     // Configuration de la bannière
                     banner: {
-                        enabled: (document.getElementById('toggle-banner-checkbox') && document.getElementById('toggle-banner-checkbox').checked) || false,
-                        style: (document.getElementById('banner-style-select') && document.getElementById('banner-style-select').value) || 'style-1',
+                        enabled: document.getElementById('toggle-banner-checkbox')?.checked || false,
+                        style: document.getElementById('banner-style-select')?.value || 'style-1',
                         alignment: getBannerAlignment(),
-                        isInverted: (document.querySelector('.banner') && document.querySelector('.banner').classList.contains('banner-layout-inverted')) || false,
+                        isInverted: document.querySelector('.banner')?.classList.contains('banner-layout-inverted') || false,
                         textStyles: {
                             nom: {
-                                bold: (document.getElementById('banner-nom-bold') && document.getElementById('banner-nom-bold').checked) || false,
-                                italic: (document.getElementById('banner-nom-italic') && document.getElementById('banner-nom-italic').checked) || false
+                                bold: document.getElementById('banner-nom-bold')?.checked || false,
+                                italic: document.getElementById('banner-nom-italic')?.checked || false
                             },
                             poste: {
-                                bold: (document.getElementById('banner-poste-bold') && document.getElementById('banner-poste-bold').checked) || false,
-                                italic: (document.getElementById('banner-poste-italic') && document.getElementById('banner-poste-italic').checked) || false
+                                bold: document.getElementById('banner-poste-bold')?.checked || false,
+                                italic: document.getElementById('banner-poste-italic')?.checked || false
                             },
                             contact: {
-                                bold: (document.getElementById('banner-contact-bold') && document.getElementById('banner-contact-bold').checked) || false,
-                                italic: (document.getElementById('banner-contact-italic') && document.getElementById('banner-contact-italic').checked) || false
+                                bold: document.getElementById('banner-contact-bold')?.checked || false,
+                                italic: document.getElementById('banner-contact-italic')?.checked || false
                             }
                         }
                     },
@@ -10565,7 +10562,7 @@ JSON :`;
                     }
                     
                     const allContent = {
-                        profile: (document.querySelector('#about textarea') && document.querySelector('#about textarea').value) || '',
+                        profile: document.querySelector('#about textarea')?.value || '',
                         experiences: Array.from(document.querySelectorAll('#experiences .experience-item textarea')).map(t => t.value).join(' '),
                         skills: Array.from(document.querySelectorAll('#skills .skill-item input')).map(i => i.value).join(' ')
                     };
@@ -10584,8 +10581,8 @@ JSON :`;
                     modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
                     modal.innerHTML = `
                         <div class="bg-white rounded-xl p-6 max-w-2xl max-h-80vh overflow-y-auto">
-                            <h3 class="text-xl font-bold mb-4">🎯 Mots-clés suggérés pour "${(jobTitle || '').replace(/"/g, '&quot;')}"</h3>
-                            <div class="whitespace-pre-line text-sm mb-4">${(keywords || '').replace(/`/g, '&#96;').replace(/\$/g, '&#36;')}</div>
+                            <h3 class="text-xl font-bold mb-4">🎯 Mots-clés suggérés pour "${jobTitle?.replace(/"/g, '&quot;') || ''}"</h3>
+                            <div class="whitespace-pre-line text-sm mb-4">${keywords?.replace(/`/g, '&#96;')?.replace(/\$/g, '&#36;') || ''}</div>
                             <button class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600" onclick="this.closest('.fixed').remove()">
                                 Compris
                             </button>
