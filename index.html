@@ -6817,70 +6817,105 @@
                     const text = controls.aiInput.value;
                     if (!text) { showNotification("Veuillez coller du texte à analyser.", "error"); return; }
                     
-                    // Lancer l'animation spectaculaire
-                    const animationPromise = showCVRestructureAnimation();
+                    // Afficher le loader pendant l'analyse
+                    showLoader("🤖 Analyse IA en cours...");
                     
-                    const schema = {
-                        type: "OBJECT",
-                        properties: {
-                            nom: { type: "STRING" }, prenom: { type: "STRING" }, poste: { type: "STRING" }, description: { type: "STRING" },
-                            experiences: { type: "ARRAY", items: { type: "OBJECT", properties: { title: { type: "STRING" }, meta: { type: "STRING" }, desc: { type: "STRING" } } } },
-                            formations: { type: "ARRAY", items: { type: "OBJECT", properties: { title: { type: "STRING" }, meta: { type: "STRING" } } } },
-                            competences: { type: "STRING" }
-                        }
-                    };
-                    const prompt = `Analyse le texte suivant et extrais les informations pour un CV. Formate la sortie en JSON respectant ce schéma. Sois concis. Texte : """${text}"""`;
+                    // Désactiver le bouton pendant le traitement
+                    controls.analyzeBtn.disabled = true;
+                    controls.analyzeBtn.classList.add('opacity-50', 'cursor-not-allowed');
                     
-                    const extractedData = await callGeminiAPI(prompt, schema);
-                    
-                    if (extractedData) {
-                        // Attendre que l'animation soit bien avancée avant de remplir
-                        await new Promise(resolve => setTimeout(resolve, 2000));
+                    try {
+                        // Lancer l'animation spectaculaire
+                        const animationPromise = showCVRestructureAnimation();
                         
-                        // Remplir avec l'effet Matrix d'écriture en temps réel
-                        const elementsToFill = [
-                            { element: controls.nom, text: extractedData.nom || '' },
-                            { element: controls.prenom, text: extractedData.prenom || '' },
-                            { element: controls.poste, text: extractedData.poste || '' },
-                            { element: controls.description, text: extractedData.description || '' },
-                            { element: controls.competences, text: extractedData.competences || '' }
-                        ];
+                        const schema = {
+                            type: "OBJECT",
+                            properties: {
+                                nom: { type: "STRING" }, prenom: { type: "STRING" }, poste: { type: "STRING" }, description: { type: "STRING" },
+                                experiences: { type: "ARRAY", items: { type: "OBJECT", properties: { title: { type: "STRING" }, meta: { type: "STRING" }, desc: { type: "STRING" } } } },
+                                formations: { type: "ARRAY", items: { type: "OBJECT", properties: { title: { type: "STRING" }, meta: { type: "STRING" } } } },
+                                competences: { type: "STRING" }
+                            }
+                        };
+                        const prompt = `Analyse le texte suivant et extrais les informations pour un CV. Formate la sortie en JSON respectant ce schéma. Sois concis. Texte : """${text}"""`;
                         
-                        // Écrire les champs principaux avec effet Matrix
-                        let currentFieldIndex = 0;
-                        function fillNextField() {
-                            if (currentFieldIndex >= elementsToFill.length) {
-                                // Remplir les listes après les champs principaux
-                                controls.experienceList.innerHTML = '';
-                                (extractedData.experiences || []).forEach(exp => createDynamicItem(controls.experienceList, [{ key: 'title', placeholder: 'Titre du poste' }, { key: 'meta', placeholder: 'Entreprise & Dates' }, { key: 'desc', placeholder: 'Description', type: 'textarea' }], exp));
+                        // Mettre à jour le texte du loader pendant l'appel API
+                        controls.loaderText.textContent = "🧠 Traitement par l'IA...";
+                        
+                        const extractedData = await callGeminiAPI(prompt, schema);
+                        
+                        if (extractedData) {
+                            // Mettre à jour le texte du loader
+                            controls.loaderText.textContent = "✨ Remplissage du CV...";
+                            
+                            // Attendre que l'animation soit bien avancée avant de remplir
+                            await new Promise(resolve => setTimeout(resolve, 2000));
+                            
+                            // Remplir avec l'effet Matrix d'écriture en temps réel
+                            const elementsToFill = [
+                                { element: controls.nom, text: extractedData.nom || '' },
+                                { element: controls.prenom, text: extractedData.prenom || '' },
+                                { element: controls.poste, text: extractedData.poste || '' },
+                                { element: controls.description, text: extractedData.description || '' },
+                                { element: controls.competences, text: extractedData.competences || '' }
+                            ];
+                            
+                            // Écrire les champs principaux avec effet Matrix
+                            let currentFieldIndex = 0;
+                            function fillNextField() {
+                                if (currentFieldIndex >= elementsToFill.length) {
+                                    // Remplir les listes après les champs principaux
+                                    controls.experienceList.innerHTML = '';
+                                    (extractedData.experiences || []).forEach(exp => createDynamicItem(controls.experienceList, [{ key: 'title', placeholder: 'Titre du poste' }, { key: 'meta', placeholder: 'Entreprise & Dates' }, { key: 'desc', placeholder: 'Description', type: 'textarea' }], exp));
+                                    
+                                    controls.formationList.innerHTML = '';
+                                    (extractedData.formations || []).forEach(form => createDynamicItem(controls.formationList, [{ key: 'title', placeholder: 'Nom du diplôme' }, { key: 'meta', placeholder: 'Établissement & Année' }], form));
+                                    
+                                    // Attendre la fin de l'animation avant de finaliser
+                                    animationPromise.then(() => {
+                                        updatePreview('form');
+                                        hideLoader(); // Masquer le loader
+                                        showNotification("✨ CV restructuré et rempli par la Matrix !", "success");
+                                        
+                                        // Réactiver le bouton
+                                        controls.analyzeBtn.disabled = false;
+                                        controls.analyzeBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                                    });
+                                    return;
+                                }
                                 
-                                controls.formationList.innerHTML = '';
-                                (extractedData.formations || []).forEach(form => createDynamicItem(controls.formationList, [{ key: 'title', placeholder: 'Nom du diplôme' }, { key: 'meta', placeholder: 'Établissement & Année' }], form));
-                                
-                                // Attendre la fin de l'animation avant de mettre à jour l'aperçu
-                                animationPromise.then(() => {
-                                    updatePreview('form');
-                                    showNotification("✨ CV restructuré et rempli par la Matrix !", "success");
-                                });
-                                return;
+                                const currentField = elementsToFill[currentFieldIndex];
+                                if (currentField.text) {
+                                    writeTextMatrixStyle(currentField.element, currentField.text, () => {
+                                        currentFieldIndex++;
+                                        setTimeout(fillNextField, 300);
+                                    });
+                                } else {
+                                    currentFieldIndex++;
+                                    fillNextField();
+                                }
                             }
                             
-                            const currentField = elementsToFill[currentFieldIndex];
-                            if (currentField.text) {
-                                writeTextMatrixStyle(currentField.element, currentField.text, () => {
-                                    currentFieldIndex++;
-                                    setTimeout(fillNextField, 300);
-                                });
-                            } else {
-                                currentFieldIndex++;
-                                fillNextField();
-                            }
+                            fillNextField();
+                        } else {
+                            // En cas d'erreur, masquer l'animation et le loader
+                            hideCVRestructureAnimation();
+                            hideLoader();
+                            showNotification("❌ Erreur lors de l'analyse. Veuillez réessayer.", "error");
+                            
+                            // Réactiver le bouton
+                            controls.analyzeBtn.disabled = false;
+                            controls.analyzeBtn.classList.remove('opacity-50', 'cursor-not-allowed');
                         }
-                        
-                        fillNextField();
-                    } else {
-                        // En cas d'erreur, masquer l'animation
+                    } catch (error) {
+                        console.error("Erreur lors de l'analyse IA:", error);
+                        hideLoader();
                         hideCVRestructureAnimation();
+                        showNotification("❌ Erreur lors de l'analyse. Vérifiez votre connexion.", "error");
+                        
+                        // Réactiver le bouton
+                        controls.analyzeBtn.disabled = false;
+                        controls.analyzeBtn.classList.remove('opacity-50', 'cursor-not-allowed');
                     }
                 });
                 
