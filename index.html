@@ -7200,8 +7200,18 @@
                     if (e.ctrlKey && e.key === 'y') { e.preventDefault(); redo(); }
                 });
 
-                controls.addExperienceBtn.addEventListener('click', () => createDynamicItem(controls.experienceList, [{ key: 'title', placeholder: 'Titre du poste' }, { key: 'meta', placeholder: 'Entreprise & Dates' }, { key: 'desc', placeholder: 'Description des missions', type: 'textarea' }]));
-                controls.addFormationBtn.addEventListener('click', () => createDynamicItem(controls.formationList, [{ key: 'title', placeholder: 'Nom du diplôme' }, { key: 'meta', placeholder: 'Établissement & Année' }]));
+                // Gestionnaires d'événements avec vérifications de sécurité
+                if (controls.addExperienceBtn) {
+                    controls.addExperienceBtn.addEventListener('click', () => createDynamicItem(controls.experienceList, [{ key: 'title', placeholder: 'Titre du poste' }, { key: 'meta', placeholder: 'Entreprise & Dates' }, { key: 'desc', placeholder: 'Description des missions', type: 'textarea' }]));
+                } else {
+                    console.warn('Bouton add-experience non trouvé');
+                }
+                
+                if (controls.addFormationBtn) {
+                    controls.addFormationBtn.addEventListener('click', () => createDynamicItem(controls.formationList, [{ key: 'title', placeholder: 'Nom du diplôme' }, { key: 'meta', placeholder: 'Établissement & Année' }]));
+                } else {
+                    console.warn('Bouton add-formation non trouvé');
+                }
                 
                 const controlsPanel = document.getElementById('controls');
                 controlsPanel.addEventListener('input', (e) => {
@@ -7453,7 +7463,9 @@
                     });
                 }
                 
-                controls.analyzeBtn.addEventListener('click', async () => {
+                // Gestionnaire pour le bouton d'analyse IA
+                if (controls.analyzeBtn) {
+                    controls.analyzeBtn.addEventListener('click', async () => {
                     const text = controls.aiInput.value;
                     if (!text) { showNotification("Veuillez coller du texte à analyser.", "error"); return; }
                     
@@ -7697,6 +7709,9 @@ JSON :`;
                         controls.analyzeBtn.classList.remove('opacity-50', 'cursor-not-allowed');
                     }
                 });
+                } else {
+                    console.warn('Bouton analyze-btn non trouvé');
+                }
                 
                 // BOUTON DE TEST TEMPORAIRE
                 const testFillBtn = document.getElementById('test-fill-btn');
@@ -7808,7 +7823,9 @@ JSON :`;
                     }
                 });
 
-                controls.downloadPdfBtn.addEventListener('click', async () => {
+                // Gestionnaires de la barre d'outils avec vérifications de sécurité
+                if (controls.downloadPdfBtn) {
+                    controls.downloadPdfBtn.addEventListener('click', async () => {
                     const filename = `CV_${controls.prenom.value}_${controls.nom.value}.pdf`.replace(/ /g, '_');
                     document.body.classList.add('presentation-mode');
 
@@ -7884,60 +7901,95 @@ JSON :`;
                         bannerBg.style.cssText = originalBannerBg.style;
                         document.body.classList.remove('presentation-mode');
                     });
-                });
+                } else {
+                    console.warn('Bouton toolbar-pdf-btn non trouvé');
+                }
 
-                controls.resetCvBtn.addEventListener('click', async () => {
-                    const confirmed = await showConfirmModal("Nouveau CV", "Êtes-vous sûr de vouloir réinitialiser complètement le CV ?");
-                    if (confirmed) resetCVToDefault();
-                });
+                if (controls.resetCvBtn) {
+                    controls.resetCvBtn.addEventListener('click', async () => {
+                        const confirmed = await showConfirmModal("Nouveau CV", "Êtes-vous sûr de vouloir réinitialiser complètement le CV ?");
+                        if (confirmed) resetCVToDefault();
+                    });
+                } else {
+                    console.warn('Bouton toolbar-new-cv-btn non trouvé');
+                }
                 
-                controls.togglePresentationModeBtn.addEventListener('click', () => {
-                    document.body.classList.toggle('presentation-mode');
-                    const isActive = document.body.classList.contains('presentation-mode');
-                    controls.togglePresentationModeBtn.innerHTML = `<i class="fa-solid ${isActive ? 'fa-eye-slash' : 'fa-eye'}"></i> ${isActive ? 'Quitter Présentation' : 'Mode Présentation'}`;
-                });
+                if (controls.togglePresentationModeBtn) {
+                    controls.togglePresentationModeBtn.addEventListener('click', () => {
+                        document.body.classList.toggle('presentation-mode');
+                        const isActive = document.body.classList.contains('presentation-mode');
+                        controls.togglePresentationModeBtn.innerHTML = `<i class="fa-solid ${isActive ? 'fa-eye-slash' : 'fa-eye'}"></i> ${isActive ? 'Quitter Présentation' : 'Mode Présentation'}`;
+                    });
+                } else {
+                    console.warn('Bouton toolbar-presentation-btn non trouvé');
+                }
                 
-                controls.toggleOverflowBtn.addEventListener('click', (e) => {
-                    document.body.classList.toggle('overflow-check-active');
-                    e.currentTarget.classList.toggle('active');
-                    
-                    const isActive = document.body.classList.contains('overflow-check-active');
-                    
-                    if (isActive) {
-                        showNotification('Mode détection de dépassement activé', 'info', 3000);
-                        e.currentTarget.style.backgroundColor = '#ef4444';
-                        e.currentTarget.style.color = 'white';
-                    } else {
-                        showNotification('Mode détection de dépassement désactivé', 'info', 3000);
-                        e.currentTarget.style.backgroundColor = '';
-                        e.currentTarget.style.color = '';
-                    }
-                    
-                    checkAllPagesOverflow();
-                });
+                if (controls.toggleOverflowBtn) {
+                    controls.toggleOverflowBtn.addEventListener('click', (e) => {
+                        document.body.classList.toggle('overflow-check-active');
+                        e.currentTarget.classList.toggle('active');
+                        
+                        const isActive = document.body.classList.contains('overflow-check-active');
+                        
+                        if (isActive) {
+                            showNotification('Mode détection de dépassement activé', 'info', 3000);
+                            e.currentTarget.style.backgroundColor = '#ef4444';
+                            e.currentTarget.style.color = 'white';
+                        } else {
+                            showNotification('Mode détection de dépassement désactivé', 'info', 3000);
+                            e.currentTarget.style.backgroundColor = '';
+                            e.currentTarget.style.color = '';
+                        }
+                        
+                        checkAllPagesOverflow();
+                    });
+                } else {
+                    console.warn('Bouton toolbar-overflow-btn non trouvé');
+                }
 
-                // Gestionnaire pour le bouton partager
-                controls.shareBtn.addEventListener('click', () => {
-                    openShareModal();
-                });
+                // Gestionnaires pour le bouton partager avec vérifications de sécurité
+                if (controls.shareBtn) {
+                    controls.shareBtn.addEventListener('click', () => {
+                        openShareModal();
+                    });
+                } else {
+                    console.warn('Bouton toolbar-share-btn non trouvé');
+                }
 
                 // Gestionnaires pour le modal de partage
-                controls.closeShareModal.addEventListener('click', () => {
-                    controls.shareModal.classList.remove('active');
-                });
+                if (controls.closeShareModal) {
+                    controls.closeShareModal.addEventListener('click', () => {
+                        controls.shareModal.classList.remove('active');
+                    });
+                } else {
+                    console.warn('Bouton close-share-modal non trouvé');
+                }
 
-                controls.copyShareLinkBtn.addEventListener('click', () => {
-                    copyShareLink();
-                });
+                if (controls.copyShareLinkBtn) {
+                    controls.copyShareLinkBtn.addEventListener('click', () => {
+                        copyShareLink();
+                    });
+                } else {
+                    console.warn('Bouton copy-share-link-btn non trouvé');
+                }
 
                 // Fermer le modal en cliquant à l'extérieur
-                controls.shareModal.addEventListener('click', (e) => {
-                    if (e.target === controls.shareModal) {
-                        controls.shareModal.classList.remove('active');
-                    }
-                });
+                if (controls.shareModal) {
+                    controls.shareModal.addEventListener('click', (e) => {
+                        if (e.target === controls.shareModal) {
+                            controls.shareModal.classList.remove('active');
+                        }
+                    });
+                } else {
+                    console.warn('Modal share-modal non trouvé');
+                }
 
-                controls.aiSummarizeBtn.addEventListener('click', summarizeAllExperiencesAI);
+                // Gestionnaires IA avec vérifications de sécurité
+                if (controls.aiSummarizeBtn) {
+                    controls.aiSummarizeBtn.addEventListener('click', summarizeAllExperiencesAI);
+                } else {
+                    console.warn('Bouton ai-synthesize-experiences-btn non trouvé');
+                }
                 
                 // Nouveaux gestionnaires IA
                 if (controls.aiLayoutOptimizeBtn) {
@@ -7971,10 +8023,30 @@ JSON :`;
                 if (controls.aiKeywordsBoostBtn) {
                     controls.aiKeywordsBoostBtn.addEventListener('click', boostKeywords);
                 }
+                
+                if (controls.aiSynthesizeSkillsBtn) {
                     controls.aiSynthesizeSkillsBtn.addEventListener('click', synthesizeSkillsWithAI);
+                } else {
+                    console.warn('Bouton ai-synthesize-skills-btn non trouvé');
+                }
+                
+                if (controls.aiLimitSkillsBtn) {
                     controls.aiLimitSkillsBtn.addEventListener('click', limitSkillsWithAI);
+                } else {
+                    console.warn('Bouton ai-limit-skills-btn non trouvé');
+                }
+                
+                if (controls.anonymizeBtn) {
                     controls.anonymizeBtn.addEventListener('click', anonymizeCV);
+                } else {
+                    console.warn('Bouton toolbar-anonymize-btn non trouvé');
+                }
+                
+                if (controls.resetRecruiterBtn) {
                     controls.resetRecruiterBtn.addEventListener('click', () => { setDefaultRecruiterInfo(); updatePreview('form'); });
+                } else {
+                    console.warn('Bouton reset-recruiter-btn non trouvé');
+                }
     
                 async function limitSkillsWithAI() {
                     try {
