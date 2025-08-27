@@ -5028,15 +5028,28 @@
             // Fonction pour parser le JSON de l'IA de manière robuste
             function parseAIJsonSafely(text) {
                 console.log("=== PARSING JSON ===");
-                console.log("Texte brut de l'IA:", text);
+                console.log("📥 Texte brut de l'IA (longueur: " + (text ? text.length : 0) + "):", text);
+                
+                // Vérification initiale
+                if (!text) {
+                    console.error("❌ ERREUR: Aucun texte reçu de l'API (null/undefined)");
+                    return null;
+                }
+                
+                if (text.trim() === '') {
+                    console.error("❌ ERREUR: Texte vide reçu de l'API");
+                    return null;
+                }
                 
                 try {
                     // Nettoyer le texte avant parsing
                     let cleanText = text.trim();
+                    console.log("🧹 Texte après trim (longueur: " + cleanText.length + "):", cleanText);
                     
                     // Supprimer les balises markdown si présentes
                     cleanText = cleanText.replace(/```json\s*/, '').replace(/```\s*$/, '');
                     cleanText = cleanText.replace(/```\s*/, '');
+                    console.log("📝 Texte après suppression markdown:", cleanText);
                     
                     // Supprimer les commentaires de l'IA
                     cleanText = cleanText.replace(/^[^{]*/, ''); // Supprimer tout avant le premier {
@@ -5048,7 +5061,12 @@
                         cleanText = jsonMatch[0];
                     }
                     
-                    console.log("Texte nettoyé pour parsing:", cleanText);
+                    console.log("🎯 Texte final pour parsing (longueur: " + cleanText.length + "):", cleanText);
+                    
+                    if (cleanText.length === 0) {
+                        console.error("❌ ERREUR: Texte vide après nettoyage complet");
+                        return null;
+                    }
                     
                     // Tentative de parsing
                     const parsed = JSON.parse(cleanText);
@@ -5163,21 +5181,51 @@
                     const result = await response.json();
                     console.log("✅ Réponse API complète:", result);
                     
-                    if (result.candidates && result.candidates.length > 0) {
-                         if (result.candidates[0].finishReason !== "STOP" && result.candidates[0].finishReason !== "MAX_TOKENS") {
-                               throw new Error(`L'IA a été bloquée (raison: ${result.candidates[0].finishReason}). Veuillez reformuler votre demande.`);
-                         }
-                        if (result.candidates[0].content && result.candidates[0].content.parts && result.candidates[0].content.parts.length > 0) {
-                            const text = result.candidates[0].content.parts[0].text;
-                            console.log("Texte brut reçu de l'IA:", text);
-                            
-                            if (schema) {
-                                // Nettoyer et parser le JSON de manière robuste
-                                return parseAIJsonSafely(text);
-                            } else {
-                                return text;
-                            }
-                        }
+                    // Vérification de la structure de la réponse
+                    if (!result) {
+                        console.error("❌ ERREUR: Réponse API vide");
+                        throw new Error("Réponse API vide");
+                    }
+                    
+                    if (!result.candidates || result.candidates.length === 0) {
+                        console.error("❌ ERREUR: Aucun candidat dans la réponse API");
+                        console.log("Structure de la réponse:", result);
+                        throw new Error("Aucune réponse générée par l'IA");
+                    }
+                    
+                    const candidate = result.candidates[0];
+                    console.log("📋 Premier candidat:", candidate);
+                    
+                    if (candidate.finishReason && candidate.finishReason !== "STOP" && candidate.finishReason !== "MAX_TOKENS") {
+                        console.error("❌ IA bloquée, raison:", candidate.finishReason);
+                        throw new Error(`L'IA a été bloquée (raison: ${candidate.finishReason}). Veuillez reformuler votre demande.`);
+                    }
+                    
+                    if (!candidate.content) {
+                        console.error("❌ ERREUR: Aucun contenu dans le candidat");
+                        console.log("Candidat complet:", candidate);
+                        throw new Error("Aucun contenu généré par l'IA");
+                    }
+                    
+                    if (!candidate.content.parts || candidate.content.parts.length === 0) {
+                        console.error("❌ ERREUR: Aucune partie dans le contenu");
+                        console.log("Contenu complet:", candidate.content);
+                        throw new Error("Contenu IA vide");
+                    }
+                    
+                    const text = candidate.content.parts[0].text;
+                    console.log("📝 Texte brut reçu de l'IA (longueur: " + (text ? text.length : 0) + "):", text);
+                    
+                    if (!text || text.trim() === '') {
+                        console.error("❌ ERREUR: Texte vide reçu de l'IA");
+                        throw new Error("Texte généré vide");
+                    }
+                    
+                    if (schema) {
+                        // Nettoyer et parser le JSON de manière robuste
+                        return parseAIJsonSafely(text);
+                    } else {
+                        return text;
                     }
                     
                     console.log("❌ Réponse vide ou invalide de l'IA");
