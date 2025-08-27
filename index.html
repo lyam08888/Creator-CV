@@ -7826,8 +7826,8 @@ JSON :`;
                 // Gestionnaires de la barre d'outils avec vérifications de sécurité
                 if (controls.downloadPdfBtn) {
                     controls.downloadPdfBtn.addEventListener('click', async () => {
-                    const filename = `CV_${controls.prenom.value}_${controls.nom.value}.pdf`.replace(/ /g, '_');
-                    document.body.classList.add('presentation-mode');
+                        const filename = `CV_${controls.prenom.value}_${controls.nom.value}.pdf`.replace(/ /g, '_');
+                        document.body.classList.add('presentation-mode');
 
                     const bannerImg = preview.bannerImg;
                     const bannerBg = preview.bannerBgImg;
@@ -7900,6 +7900,7 @@ JSON :`;
                         bannerBg.src = originalBannerBg.src;
                         bannerBg.style.cssText = originalBannerBg.style;
                         document.body.classList.remove('presentation-mode');
+                    });
                     });
                 } else {
                     console.warn('Bouton toolbar-pdf-btn non trouvé');
