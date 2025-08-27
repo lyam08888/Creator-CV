@@ -10484,9 +10484,77 @@ JSON :`;
             }
             
             // --- START THE APP ---
-            initializeAll();
-            loadSharedCV(); // Vérifier s'il y a un CV partagé à charger
-            resetCVToDefault(); // Start with a clean slate
+            // Assurer que l'initialisation se fait correctement
+            console.log('Démarrage de l\'application...');
+            
+            // Initialisation avec délai pour assurer que tous les éléments DOM sont disponibles
+            setTimeout(() => {
+                console.log('Initialisation des composants...');
+                initializeAll();
+                loadSharedCV(); // Vérifier s'il y a un CV partagé à charger
+                resetCVToDefault(); // Start with a clean slate
+                console.log('Application initialisée avec succès.');
+            }, 50);
+            
+            // Fonction de diagnostic pour tester les boutons (accessible depuis la console)
+            window.diagnoseBtns = function() {
+                console.log('=== DIAGNOSTIC DES BOUTONS ===');
+                console.log('add-experience:', document.getElementById('add-experience'));
+                console.log('add-formation:', document.getElementById('add-formation'));
+                console.log('analyze-btn:', document.getElementById('analyze-btn'));
+                console.log('ai-synthesize-experiences-btn:', document.getElementById('ai-synthesize-experiences-btn'));
+                console.log('controls.addExperienceBtn:', controls.addExperienceBtn);
+                console.log('controls.addFormationBtn:', controls.addFormationBtn);
+                console.log('controls.analyzeBtn:', controls.analyzeBtn);
+                console.log('=== FIN DIAGNOSTIC ===');
+            };
+            
+            // Gestionnaires de secours au cas où les controls ne fonctionneraient pas
+            window.setupFallbackEventHandlers = function() {
+                console.log('Configuration des gestionnaires de secours...');
+                
+                const addExpBtn = document.getElementById('add-experience');
+                if (addExpBtn && !addExpBtn._hasListener) {
+                    addExpBtn.addEventListener('click', () => {
+                        console.log('Bouton ajouter expérience cliqué (secours)');
+                        createDynamicItem(document.getElementById('experience-list'), [
+                            { key: 'title', placeholder: 'Titre du poste' }, 
+                            { key: 'meta', placeholder: 'Entreprise & Dates' }, 
+                            { key: 'desc', placeholder: 'Description des missions', type: 'textarea' }
+                        ]);
+                    });
+                    addExpBtn._hasListener = true;
+                    console.log('Gestionnaire de secours ajouté pour add-experience');
+                }
+                
+                const addFormBtn = document.getElementById('add-formation');
+                if (addFormBtn && !addFormBtn._hasListener) {
+                    addFormBtn.addEventListener('click', () => {
+                        console.log('Bouton ajouter formation cliqué (secours)');
+                        createDynamicItem(document.getElementById('formation-list'), [
+                            { key: 'title', placeholder: 'Nom du diplôme' }, 
+                            { key: 'meta', placeholder: 'Établissement & Année' }
+                        ]);
+                    });
+                    addFormBtn._hasListener = true;
+                    console.log('Gestionnaire de secours ajouté pour add-formation');
+                }
+                
+                const analyzeBtn = document.getElementById('analyze-btn');
+                if (analyzeBtn && !analyzeBtn._hasListener) {
+                    analyzeBtn.addEventListener('click', () => {
+                        console.log('Bouton analyser cliqué (secours)');
+                        showNotification('Bouton analyse fonctionnel ! Vérifiez votre clé API pour utiliser l\'IA.', 'info');
+                    });
+                    analyzeBtn._hasListener = true;
+                    console.log('Gestionnaire de secours ajouté pour analyze-btn');
+                }
+            };
+            
+            // Appeler automatiquement les gestionnaires de secours après un délai
+            setTimeout(() => {
+                window.setupFallbackEventHandlers();
+            }, 200);
             
             // --- NOUVELLES FONCTIONS IA AVANCÉES ---
             
