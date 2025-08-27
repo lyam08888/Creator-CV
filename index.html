@@ -6846,17 +6846,6 @@
                             { element: controls.competences, text: extractedData.competences || '' }
                         ];
                         
-                        // Mettre à jour aussi le champ bannière avec le nom complet
-                        const nomComplet = `${extractedData.prenom || ''} ${extractedData.nom || ''}`.trim();
-                        if (nomComplet) {
-                            controls.bannerNom.value = nomComplet;
-                        }
-                        
-                        // Mettre à jour le poste dans la bannière aussi
-                        if (extractedData.poste) {
-                            controls.bannerPoste.value = extractedData.poste;
-                        }
-                        
                         // Écrire les champs principaux avec effet Matrix
                         let currentFieldIndex = 0;
                         function fillNextField() {
@@ -6868,12 +6857,9 @@
                                 controls.formationList.innerHTML = '';
                                 (extractedData.formations || []).forEach(form => createDynamicItem(controls.formationList, [{ key: 'title', placeholder: 'Nom du diplôme' }, { key: 'meta', placeholder: 'Établissement & Année' }], form));
                                 
-                                // Mettre à jour l'aperçu immédiatement pour refléter les changements de bannière
-                                updatePreview('form');
-                                
-                                // Attendre la fin de l'animation avant de finaliser
+                                // Attendre la fin de l'animation avant de mettre à jour l'aperçu
                                 animationPromise.then(() => {
-                                    updatePreview('form'); // Double mise à jour pour être sûr
+                                    updatePreview('form');
                                     showNotification("✨ CV restructuré et rempli par la Matrix !", "success");
                                 });
                                 return;
