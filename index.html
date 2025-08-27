@@ -3870,15 +3870,21 @@
                 });
                 
                 // Sliders
-                document.getElementById('font-size-slider')?.addEventListener('input', (e) => {
-                    accessibilitySettings.fontSize = parseInt(e.target.value);
-                    applyAccessibilitySettings();
-                });
+                const fontSizeSlider = document.getElementById('font-size-slider');
+                if (fontSizeSlider) {
+                    fontSizeSlider.addEventListener('input', (e) => {
+                        accessibilitySettings.fontSize = parseInt(e.target.value);
+                        applyAccessibilitySettings();
+                    });
+                }
                 
-                document.getElementById('line-height-slider')?.addEventListener('input', (e) => {
-                    accessibilitySettings.lineHeight = parseFloat(e.target.value);
-                    applyAccessibilitySettings();
-                });
+                const lineHeightSlider = document.getElementById('line-height-slider');
+                if (lineHeightSlider) {
+                    lineHeightSlider.addEventListener('input', (e) => {
+                        accessibilitySettings.lineHeight = parseFloat(e.target.value);
+                        applyAccessibilitySettings();
+                    });
+                }
                 
                 // Checkboxes
                 const checkboxes = [
@@ -3887,16 +3893,22 @@
                 ];
                 
                 checkboxes.forEach(id => {
-                    document.getElementById(id)?.addEventListener('change', (e) => {
-                        const setting = id.replace(/-([a-z])/g, (match, letter) => letter.toUpperCase());
-                        accessibilitySettings[setting] = e.target.checked;
-                        applyAccessibilitySettings();
-                    });
+                    const element = document.getElementById(id);
+                    if (element) {
+                        element.addEventListener('change', (e) => {
+                            const setting = id.replace(/-([a-z])/g, (match, letter) => letter.toUpperCase());
+                            accessibilitySettings[setting] = e.target.checked;
+                            applyAccessibilitySettings();
+                        });
+                    }
                 });
                 
                 // Boutons d'action
-                document.getElementById('save-accessibility')?.addEventListener('click', saveAccessibilitySettings);
-                document.getElementById('reset-accessibility')?.addEventListener('click', resetAccessibilitySettings);
+                const saveBtn = document.getElementById('save-accessibility');
+                if (saveBtn) saveBtn.addEventListener('click', saveAccessibilitySettings);
+                
+                const resetBtn = document.getElementById('reset-accessibility');
+                if (resetBtn) resetBtn.addEventListener('click', resetAccessibilitySettings);
             }
             
             // Raccourcis clavier globaux
