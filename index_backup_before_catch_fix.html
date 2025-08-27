@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
@@ -3449,6 +3449,7 @@
         // This script is now self-contained and does not use Firebase for saving.
         
         document.addEventListener('DOMContentLoaded', function() {
+            try {
             // --- ENSURE ALL OVERLAYS ARE HIDDEN ON PAGE LOAD ---
             function hideAllOverlays() {
                 // Hide loader overlay
@@ -10632,8 +10633,11 @@ JSON :`;
                 updateAllStyles();
             }, 100);
             
+        } catch (error) {
+            console.error('Erreur lors de l\'initialisation:', error);
         }
-        }); // Fermeture de DOMContentLoaded
+        
+    }); // Fermeture de DOMContentLoaded
     
     </script>
 </body>
