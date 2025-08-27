@@ -6844,9 +6844,45 @@
                         
                         const extractedData = await callGeminiAPI(prompt, schema);
                         
-                        if (extractedData) {
+                        // TEMPORAIRE : Test avec des données mockées si l'API échoue
+                        const testData = extractedData || {
+                            nom: "MARTIN",
+                            prenom: "Jean",
+                            poste: "Développeur Web",
+                            description: "Développeur passionné avec 5 ans d'expérience en JavaScript et React.",
+                            experiences: [
+                                {
+                                    title: "Développeur Frontend",
+                                    meta: "TechCorp • 2020-2023",
+                                    desc: "Développement d'applications web modernes"
+                                }
+                            ],
+                            formations: [
+                                {
+                                    title: "Master Informatique",
+                                    meta: "Université Tech • 2020"
+                                }
+                            ],
+                            competences: "JavaScript, React, Node.js, CSS, HTML"
+                        };
+                        
+                        console.log("Données finales à utiliser:", testData);
+                        
+                        // Debug : Afficher les données extraites
+                        console.log("Données extraites par l'IA:", extractedData);
+                        
+                        if (testData) {
                             // Mettre à jour le texte du loader
                             controls.loaderText.textContent = "✨ Remplissage du CV...";
+                            
+                            // Debug : Vérifier que les contrôles existent
+                            console.log("Contrôles nom/prenom:", controls.nom, controls.prenom);
+                            console.log("Valeurs à insérer:", {
+                                nom: testData.nom,
+                                prenom: testData.prenom,
+                                poste: testData.poste,
+                                description: testData.description
+                            });
                             
                             // Attendre que l'animation soit bien avancée avant de remplir
                             await new Promise(resolve => setTimeout(resolve, 2000));
@@ -8504,7 +8540,15 @@
             // --- FONCTION D'ÉCRITURE MATRIX EN TEMPS RÉEL ---
             
             function writeTextMatrixStyle(element, newText, callback = null) {
+                console.log("writeTextMatrixStyle appelé avec:", {
+                    element: element,
+                    elementId: element?.id,
+                    newText: newText,
+                    hasCallback: !!callback
+                });
+                
                 if (!element || !newText) {
+                    console.log("Élément ou texte manquant, arrêt de la fonction");
                     if (callback) callback();
                     return;
                 }
