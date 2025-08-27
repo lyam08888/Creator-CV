@@ -8077,8 +8077,10 @@ JSON :`;
                 }
 
                 // Appliquer le positionnement intelligent des tooltips
-                document.querySelectorAll('.tooltip').forEach(tooltip => {
-                    tooltip.addEventListener('mouseenter', () => positionTooltip(tooltip));
+                document.querySelectorAll('.tooltip').forEach(function(tooltip) {
+                    tooltip.addEventListener('mouseenter', function() {
+                        positionTooltip(tooltip);
+                    });
                 });
 
                 document.querySelectorAll('.a4-page').forEach(setupOverflowObserver);
