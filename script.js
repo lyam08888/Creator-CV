@@ -7184,11 +7184,7 @@ JSON :`;
                 updatePreview('form');
                 updateAllStyles();
             }, 100);
-            
-        } catch (error) {
-            console.error('Erreur lors de l\'initialisation:', error);
-        }
-        
-    }); // Fermeture de DOMContentLoaded
+            ) } } 
+        }); // Fermeture de DOMContentLoaded
     
     
