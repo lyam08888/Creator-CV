@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Créateur de CV IA - Pro Recruteur</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.4.0/dist/tailwind.min.css" rel="stylesheet">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Montserrat:wght@400;500;700;800&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Roboto+Mono:wght@400;700&family=Merriweather:wght@400;700&family=Oswald:wght@400;700&family=Cormorant+Garamond:wght@400;700&family=Open+Sans:wght@400;700&family=Source+Sans+Pro:wght@400;700&family=Nunito+Sans:wght@400;700&display=swap" rel="stylesheet">
@@ -5033,12 +5033,12 @@
                 // Vérification initiale
                 if (!text) {
                     console.error("❌ ERREUR: Aucun texte reçu de l'API (null/undefined)");
-                    return null;
+                    throw new Error("Aucune réponse reçue de l'IA");
                 }
                 
                 if (text.trim() === '') {
                     console.error("❌ ERREUR: Texte vide reçu de l'API");
-                    return null;
+                    throw new Error("Réponse vide de l'IA");
                 }
                 
                 try {
@@ -5047,25 +5047,25 @@
                     console.log("🧹 Texte après trim (longueur: " + cleanText.length + "):", cleanText);
                     
                     // Supprimer les balises markdown si présentes
-                    cleanText = cleanText.replace(/```json\s*/, '').replace(/```\s*$/, '');
-                    cleanText = cleanText.replace(/```\s*/, '');
+                    cleanText = cleanText.replace(/```json\s*/g, '').replace(/```\s*$/g, '');
+                    cleanText = cleanText.replace(/```\s*/g, '');
                     console.log("📝 Texte après suppression markdown:", cleanText);
                     
-                    // Supprimer les commentaires de l'IA
-                    cleanText = cleanText.replace(/^[^{]*/, ''); // Supprimer tout avant le premier {
-                    cleanText = cleanText.replace(/[^}]*$/, ''); // Supprimer tout après le dernier }
+                    // Supprimer les commentaires de l'IA avant et après le JSON
+                    const jsonStart = cleanText.indexOf('{');
+                    const jsonEnd = cleanText.lastIndexOf('}');
                     
-                    // Trouver le JSON valide dans la réponse
-                    const jsonMatch = cleanText.match(/\{[\s\S]*\}/);
-                    if (jsonMatch) {
-                        cleanText = jsonMatch[0];
+                    if (jsonStart === -1 || jsonEnd === -1 || jsonStart >= jsonEnd) {
+                        console.error("❌ ERREUR: Aucun JSON valide trouvé dans la réponse");
+                        throw new Error("Format de réponse invalide - aucun JSON trouvé");
                     }
                     
+                    cleanText = cleanText.substring(jsonStart, jsonEnd + 1);
                     console.log("🎯 Texte final pour parsing (longueur: " + cleanText.length + "):", cleanText);
                     
                     if (cleanText.length === 0) {
                         console.error("❌ ERREUR: Texte vide après nettoyage complet");
-                        return null;
+                        throw new Error("JSON vide après nettoyage");
                     }
                     
                     // Tentative de parsing
@@ -5073,26 +5073,30 @@
                     console.log("✅ JSON parsé avec succès:", parsed);
                     
                     // Vérifier que les données essentielles sont présentes
-                    if (parsed && (parsed.nom || parsed.prenom || parsed.poste)) {
+                    if (parsed && (parsed.nom || parsed.prenom || parsed.poste || parsed.description)) {
                         return parsed;
                     } else {
-                        console.log("⚠️ JSON valide mais données vides");
-                        return null;
+                        console.log("⚠️ JSON valide mais données essentielles manquantes");
+                        throw new Error("Données incomplètes reçues de l'IA");
                     }
                     
                 } catch (error) {
                     console.error("❌ Erreur lors du parsing JSON:", error);
                     console.log("Texte qui a causé l'erreur:", text);
                     
-                    // Essayer une extraction simple avec regex
-                    const fallbackData = extractDataFromText(text);
-                    if (fallbackData.nom || fallbackData.prenom || fallbackData.poste) {
-                        console.log("✅ Fallback réussi:", fallbackData);
-                        return fallbackData;
+                    // Essayer une extraction simple avec regex comme fallback
+                    try {
+                        const fallbackData = extractDataFromText(text);
+                        if (fallbackData.nom || fallbackData.prenom || fallbackData.poste) {
+                            console.log("✅ Fallback réussi:", fallbackData);
+                            return fallbackData;
+                        }
+                    } catch (fallbackError) {
+                        console.log("❌ Fallback a également échoué:", fallbackError);
                     }
                     
-                    console.log("❌ Même le fallback a échoué");
-                    return null;
+                    // Si tout échoue, lancer l'erreur originale
+                    throw error;
                 }
             }
             
@@ -5227,14 +5231,11 @@
                     } else {
                         return text;
                     }
-                    
-                    console.log("❌ Réponse vide ou invalide de l'IA");
-                    throw new Error("Réponse invalide ou vide reçue de l'IA.");
 
                 } catch (error) {
                     console.error("❌ Erreur détaillée de l'IA:", error);
                     showNotification(`Erreur de l'IA : ${error.message}`, 'error', 5000);
-                    return null;
+                    throw error; // Re-throw pour permettre au code appelant de gérer l'erreur
                 } finally {
                     hideMatrixProcessing();
                 }
@@ -6960,6 +6961,12 @@
                     const text = controls.aiInput.value;
                     if (!text) { showNotification("Veuillez coller du texte à analyser.", "error"); return; }
                     
+                    // Vérifier la clé API avant de continuer
+                    if (!validateApiKey()) {
+                        showNotification("Veuillez configurer votre clé API Gemini d'abord.", "error");
+                        return;
+                    }
+                    
                     // Afficher le loader pendant l'analyse
                     showLoader("🤖 Analyse IA en cours...");
                     
@@ -6987,6 +6994,8 @@ RÈGLES STRICTES :
 2. Pas de commentaires, pas de texte avant ou après le JSON
 3. Utilise des guillemets doubles pour toutes les chaînes
 4. Échappe correctement les guillemets dans le contenu
+5. Si une information n'est pas trouvée, mets une chaîne vide ""
+6. Assure-toi que le JSON est complet et valide
 
 FORMAT EXACT :
 {
@@ -7162,7 +7171,7 @@ JSON :`;
                             // En cas d'erreur, masquer l'animation et le loader
                             hideCVRestructureAnimation();
                             hideLoader();
-                            showNotification("❌ Erreur lors de l'analyse. Veuillez réessayer.", "error");
+                            showNotification("❌ Aucune donnée extraite. L'IA n'a pas pu analyser le texte.", "error");
                             
                             // Réactiver le bouton
                             controls.analyzeBtn.disabled = false;
@@ -7172,7 +7181,20 @@ JSON :`;
                         console.error("Erreur lors de l'analyse IA:", error);
                         hideLoader();
                         hideCVRestructureAnimation();
-                        showNotification("❌ Erreur lors de l'analyse. Vérifiez votre connexion.", "error");
+                        
+                        // Message d'erreur plus spécifique selon le type d'erreur
+                        let errorMessage = "❌ Erreur lors de l'analyse.";
+                        if (error.message.includes("API")) {
+                            errorMessage = "❌ Erreur API. Vérifiez votre clé Gemini.";
+                        } else if (error.message.includes("JSON")) {
+                            errorMessage = "❌ Erreur de format. L'IA n'a pas répondu correctement.";
+                        } else if (error.message.includes("réseau") || error.message.includes("connexion")) {
+                            errorMessage = "❌ Erreur de connexion. Vérifiez votre internet.";
+                        } else {
+                            errorMessage = `❌ Erreur: ${error.message}`;
+                        }
+                        
+                        showNotification(errorMessage, "error", 8000);
                         
                         // Réactiver le bouton
                         controls.analyzeBtn.disabled = false;
