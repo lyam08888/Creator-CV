@@ -5149,8 +5149,8 @@
                 `;
                 controls.customSectionsList.appendChild(controlDiv);
                 
-                    updatePreview('form');
-                    updateAllStyles();
+                updatePreview('form');
+                updateAllStyles();
             }
 
             // --- HELPER FUNCTIONS ---
@@ -5859,8 +5859,8 @@
                 });
                 updateProgressBar();
                 
-                    updatePreview('form');
-                    updateAllStyles();
+                updatePreview('form');
+                updateAllStyles();
                 showNotification("Le CV a été réinitialisé.", "success");
             }
 
@@ -10621,35 +10621,26 @@ JSON :`;
             }
             
             // Initialisation de l'application
-            try {
-                setupAccessibilityModal();
-                loadAccessibilitySettings();
-                setupKeyboardShortcuts();
-                setupTemplateManager();
+            setupAccessibilityModal();
+            loadAccessibilitySettings();
+            setupKeyboardShortcuts();
+            setupTemplateManager();
             
             // S'assurer que l'état initial de la bannière est correct
             setTimeout(() => {
-                    updatePreview('form');
-                    updateAllStyles();
+                updatePreview('form');
+                updateAllStyles();
             }, 100);
-                
-            } catch (error) {
-                console.error('Erreur lors de l'initialisation:', error);
-            }
-        }); // Fermeture de DOMContentLoaded
+            
+        } catch (error) {
+            console.error('Erreur lors de l\'initialisation:', error);
+        }
+        
+    }); // Fermeture de DOMContentLoaded
     
     </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
 
 
 
