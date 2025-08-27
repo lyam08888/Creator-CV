@@ -10556,7 +10556,7 @@ JSON :`;
                         skills: Array.from(document.querySelectorAll('#skills .skill-item input')).map(i => i.value).join(' ')
                     };
                     
-                    const prompt = `En tant qu'expert ATS (Applicant Tracking System), identifiez et intégrez naturellement les mots-clés essentiels pour le poste "${jobTitle}" dans ce CV :
+                    const prompt = `En tant qu'expert ATS (Applicant Tracking System), identifiez et intégrez naturellement les mots-clés essentiels pour le poste "${(jobTitle || '').replace(/`/g, '').replace(/\$/g, '')}" dans ce CV :
                     
                     Contenu actuel : ${JSON.stringify(allContent)}
                     
@@ -10570,8 +10570,8 @@ JSON :`;
                     modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
                     modal.innerHTML = `
                         <div class="bg-white rounded-xl p-6 max-w-2xl max-h-80vh overflow-y-auto">
-                            <h3 class="text-xl font-bold mb-4">🎯 Mots-clés suggérés pour "${jobTitle}"</h3>
-                            <div class="whitespace-pre-line text-sm mb-4">${keywords}</div>
+                            <h3 class="text-xl font-bold mb-4">🎯 Mots-clés suggérés pour "${jobTitle?.replace(/"/g, '&quot;') || ''}"</h3>
+                            <div class="whitespace-pre-line text-sm mb-4">${keywords?.replace(/`/g, '&#96;')?.replace(/\$/g, '&#36;') || ''}</div>
                             <button class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600" onclick="this.closest('.fixed').remove()">
                                 Compris
                             </button>
